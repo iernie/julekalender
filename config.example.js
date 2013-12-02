@@ -1,3 +1,4 @@
 exports.config = {
+	title: "",
 	database: ""
 }

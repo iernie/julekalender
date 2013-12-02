@@ -1,13 +1,7 @@
-var config = require("../config.js").config;
-var mongojs = require("mongojs");
-var db = mongojs(config.database);
-var srand = require('srand');
-srand.seed(Date.now());
-
-exports.index = function(req, res){
+exports.index = function(req, res, db){
 	db.collection("julekalender").runCommand('count', function(err, count) {
 		if(count && count.n) {
-			var rand = Math.floor(srand.random()*count.n);
+			var rand = Math.floor(Math.random()*count.n);
 		    db.collection("julekalender").find(function(err2, data) {
 		    	console.log(data);
 

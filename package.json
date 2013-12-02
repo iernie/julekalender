@@ -10,7 +10,6 @@
     "jade": "*",
     "less-middleware": "*",
     "mongojs": "*",
-    "srand": "*"
   },
   "engines": {
     "node": "0.10.x"

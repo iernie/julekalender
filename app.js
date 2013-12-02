@@ -8,8 +8,13 @@ var routes = require('./routes');
 var register = require('./routes/register');
 var winner = require('./routes/winner');
 var remove = require('./routes/remove');
+var users = require('./routes/users');
 var http = require('http');
 var path = require('path');
+
+var config = require("./config.js").config;
+var mongojs = require("mongojs");
+var db = mongojs(config.database);
 
 var app = express();
 
@@ -32,11 +37,24 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-app.get('/', routes.index);
-app.get('/register', register.index);
-app.get('/winner', winner.index);
-app.get('/remove', remove.index);
-app.post('/register/save', register.save);
+app.get('/', function(req, res) {
+	routes.index(req, res, db);
+});
+app.get('/register', function(req, res) {
+	register.index(req, res, db);
+});
+app.get('/winner', function(req, res) {
+	winner.index(req, res, db);
+});
+app.get('/remove', function(req, res) {
+	remove.index(req, res, db);
+});
+app.get('/users', function(req, res) {
+	users.index(req, res, db);
+});
+app.post('/register/save', function(req, res) {
+	register.save(req, res, db);
+});
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

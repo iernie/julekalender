@@ -1,12 +1,8 @@
-var config = require("../config.js").config;
-var mongojs = require("mongojs");
-var db = mongojs(config.database);
-
-exports.index = function(req, res){
+exports.index = function(req, res, db){
   	res.render('register');
 };
 
-exports.save = function(req, res){
+exports.save = function(req, res, db){
 	console.log(req.body);
 	db.collection("julekalender").save(req.body);
 	res.redirect("/");
