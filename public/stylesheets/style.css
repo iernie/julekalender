@@ -1,17 +1,46 @@
+@font-face {
+  font-family: 'calligraffitiregular';
+  src: url('../fonts/Calligraffiti-webfont.eot');
+  src: url('../fonts/Calligraffiti-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/Calligraffiti-webfont.woff') format('woff'), url('../fonts/Calligraffiti-webfont.ttf') format('truetype'), url('../fonts/Calligraffiti-webfont.svg#calligraffitiregular') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
 body {
   padding: 50px;
   font: 14px Helvetica, Arial, sans-serif;
   text-align: center;
+  background: #e0e1dd;
 }
 h1 {
-  font-size: 5em;
+  font-size: 7em;
+  font-family: calligraffitiregular;
+  color: #e1382b;
+  text-shadow: 2px 2px 0 #ffffff;
 }
-a {
-  color: #00B7FF;
-  background: #c8280a;
+h2 {
+  font-size: 5em;
+  color: #4d4f53;
+}
+a,
+input[type="submit"] {
+  color: #ffffff;
+  background: #e44d42;
+  box-shadow: 0 2px 0 #bf261b;
   padding: 10px;
   border-radius: 3px;
   text-decoration: none;
-  color: #fff;
+  font-size: 1.5em;
+  border: 0;
+}
+a:hover,
+input[type="submit"]:hover {
+  color: #ffffff;
+  background: #e23c30;
+}
+ul {
+  list-style-type: none;
+}
+ul li {
+  padding: 10px;
   font-size: 1.5em;
 }

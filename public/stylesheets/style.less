@@ -1,19 +1,62 @@
+@white: rgb(255,255,255);
+@red: rgb(213,43,30);
+@grey-1: rgb(224,225,221);
+@grey-2: rgb(201,202,200);
+@grey-3: rgb(173,175,175);
+@grey-4: rgb(77,79,83);
+
+@font-face {
+    font-family: 'calligraffitiregular';
+    src: url('../fonts/Calligraffiti-webfont.eot');
+    src: url('../fonts/Calligraffiti-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../fonts/Calligraffiti-webfont.woff') format('woff'),
+         url('../fonts/Calligraffiti-webfont.ttf') format('truetype'),
+         url('../fonts/Calligraffiti-webfont.svg#calligraffitiregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
 body {
   padding: 50px;
   font: 14px Helvetica, Arial, sans-serif;
   text-align: center;
+  background: @grey-1;
 }
 
 h1 {
-	font-size: 5em;
+    font-size: 7em;
+    font-family: calligraffitiregular;
+    color: lighten(@red, 5%);
+    text-shadow: 2px 2px 0 @white;
+}
+
+h2 {
+    font-size: 5em;
+    color: @grey-4;
 }
 
 a, input[type="submit"] {
-  color: #00B7FF;
-  background: rgba(200,40,10,1);
-  padding: 10px;
-  border-radius: 3px;
-  text-decoration: none;
-  color: #fff;
-  font-size: 1.5em;
+    color: @white;
+    background: lighten(@red, 10%);
+    box-shadow: 0 2px 0 darken(@red, 5%);
+    padding: 10px;
+    border-radius: 3px;
+    text-decoration: none;
+    font-size: 1.5em;
+    border: 0;
+
+    &:hover {
+        color: @white;
+        background: lighten(@red, 6%);
+    }
+}
+
+ul {
+    list-style-type: none;
+
+    li {
+        padding: 10px;
+        font-size: 1.5em;
+    }
 }
