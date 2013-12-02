@@ -37,6 +37,14 @@ input[type="submit"]:hover {
   color: #ffffff;
   background: #e23c30;
 }
+input {
+  border-radius: 3px;
+  border: 0;
+  box-shadow: 0 2px 0 #c9cac8;
+  padding: 5px;
+  font-size: 2em;
+  margin: 0 0 40px 0;
+}
 ul {
   list-style-type: none;
 }

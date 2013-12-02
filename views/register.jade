@@ -1,10 +1,9 @@
 extends layout
 
 block content
-  h1= "Registrer bruker"
-  form(action='/register/save', method='post')
-    div(data-role='fieldcontain')
-        label(for='name') Navn
-          input(id='navn',type='text',value='',placeholder='',name='navn')
-    div(data-role='fieldcontain')
-      input(type='submit',value='Registrer',data-transition='fade', data-theme='c')
+    h1= "Registrer bruker"
+    form(action='/register/save', method='post')
+        div(data-role='fieldcontain')
+            input(id='navn', type='text', value='', placeholder='Ola Nordmann', name='navn')
+        div(data-role='fieldcontain')
+            input(type='submit', value='Registrer')
