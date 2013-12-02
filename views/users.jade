@@ -1,7 +1,7 @@
 extends layout
 
 block content
-	h1= "ETF Julekalender 2013"
+	h1 Brukere
 	ul
 		each user in users
-			li= user.navn
+			li= user.navn + " (" + user.won + ")"

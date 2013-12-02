@@ -1,5 +1,10 @@
 extends layout
 
 block content
-  h1= "Vinneren er"
-  p #{name}
+  h1 Vinneren er
+  h2= name
+  form(action='/winner/won', method='post')
+    div(data-role='fieldcontain')
+        input(id='id', type='hidden', value='#{id}', name='id')
+    div(data-role='fieldcontain')
+      input(type='submit',value='Erklær vinner')

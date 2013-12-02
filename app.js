@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // development only
 if ('development' == app.get('env')) {
-  app.use(express.errorHandler());
+	app.use(express.errorHandler());
 }
 
 app.get('/', function(req, res) {
@@ -46,7 +46,7 @@ app.get('/register', function(req, res) {
 app.get('/winner', function(req, res) {
 	winner.index(req, res, db);
 });
-app.get('/remove', function(req, res) {
+app.get('/removeallthethings', function(req, res) {
 	remove.index(req, res, db);
 });
 app.get('/users', function(req, res) {
@@ -55,7 +55,10 @@ app.get('/users', function(req, res) {
 app.post('/register/save', function(req, res) {
 	register.save(req, res, db);
 });
+app.post('/winner/won', function(req, res) {
+	winner.won(req, res, db);
+});
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+	console.log('Express server listening on port ' + app.get('port'));
 });
