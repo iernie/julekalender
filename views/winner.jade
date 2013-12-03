@@ -2,7 +2,7 @@ extends layout
 
 block content
   h1 Vinneren er&hellip;
-  h2= name
+  h2#name= name
   form(action='/winner/won', method='post')
     div(data-role='fieldcontain')
         input(id='id', type='hidden', value='#{id}', name='id')

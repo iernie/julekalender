@@ -4,4 +4,8 @@ $(document).ready(function() {
         minSize: 5,
         maxSize:8
     });
+
+    $("#name").shuffleLetters({
+    	step: 100
+    });
 });

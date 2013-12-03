@@ -6,9 +6,7 @@
   font-style: normal;
 }
 body {
-  padding: 50px;
-  font: 14px Helvetica, Arial, sans-serif;
-  text-align: center;
+  font-family: Helvetica, Arial, sans-serif;
   background: #e0e1dd;
 }
 h1 {
@@ -51,4 +49,15 @@ ul {
 ul li {
   padding: 10px;
   font-size: 1.5em;
+}
+#content {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 500px;
+  width: 70%;
+  text-align: center;
 }
