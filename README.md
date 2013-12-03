@@ -1,6 +1,6 @@
 Julekalender
 ============
-Enkel app som velger vinner av dagens julekalenderluke. Skrevet i node <3
+Enkel app som velger vinner av dagens julekalenderluke. Skrevet i node med mongodb <3
 
 ## Bruk
 Trykk på "Se dagens vinner". Hvis vinneren står for gaven i dagens luke, last siden på nytt og gjenta. Hvis ikke, erklær som vinner og åpne gave!
