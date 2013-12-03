@@ -3,7 +3,7 @@ var mongojs = require('mongojs');
 var ObjectId = mongojs.ObjectId;
 
 exports.index = function(req, res, db){
-	db.collection("julekalender").find({ won: { $lt: 2 } }, function(err, data) {
+	db.collection("julekalender").find({ won: { $lt: config.giftsperuser } }, function(err, data) {
 		if(data && data.length > 0) {
 			var rand = Math.floor(Math.random()*data.length);
 	    	console.log(data);
