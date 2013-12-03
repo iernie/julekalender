@@ -1,5 +1,5 @@
 exports.config = {
-	title: "",
+	title: "Julekalender 2013",
 	giftsperuser: 2,
 	database: ""
 }
