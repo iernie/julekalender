@@ -5,7 +5,14 @@ $(document).ready(function() {
         maxSize:8
     });
 
+    $('#picture').hide();
+    $('#picture-img').hide();
+
     $("#name").shuffleLetters({
-    	step: 100
+    	step: 100,
+    	callback: function() {
+    		$('#picture').slideDown();
+    		$('#picture-img').slideDown();
+    	}
     });
 });

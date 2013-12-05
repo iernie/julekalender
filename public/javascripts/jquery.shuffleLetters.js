@@ -53,7 +53,7 @@
 				
 				if(ch == " "){
 					types[i] = "space";
-					continue;
+					//continue;
 				}
 				else if(/[a-z]/.test(ch)){
 					types[i] = "lowerLetter";

@@ -52,6 +52,9 @@ app.get('/removeallthethings', function(req, res) {
 app.get('/users', function(req, res) {
 	users.index(req, res, db);
 });
+app.post('/users/edit', function(req, res) {
+	users.edit(req, res, db);
+});
 app.post('/register/save', function(req, res) {
 	register.save(req, res, db);
 });

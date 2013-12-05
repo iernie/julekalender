@@ -1,7 +1,13 @@
 extends layout
 
 block content
-	h1 Brukere
-	ul
-		each user in users
-			li= user.navn + " (" + user.won + ")"
+    h1 Brukere
+    ul
+        each user in users
+            li
+                form(action='/users/edit', method='post')
+                    input(id='navn', type='text', value='#{user.navn}', name='navn')
+                    input(id='won', type='text', value='#{user.won}', name='won')
+                    input(id='image', type='text', value='#{user.image}', name='image')
+                    input(id='id', type='hidden', value='#{user._id}', name='id')
+                    input(type='submit', value='Lagre')
