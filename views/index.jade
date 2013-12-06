@@ -1,5 +1,16 @@
 extends layout
 
 block content
-  h1= title
-  a(href="/winner") Se dagens vinner
+    h1= title
+    ul#calendar(class="clearfix")
+        - var today = new Date().getDate();
+        - for (var i = 1; i < 25; i++)
+            if today > i
+                li(id=i, class="opened")= i
+            else if today == i
+                li(id=i, class="today")
+                    a(href="/winner")= today
+            else
+                li(id=i)= i
+            
+                

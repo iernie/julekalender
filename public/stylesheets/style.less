@@ -16,6 +16,18 @@
     font-style: normal;
 }
 
+.clearfix:after {
+    content: ".";
+    display: block;
+    clear: both;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+}
+ 
+.clearfix {
+    display: inline-block;
+}
 
 body {
 	font-family: Helvetica, Arial, sans-serif;
@@ -23,7 +35,7 @@ body {
 }
 
 #content {
-	margin-top: 10%;
+	margin-top: 5%;
 	text-align: center;
 }
 
@@ -39,7 +51,23 @@ h2 {
     color: @grey-4;
 }
 
-a, input[type="submit"] {
+form {
+    font-size: 1em;
+
+    input {
+        margin-bottom: 20px;
+    }
+}
+
+input[type="text"] {
+    border-radius: 3px;
+    border: 0;
+    box-shadow: 0 2px 0 @grey-2;
+    padding: 5px;
+    font-size: 2em;
+}
+
+input[type="submit"] {
     color: @white;
     background: lighten(@red, 10%);
     box-shadow: 0 2px 0 darken(@red, 5%);
@@ -48,20 +76,13 @@ a, input[type="submit"] {
     text-decoration: none;
     font-size: 1.5em;
     border: 0;
+    position: relative;
+    top: -3px;
 
     &:hover {
         color: @white;
         background: lighten(@red, 6%);
     }
-}
-
-input {
-    border-radius: 3px;
-    border: 0;
-    box-shadow: 0 2px 0 @grey-2;
-    padding: 5px;
-    font-size: 2em;
-    margin: 0 0 40px 0;
 }
 
 input[name="won"] {
@@ -71,10 +92,54 @@ input[name="won"] {
 
 ul {
     list-style-type: none;
+}
+
+ul#calendar {
+    margin: 0;
+    padding: 0;
 
     li {
-        padding: 10px;
-        font-size: 1.5em;
+        float: left;
+        color: @white;
+        background: @grey-2;
+        height: 100px;
+        width: 100px;
+        margin: 0 20px 20px 0;
+        box-sizing: border-box;
+        padding: 23px 0 0 0;
+        border: 2px dashed @white;
+        font-size: 3em;
+
+        &:nth-child(8n+0) {
+            margin: 0;
+        }
+
+        &:nth-child(8n+1) {
+            clear: both;
+        }
+
+        &.opened {
+            background: @grey-4;
+        }
+
+        &.today {
+            background: lighten(@red, 10%);
+        }
+
+        &.today:hover {
+            background: lighten(@red, 6%);
+        }
+
+        a {
+            font-size: 1em;
+            background: none;
+            box-shadow: none;
+            color: @white;
+            text-decoration: none;
+            display: block;
+            margin-top: -23px;
+            padding: 23px 0;
+        }
     }
 }
 
@@ -84,4 +149,16 @@ ul {
     border-radius: 9999px;
     overflow: hidden;
     margin: 0 auto;
+    filter: url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\'><filter id=\'grayscale\'><feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/></filter></svg>#grayscale");
+    filter: gray;
+    -webkit-filter: grayscale(100%);
+}
+
+canvas {
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -o-crisp-edges;
+    image-rendering: crisp-edges;
+    -ms-interpolation-mode: nearest-neighbor;
 }
