@@ -1,5 +1,10 @@
-var Pixelate = function(canvas, source) {
-    this.canvas = canvas;
+var Pixelate = function(source, width, height) {
+    var image = document.getElementById(source);
+    var parent = image.parentNode;
+    this.canvas = document.createElement("canvas");
+
+    this.canvas.width = width;
+    this.canvas.height = height;
     this.ctx = this.canvas.getContext('2d');
     this.img = new Image(); 
 
@@ -8,7 +13,9 @@ var Pixelate = function(canvas, source) {
     this.ctx.imageSmoothingEnabled = false;
     
     this.img.onload = this.setValue;
-    this.img.src = source;
+    this.img.src = image.src;
+
+    parent.replaceChild(this.canvas, image);
 };
 
 Pixelate.prototype.setValue = function(v) {
@@ -24,11 +31,11 @@ Pixelate.prototype.reset = function() {
 };
 
 $(document).ready(function() {
-    var pixelate = new Pixelate($("#canvas")[0], $("#picture-img").val());
+    var pixelate = new Pixelate("picture-img", 201, 235);
     var size = 1;
     var interval = setInterval(function() {
         pixelate.setValue(size++);
-    }, 750);
+    }, 500);
 
     $("#name").shuffleLetters({
         step: 100,

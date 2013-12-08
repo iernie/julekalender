@@ -6,10 +6,10 @@ block headerlinks
 block content
     h1 Vinneren er&hellip;
     #picture
-        canvas(id="canvas", width="201", height="235")
+        img#picture-img(src="/images/people/#{data.image}")
     h2#name= data.navn
     form(action='/winner/won', method='post')
-        input#picture-img(type="hidden", value="/images/people/#{data.image}")
+        
         div(data-role='fieldcontain')
             input(id='id', type='hidden', value='#{data._id}', name='id')
         div(data-role='fieldcontain')
