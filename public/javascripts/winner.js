@@ -5,6 +5,7 @@ var Pixelate = function(source, width, height) {
 
     this.canvas.width = width;
     this.canvas.height = height;
+    this.canvas.style.background = "#fff";
     this.ctx = this.canvas.getContext('2d');
     this.img = new Image(); 
 
@@ -32,16 +33,19 @@ Pixelate.prototype.reset = function() {
 
 $(document).ready(function() {
     var pixelate = new Pixelate("picture-img", 201, 235);
-    var size = 1;
+    var size = 1, finished = false;
     var interval = setInterval(function() {
         pixelate.setValue(size++);
-    }, 500);
+        if(finished) {
+            clearInterval(this);
+            pixelate.reset();
+        }
+    }, 700);
 
     $("#name").shuffleLetters({
         step: 100,
         callback: function() {
-            clearInterval(interval);
-            pixelate.reset();
+            finished = true;
         }
     });
 });
