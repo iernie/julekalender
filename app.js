@@ -44,6 +44,9 @@ app.get('/register', function(req, res) {
 	register.index(req, res, db);
 });
 app.get('/winner', function(req, res) {
+	res.redirect("/");
+});
+app.get('/winner/:day', function(req, res) {
 	winner.index(req, res, db);
 });
 app.get('/removeallthethings', function(req, res) {

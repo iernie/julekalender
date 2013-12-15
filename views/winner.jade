@@ -9,8 +9,7 @@ block content
         img#picture-img(src="/images/people/#{data.image}")
     h2#name= data.navn
     form(action='/winner/won', method='post')
-        
-        div(data-role='fieldcontain')
-            input(id='id', type='hidden', value='#{data._id}', name='id')
+        input(id='day', type='hidden', value='#{day}', name='day')
+        input(id='id', type='hidden', value='#{data._id}', name='id')
         div(data-role='fieldcontain')
             input(type='submit',value='Erklær vinner')
