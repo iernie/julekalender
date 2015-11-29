@@ -17,6 +17,7 @@ var index = require('./routes/index');
 var team = require('./routes/team');
 var users = require('./routes/users');
 var open = require('./routes/open');
+var api = require('./routes/api');
 
 var UserObject = Parse.Object.extend("Users");
 
@@ -34,7 +35,6 @@ Handlebars.registerAsyncHelper('picture', function(objectId, cb) {
     var query = new Parse.Query(UserObject);
     query.get(objectId).then(function(user) {
         var parseFile = user.get('picture');
-        console.log(parseFile.url());
         if(parseFile) {
             return cb(parseFile.url());
         }
@@ -68,6 +68,8 @@ app.post('/:name/users', upload.single('picture'), users.post);
 
 app.get('/:name/open/:day', open.get);
 app.post('/:name/open/:day', open.post);
+
+app.get('/:name/api', api.get);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
