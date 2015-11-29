@@ -1,0 +1,21 @@
+<h1>{{teamname}}</h1>
+<ul id="calendar" class="clearfix">
+	{{#days}}
+		<li class="{{id}}{{#today}} today{{/today}}{{#opened}} opened{{/opened}}">
+			{{#if today}}
+				<a href="/{{teamname}}/open/{{id}}">{{id}}</a>
+			{{else}}
+				{{#if opened}}
+					<div class="calpic">
+	                	<img src="{{picture user}}"></img>
+	                </div>
+	            	<div class="picoverlay">{{id}}</div>
+	            {{else}}
+	            	{{id}}
+            	{{/if}}
+            {{/if}}
+		</li>
+	{{/days}}
+</ul>
+<br>
+<a href="/{{teamname}}/users">Brukere</a>

@@ -1,25 +1,46 @@
-var config = require("../config.js").config;
-var mongojs = require('mongojs');
-var ObjectId = mongojs.ObjectId;
+var UserObject = Parse.Object.extend("Users");
 
-exports.index = function(req, res, db) {
-	db.collection("julekalender").find(function(err, data) {
-		console.log(data);
-		res.render("users", {
-			title: config.title,
-			users: data
+exports.get = function(req, res, next) {
+	var teamname = req.params.name;
+
+	var query = new Parse.Query(UserObject);
+	query.equalTo("team", teamname);
+	query.find().then(function(result) {
+		res.render('partials/users', {
+			title: teamname,
+			teamname: teamname,
+			users: result,
+			layout: 'layout'
 		});
 	});
-}
+};
 
-exports.edit = function(req, res, db) {
-	db.collection("julekalender").update({_id: ObjectId(req.body.id)},
-	{
-		"navn": req.body.navn,
-		"won": parseInt(req.body.won),
-		"image": req.body.image
-	}, { multi: false }, function(err, updated) {
-		console.log(err, updated);
-		res.redirect("/users");
-	});
-}
+exports.post = function(req, res, next) {
+	var teamname = req.params.name;
+
+	var save = function(user) {
+		if(req.file) {
+    		var base64 = req.file.buffer.toString('base64');
+    		var parseFile = new Parse.File(req.file.originalname, { base64: base64 }, req.file.mimetype);
+    		parseFile.save().then(function() {
+            	user.save({ 'name': req.body.name, 'picture': parseFile, 'team': teamname }).then(function() {
+	        		res.redirect('/' + teamname + '/users');
+	        	});
+			});
+    	} else {
+    		user.save({ 'name': req.body.name, 'team': teamname }).then(function() {
+        		res.redirect('/' + teamname + '/users');
+        	});
+    	}
+	}
+
+	if(!req.body.id) {
+		var user = new UserObject();
+		save(user);
+    } else {
+    	var query = new Parse.Query(UserObject);;
+	    query.get(req.body.id).then(function(user) {
+        	save(user);
+        });
+    }	
+};

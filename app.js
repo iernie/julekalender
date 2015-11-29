@@ -1,70 +1,106 @@
-
-/**
- * Module dependencies.
- */
-
 var express = require('express');
-var routes = require('./routes');
-var register = require('./routes/register');
-var winner = require('./routes/winner');
-var remove = require('./routes/remove');
-var users = require('./routes/users');
-var http = require('http');
 var path = require('path');
+var favicon = require('serve-favicon');
+var logger = require('morgan');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var Handlebars = require('express-hbs');
+var multer  = require('multer')
+var upload = multer();
 
-var config = require("./config.js").config;
-var mongojs = require("mongojs");
-var db = mongojs(config.database);
+var config  = require('./config');
+
+GLOBAL.Parse = require('parse/node');
+Parse.initialize(config.appKey, config.clientKey);
+
+var index = require('./routes/index');
+var team = require('./routes/team');
+var users = require('./routes/users');
+var open = require('./routes/open');
+
+var UserObject = Parse.Object.extend("Users");
 
 var app = express();
 
-// all environments
-app.set('port', process.env.PORT || 3000);
+Handlebars.registerHelper('get', function(object, name) {
+    return object.get(name);
+});
+
+Handlebars.registerHelper('objectId', function(object) {
+    return object.id;
+});
+
+Handlebars.registerAsyncHelper('picture', function(objectId, cb) {
+    var query = new Parse.Query(UserObject);
+    query.get(objectId).then(function(user) {
+        var parseFile = user.get('picture');
+        console.log(parseFile.url());
+        if(parseFile) {
+            return cb(parseFile.url());
+        }
+        return cb("");
+    });
+});
+
+// view engine setup
+app.engine('hbs', Handlebars.express4({
+  partialsDir: path.join(__dirname, 'views', 'partials')
+}));
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
-app.use(express.bodyParser());
-app.use(express.favicon());
-app.use(express.logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.methodOverride());
-app.use(app.router);
-app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
+app.set('view engine', 'hbs');
+
+// uncomment after placing your favicon in /public
+app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// development only
-if ('development' == app.get('env')) {
-	app.use(express.errorHandler());
+app.get('/', index.get);
+app.post('/', index.post);
+
+app.get('/:name', team.get);
+
+app.get('/:name/users', users.get);
+app.post('/:name/users', upload.single('picture'), users.post);
+
+app.get('/:name/open/:day', open.get);
+app.post('/:name/open/:day', open.post);
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handlers
+
+// development error handler
+// will print stacktrace
+if (app.get('env') === 'development') {
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.render('partials/error', {
+      message: err.message,
+      error: err,
+      layout: 'layout'
+    });
+  });
 }
 
-app.get('/', function(req, res) {
-	routes.index(req, res, db);
-});
-app.get('/register', function(req, res) {
-	register.index(req, res, db);
-});
-app.get('/winner', function(req, res) {
-	res.redirect("/");
-});
-app.get('/winner/:day', function(req, res) {
-	winner.index(req, res, db);
-});
-app.get('/removeallthethings', function(req, res) {
-	remove.index(req, res, db);
-});
-app.get('/users', function(req, res) {
-	users.index(req, res, db);
-});
-app.post('/users/edit', function(req, res) {
-	users.edit(req, res, db);
-});
-app.post('/register/save', function(req, res) {
-	register.save(req, res, db);
-});
-app.post('/winner/won', function(req, res) {
-	winner.won(req, res, db);
+// production error handler
+// no stacktraces leaked to user
+app.use(function(err, req, res, next) {
+  res.status(err.status || 500);
+  res.render('partials/error', {
+    message: err.message,
+    error: {},
+    layout: 'layout'
+  });
 });
 
-http.createServer(app).listen(app.get('port'), function(){
-	console.log('Express server listening on port ' + app.get('port'));
-});
+
+  module.exports = app;

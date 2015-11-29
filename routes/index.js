@@ -1,23 +1,23 @@
-var config = require("../config.js").config;
+exports.get = function(req, res, next) {
+	res.render('partials/index', {
+		title: 'Julekalender as a Service',
+		error: req.query.error,
+		layout: 'layout'
+	});
+};
 
-exports.index = function(req, res, db){
-	db.collection("julekalender-winners").find(function(err, winners) {
-		var lookupWinners = {};
-		for (var i = 0, len = winners.length; i < len; i++) {
-		    lookupWinners[winners[i].day] = winners[i].winner
+exports.post = function(req, res, next) {
+	var TeamObject = Parse.Object.extend("Teams");
+	var query = new Parse.Query(TeamObject);
+	query.equalTo("name", req.body.name);
+	query.first().then(function(team) {
+		if(!team) {
+			var team = new TeamObject();
+			team.save({ name: req.body.name }).then(function(object) {
+				res.redirect('/' + object.get('name'));
+			});
+		} else {
+			res.redirect('/?error=true');
 		}
-		db.collection("julekalender").find(function(errr, users) {
-			var lookupUsers = {};
-			for (var i = 0, len = users.length; i < len; i++) {
-			    lookupUsers[users[i]._id] = users[i]
-			}
-			res.render('index',
-				{
-					title: config.title,
-					winners: lookupWinners,
-					users: lookupUsers
-				}
-			);
-		});
 	});
 };
