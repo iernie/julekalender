@@ -13,9 +13,11 @@ exports.get = function(req, res, next) {
 		var grouped = _.pairs(_.groupBy(users, function(user) {
 			return user.get('won') || 0;
 		}));
-		var lowest = grouped[0][1];
 
-		if(lowest.length > 0) {
+		grouped.sort();
+
+		if(grouped.length > 0 && grouped[0][1].length > 0) {
+			var lowest = grouped[0][1];
 			var rand = Math.floor(Math.random() * lowest.length);
 			res.render('partials/open', {
 				title: teamname,
