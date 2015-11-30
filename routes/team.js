@@ -21,7 +21,7 @@ exports.get = function(req, res, next) {
 						days[i].opened = true;
 						days[i].user = winners[i].get('user');
 					}
-					else if(moment().date() >= i+1 && moment().month() + 1 === 11) {
+					else if(moment().date() >= i+1 && moment().month() + 1 === 12) {
 						days[i].today = true;
 					}
 				};

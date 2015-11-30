@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var UserObject = Parse.Object.extend("Users");
 var WinnerObject = Parse.Object.extend("Winners");
 
@@ -8,13 +9,19 @@ exports.get = function(req, res, next) {
 	var usersQuery = new Parse.Query(UserObject);
 	usersQuery.equalTo("team", teamname);
 	usersQuery.find().then(function(users) {
-		if(users.length > 0) {
-			var rand = Math.floor(Math.random() * users.length);
+
+		var grouped = _.pairs(_.groupBy(users, function(user) {
+			return user.get('won') || 0;
+		}));
+		var lowest = grouped[0][1];
+
+		if(lowest.length > 0) {
+			var rand = Math.floor(Math.random() * lowest.length);
 			res.render('partials/open', {
 				title: teamname,
 				teamname: teamname,
 				day: day,
-				winner: users[rand],
+				winner: lowest[rand],
 				layout: 'layout'
 			});
 		} else {

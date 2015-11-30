@@ -10,9 +10,9 @@
     font-family: 'calligraffitiregular';
     src: url('../fonts/Calligraffiti-webfont.eot');
     src: url('../fonts/Calligraffiti-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../fonts/Calligraffiti-webfont.woff') format('woff'),
-         url('../fonts/Calligraffiti-webfont.ttf') format('truetype'),
-         url('../fonts/Calligraffiti-webfont.svg#calligraffitiregular') format('svg');
+    url('../fonts/Calligraffiti-webfont.woff') format('woff'),
+    url('../fonts/Calligraffiti-webfont.ttf') format('truetype'),
+    url('../fonts/Calligraffiti-webfont.svg#calligraffitiregular') format('svg');
     font-weight: normal;
     font-style: normal;
 }
@@ -21,23 +21,23 @@
     display: inline-block;
 
     &:after {
-    	content: ".";
-	    display: block;
-	    clear: both;
-	    visibility: hidden;
-	    line-height: 0;
-	    height: 0;
+        content: ".";
+        display: block;
+        clear: both;
+        visibility: hidden;
+        line-height: 0;
+        height: 0;
     }
 }
 
 body {
-	font-family: Helvetica, Arial, sans-serif;
-	background: @grey-1;
+    font-family: Helvetica, Arial, sans-serif;
+    background: @grey-1;
 }
 
 #content {
-	margin: 100px 0;
-	text-align: center;
+    margin: 100px 0;
+    text-align: center;
 }
 
 h1 {
@@ -190,12 +190,12 @@ ul#calendar {
     width: 80px;
     border-radius: 9999px;
     overflow: hidden;
-    margin: 0 auto;
+    margin: 0 auto; 
 }
 
 .userline {
-	width: 680px;
-	margin: 0 auto;
+    width: 680px;
+    margin: 0 auto;
 }
 
 .userpic {
@@ -208,8 +208,11 @@ ul#calendar {
     float: left;
 
     img {
-    	height: auto;
-    	max-width: 100%;
+        height: auto;
+        max-width: 100%;
+        filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale"); /* Firefox 10+, Firefox on Android */
+        filter: gray; /* IE6-9 */
+        -webkit-filter: grayscale(100%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */
     }
 }
 
@@ -219,6 +222,7 @@ ul#calendar {
     left: 0;
     right: 0;
     height: 50px;
+    text-align: center;
 
     &.error {
         background: fade(@red, 50%);
@@ -233,18 +237,16 @@ ul#calendar {
         font-weight: bold;
         padding: 15px;
         font-size: 1.2em;
-        width: 680px;
-        margin: 0 auto;
     }
 }
 
 a {
-	color: @red;
-	text-decoration: none;
+    color: @red;
+    text-decoration: none;
 
-	&:hover {
-		text-decoration: underline;
-	}
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 canvas {
@@ -254,4 +256,7 @@ canvas {
     image-rendering: -o-crisp-edges;
     image-rendering: crisp-edges;
     -ms-interpolation-mode: nearest-neighbor;
+    filter: url("data:image/svg+xml;utf8,&lt;svg xmlns=\'http://www.w3.org/2000/svg\'&gt;&lt;filter id=\'grayscale\'&gt;&lt;feColorMatrix type=\'matrix\' values=\'0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0\'/&gt;&lt;/filter&gt;&lt;/svg&gt;#grayscale"); /* Firefox 10+, Firefox on Android */
+    filter: gray; /* IE6-9 */
+    -webkit-filter: grayscale(100%); /* Chrome 19+, Safari 6+, Safari 6+ iOS */ 
 }
