@@ -1,5 +1,6 @@
 @white: rgb(255,255,255);
 @red: rgb(213,43,30);
+@green: rgb(0,180,0);
 @grey-1: rgb(224,225,221);
 @grey-2: rgb(201,202,200);
 @grey-3: rgb(173,175,175);
@@ -35,7 +36,7 @@ body {
 }
 
 #content {
-	margin-top: 5%;
+	margin: 100px 0;
 	text-align: center;
 }
 
@@ -209,6 +210,31 @@ ul#calendar {
     img {
     	height: auto;
     	max-width: 100%;
+    }
+}
+
+.alert.flash {
+    position: fixed;
+    bottom: -50px;
+    left: 0;
+    right: 0;
+    height: 50px;
+
+    &.error {
+        background: fade(@red, 50%);
+    }
+
+    &.success {
+        background: fade(@green, 50%);
+    }
+
+    .message {
+        color: @white;
+        font-weight: bold;
+        padding: 15px;
+        font-size: 1.2em;
+        width: 680px;
+        margin: 0 auto;
     }
 }
 

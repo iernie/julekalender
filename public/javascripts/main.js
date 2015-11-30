@@ -38,6 +38,16 @@ $(document).ready(function() {
         maxSize:8
     });
 
+    $(".alert.flash").animate({
+        bottom: "+=50px",
+    });
+
+    setTimeout(function(){
+        $(".alert.flash").animate({
+            bottom: "-=50px",
+        });
+    }, 5000);
+
     var pixelate = new Pixelate("picture-img", 201, 235);
     var size = 1, finished = false;
     var interval = setInterval(function() {

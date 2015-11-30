@@ -5,6 +5,8 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var Handlebars = require('express-hbs');
+var session = require('express-session')
+var flash = require('express-flash-notification')
 var multer  = require('multer')
 var upload = multer();
 
@@ -48,6 +50,8 @@ app.engine('hbs', Handlebars.express4({
 }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
+app.use(session({ secret: 'julekalender', resave: true, saveUninitialized: false }));
+app.use(flash(app, { view_name: 'partials/flash' }));
 
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));

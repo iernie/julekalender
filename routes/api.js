@@ -5,13 +5,13 @@ exports.get = function(req, res, next) {
 	var teamname = req.params.name;
 	var today = new Date().getDate();
 
-	var query = new Parse.Query(WinnerObject);
-	query.equalTo("team", teamname);
-	query.equalTo("day", today);
-	query.first().then(function(winner) {
+	var winnersQuery = new Parse.Query(WinnerObject);
+	winnersQuery.equalTo("team", teamname);
+	winnersQuery.equalTo("day", today);
+	winnersQuery.first().then(function(winner) {
 		if(winner) {
-			var users = new Parse.Query(UserObject);
-		    users.get(winner.get('user')).then(function(user) {
+			var usersQuery = new Parse.Query(UserObject);
+		    usersQuery.get(winner.get('user')).then(function(user) {
 		        var parseFile = user.get('picture');
 		        if(parseFile) {
 		            res.json({
