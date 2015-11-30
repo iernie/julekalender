@@ -53,7 +53,6 @@ app.set('view engine', 'hbs');
 app.use(session({ secret: 'julekalender', resave: true, saveUninitialized: false }));
 app.use(flash(app, { view_name: 'partials/flash' }));
 
-// uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -109,4 +108,4 @@ app.use(function(err, req, res, next) {
 });
 
 
-  module.exports = app;
+module.exports = app;

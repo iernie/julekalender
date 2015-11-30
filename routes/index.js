@@ -1,3 +1,5 @@
+var slug = require('slug')
+
 exports.get = function(req, res, next) {
 	res.render('partials/index', {
 		title: 'Julekalender as a Service',
@@ -16,7 +18,7 @@ exports.post = function(req, res, next) {
 		teamQuery.first().then(function(team) {
 			if(!team) {
 				var team = new TeamObject();
-				team.save({ name: req.body.name }).then(function(object) {
+				team.save({ name: slug(req.body.name) }).then(function(object) {
 					req.flash('success', 'Ny kalender opprettet.', false);
 					res.redirect('/' + object.get('name'));
 				});

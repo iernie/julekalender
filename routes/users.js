@@ -1,3 +1,4 @@
+var slug = require('slug')
 var UserObject = Parse.Object.extend("Users");
 
 exports.get = function(req, res, next) {
@@ -24,7 +25,7 @@ exports.post = function(req, res, next) {
 		var save = function(user) {
 			if(req.file) {
 	    		var base64 = req.file.buffer.toString('base64');
-	    		var parseFile = new Parse.File(req.file.originalname, { base64: base64 }, req.file.mimetype);
+	    		var parseFile = new Parse.File(slug(req.file.originalname), { base64: base64 }, req.file.mimetype);
 	    		parseFile.save().then(function() {
 	            	user.save({ 'name': req.body.name, 'picture': parseFile, 'team': teamname }).then(function() {
 		        		res.redirect('/' + teamname + '/users');
