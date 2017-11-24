@@ -1,4 +1,4 @@
-module.exports = { 
-	appKey: "",
-	clientKey: ""
+module.exports = {
+	appId: "",
+	serverUrl: ""
 };

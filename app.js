@@ -13,7 +13,8 @@ var upload = multer();
 var config  = require('./config');
 
 GLOBAL.Parse = require('parse/node');
-Parse.initialize(config.appKey, config.clientKey);
+Parse.initialize(config.appId);
+Parse.serverURL = config.serverUrl
 
 var index = require('./routes/index');
 var team = require('./routes/team');
