@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var Handlebars = require('express-hbs');
 var session = require('express-session')
 var flash = require('express-flash-notification')
+var cors = require('cors');
+var helmet = require('helmet');
 var multer  = require('multer')
 var upload = multer();
 
@@ -44,6 +46,10 @@ Handlebars.registerAsyncHelper('picture', function(objectId, cb) {
         return cb("");
     });
 });
+
+app.use(helmet());
+app.use(cors());
+app.disable('x-powered-by');
 
 // view engine setup
 app.engine('hbs', Handlebars.express4({
