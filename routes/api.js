@@ -19,7 +19,7 @@ exports.get = function(req, res, next) {
 						url: parseFile.url()
 					});
 		        } else {
-		        	res.json({ name: winner.get('name') });
+					res.json({ name: user.get('name') });
 		        }
 		    });
 		} else {
