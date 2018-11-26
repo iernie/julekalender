@@ -1,5 +1,4 @@
-var Pixelate = function(source, width, height) {
-    var image = document.getElementById(source);
+var Pixelate = function (image, width, height) {
     var parent = image.parentNode;
     this.canvas = document.createElement("canvas");
 
@@ -7,12 +6,12 @@ var Pixelate = function(source, width, height) {
     this.canvas.height = height;
     this.canvas.style.background = "#fff";
     this.ctx = this.canvas.getContext('2d');
-    this.img = new Image(); 
+    this.img = new Image();
 
     this.ctx.mozImageSmoothingEnabled = false;
     this.ctx.webkitImageSmoothingEnabled = false;
     this.ctx.imageSmoothingEnabled = false;
-    
+
     this.img.onload = this.setValue;
     this.img.src = image.src;
 
@@ -20,11 +19,13 @@ var Pixelate = function(source, width, height) {
 };
 
 Pixelate.prototype.setValue = function(v) {
-    var size = v * 0.01;
-    var w = this.canvas.width * size;
-    var h = this.canvas.height * size;
-    this.ctx.drawImage(this.img, 0, 0, w, h);
-    this.ctx.drawImage(this.canvas, 0, 0, w, h, 0, 0, this.canvas.width, this.canvas.height);
+    if (this.canvas) {
+        var size = v * 0.01;
+        var w = this.canvas.width * size;
+        var h = this.canvas.height * size;
+        this.ctx.drawImage(this.img, 0, 0, w, h);
+        this.ctx.drawImage(this.canvas, 0, 0, w, h, 0, 0, this.canvas.width, this.canvas.height);
+    }
 };
 
 Pixelate.prototype.reset = function() {
@@ -48,20 +49,20 @@ $(document).ready(function() {
         });
     }, 5000);
 
-    var pixelate = new Pixelate("picture-img", 201, 235);
-    var size = 1, finished = false;
-    var interval = setInterval(function() {
-        pixelate.setValue(size++);
-        if(finished) {
-            clearInterval(this);
-            pixelate.reset();
-        }
-    }, 700);
+    var image = document.getElementById("picture-img");
+    if (image) {
+        var pixelate = new Pixelate(image, 201, 235);
+        var size = 1;
+        var interval = setInterval(function () {
+            pixelate.setValue(size++);
+        }, 700);
 
-    $("#name").shuffleLetters({
-        step: 100,
-        callback: function() {
-            finished = true;
-        }
-    });
+        $("#name").shuffleLetters({
+            step: 100,
+            callback: function () {
+                pixelate.reset();
+                clearInterval(interval);
+            }
+        });
+    }
 });

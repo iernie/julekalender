@@ -10,7 +10,7 @@ exports.get = function(req, res, next) {
 	usersQuery.equalTo("team", teamname);
 	usersQuery.find().then(function(users) {
 
-		var grouped = _.pairs(_.groupBy(users, function(user) {
+		var grouped = _.entries(_.groupBy(users, function(user) {
 			return user.get('won') || 0;
 		}));
 

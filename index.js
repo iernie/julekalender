@@ -1,8 +1,8 @@
+require('dotenv').config();
+
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var Handlebars = require('express-hbs');
 var session = require('express-session')
@@ -10,11 +10,10 @@ var flash = require('express-flash-notification')
 var multer  = require('multer')
 var upload = multer();
 
-var config  = require('./config');
+global.Parse = require('parse/node');
 
-GLOBAL.Parse = require('parse/node');
-Parse.initialize(config.appId);
-Parse.serverURL = config.serverUrl
+Parse.initialize(process.env.APP_ID);
+Parse.serverURL = process.env.PARSE_URL;
 
 var index = require('./routes/index');
 var team = require('./routes/team');
@@ -25,6 +24,7 @@ var api = require('./routes/api');
 var UserObject = Parse.Object.extend("Users");
 
 var app = express();
+var port = process.env.PORT || 2000;
 
 Handlebars.registerHelper('get', function(object, name) {
     return object.get(name);
@@ -55,10 +55,8 @@ app.use(session({ secret: 'julekalender', resave: true, saveUninitialized: false
 app.use(flash(app, { view_name: 'partials/flash' }));
 
 app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
-app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(require('less-middleware')(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -108,5 +106,4 @@ app.use(function(err, req, res, next) {
   });
 });
 
-
-module.exports = app;
+app.listen(port);
