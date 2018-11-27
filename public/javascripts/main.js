@@ -32,6 +32,24 @@ Pixelate.prototype.reset = function() {
     this.ctx.drawImage(this.img, 0, 0, this.canvas.width, this.canvas.height);
 };
 
+if (!String.prototype.splice) {
+    /**
+     * {JSDoc}
+     *
+     * The splice() method changes the content of a string by removing a range of
+     * characters and/or adding new characters.
+     *
+     * @this {String}
+     * @param {number} start Index at which to start changing the string.
+     * @param {number} delCount An integer indicating the number of old chars to remove.
+     * @param {string} newSubStr The String that is spliced in.
+     * @return {string} A new string with the spliced substring.
+     */
+    String.prototype.splice = function (start, delCount, newSubStr) {
+        return this.slice(0, start) + newSubStr + this.slice(start + Math.abs(delCount));
+    };
+}
+
 $(document).ready(function() {
     $(document).snowfall({
         round : true,
@@ -57,8 +75,13 @@ $(document).ready(function() {
             pixelate.setValue(size++);
         }, 700);
 
+        var name = $("#name").html();
+        var length = Math.max(26, name.length);
+        var text = Array(length).join("	").splice(name.length / 2 - ((length / 2) + name.length), name.length, name);
+
         $("#name").shuffleLetters({
             step: 100,
+            text: text,
             callback: function () {
                 pixelate.reset();
                 clearInterval(interval);
