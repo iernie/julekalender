@@ -13,6 +13,7 @@ exports.get = function(req, res, next) {
 		if(team) {
 			var winnersQuery = new Parse.Query(WinnerObject);
 			winnersQuery.equalTo('team', team.get('name'));
+			winnersQuery.ascending('day');
 			winnersQuery.find().then(function(winners) {
 				var days = [];
 				for (var i = 0; i < 24; i++) {
