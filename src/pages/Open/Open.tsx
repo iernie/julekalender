@@ -111,11 +111,14 @@ const Open: React.FC = () => {
       />
       <div className={stepClass}>
         <div className={styles.winner}>
-          <img
-            className={styles.avatar}
-            src={winner?.image}
-            alt={winner?.name}
-          />
+          <div className={styles.avatar}>
+            <img
+              className={styles.image}
+              src={winner?.image}
+              alt={winner?.name}
+            />
+          </div>
+
           <h2>{winner?.name}</h2>
         </div>
         {(step === null || step < 3) && (

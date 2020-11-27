@@ -50,11 +50,13 @@ const Calendar: React.FC = () => {
             <div key={day + 1} className={dayClass}>
               {!winner && day + 1}
               {winner && (
-                <img
-                  className={styles.avatar}
-                  src={winner.image}
-                  alt={winner.name}
-                />
+                <div className={styles.avatar}>
+                  <img
+                    className={styles.image}
+                    src={winner.image}
+                    alt={winner.name}
+                  />
+                </div>
               )}
             </div>
           );

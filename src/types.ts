@@ -5,14 +5,14 @@ export type UserType = {
   calendar: firebase.firestore.DocumentReference<firebase.firestore.DocumentData>;
   name: string;
   image: string;
-  createdAt: Date;
+  createdAt: firebase.firestore.Timestamp;
   won: Array<string>;
 };
 
 export type CalendarType = {
   id: string;
   name: string;
-  createdAt: Date;
+  createdAt: firebase.firestore.Timestamp;
   settings: {
     giftsPerUser?: number;
     fair?: boolean;

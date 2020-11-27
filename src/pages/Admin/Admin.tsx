@@ -14,6 +14,20 @@ const Admin: React.FC = () => {
   const { name } = useParams<{ name: string }>();
   const history = useHistory();
 
+  const usedAvatars = React.useRef<Array<number>>([]);
+
+  const getAvatar = (): number => {
+    if (usedAvatars.current.length === 20) {
+      usedAvatars.current = [];
+    }
+    const random = Math.floor(Math.random() * 20) + 1;
+    if (usedAvatars.current.indexOf(random) === -1) {
+      usedAvatars.current.push(random);
+      return random;
+    }
+    return getAvatar();
+  };
+
   const db = firebase.firestore();
 
   return (
@@ -76,7 +90,9 @@ const Admin: React.FC = () => {
         <div className={styles.users}>
           {users &&
             users
-              .sort((a, b) => compareAsc(a.createdAt, b.createdAt))
+              .sort((a, b) =>
+                compareAsc(a.createdAt.seconds, b.createdAt.seconds)
+              )
               .map((user) => {
                 const ref = firebase
                   .storage()
@@ -150,7 +166,7 @@ const Admin: React.FC = () => {
               .set({
                 id,
                 name: "",
-                createdAt: new Date(),
+                createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                 won: [],
                 calendar: db
                   .collection("calendars")
@@ -158,7 +174,7 @@ const Admin: React.FC = () => {
                 image: await firebase
                   .storage()
                   .ref()
-                  .child(`avatars/${Math.floor(Math.random() * 20) + 1}.png`)
+                  .child(`avatars/${getAvatar()}.png`)
                   .getDownloadURL(),
               } as UserType)
               .then(() => {});

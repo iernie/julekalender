@@ -9,6 +9,11 @@
   height: 25rem;
   width: 25rem;
   border-radius: 50%;
+  overflow: hidden;
+}
+
+.image {
+  width: inherit;
 }
 
 .refresh {

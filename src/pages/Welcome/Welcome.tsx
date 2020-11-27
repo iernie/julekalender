@@ -31,7 +31,7 @@ const Welcome: React.FC = () => {
               .doc(name.toLocaleLowerCase())
               .set({
                 id: uuidv4(),
-                createdAt: new Date(),
+                createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                 name,
                 settings: {
                   fair: true,

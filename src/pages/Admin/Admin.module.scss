@@ -42,10 +42,24 @@
   margin: 0 auto;
   position: relative;
   margin-bottom: 1rem;
+
+  &:before {
+    position: absolute;
+    content: "";
+    display: block;
+    border-radius: 50%;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+  }
+
+  &:hover:before {
+    border: 0.125rem dashed var(--white);
+  }
 }
 
 .image {
-  height: inherit;
   width: inherit;
 }
 
