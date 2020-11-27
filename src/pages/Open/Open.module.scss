@@ -1,0 +1,206 @@
+:global(body) {
+  overflow-y: hidden;
+}
+
+.settings {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
+.avatar {
+  height: 25rem;
+  width: 25rem;
+  border-radius: 50%;
+}
+
+.refresh {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+.giftbox {
+  width: 300px;
+  height: 220px;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  margin-left: -150px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.giftbox:after {
+  content: "";
+  color: #fff;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  z-index: 1000;
+  transform: rotate(-20deg);
+  transform-origin: 0 0;
+}
+
+.giftbox > div {
+  background: var(--red);
+  position: absolute;
+}
+
+.giftbox .cover {
+  top: 0;
+  left: 0;
+  height: 25%;
+  width: 100%;
+  z-index: 2;
+  transition: all 0.4s ease-out;
+}
+
+.giftbox:hover .cover {
+  transform: translateY(-0.5rem) rotate(-2deg);
+}
+
+.giftbox .box {
+  bottom: 0;
+  height: 80%;
+  left: 5%;
+  right: 5%;
+  z-index: 1;
+}
+
+.giftbox > div:after,
+.giftbox > div:before {
+  content: "";
+  position: absolute;
+  top: 0;
+}
+
+/* ribbon */
+.giftbox > div:before {
+  background: var(--yellow);
+  width: 50px;
+  left: 50%;
+  height: 100%;
+  transform: translateX(-50%);
+}
+
+/* shadow */
+.giftbox .box:after {
+  background: rgba(0, 0, 0, 0.1);
+  left: 0;
+  height: 30px;
+  width: 100%;
+}
+
+.giftbox .cover div {
+  position: absolute;
+  height: 60px;
+  width: 60px;
+  bottom: 100%;
+  left: 30%;
+}
+
+.giftbox .cover div:before,
+.giftbox .cover div:after {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  content: "";
+  background: transparent;
+  border-radius: 30px;
+  box-shadow: inset 0 0 0 14px var(--yellow);
+}
+
+.giftbox .cover div:before {
+  transform: translateX(-45%) skewY(40deg);
+}
+
+.giftbox .cover div:after {
+  transform: translateX(45%) skewY(-40deg);
+}
+
+.step-1 .giftbox {
+  animation: wobble 0.5s linear infinite forwards;
+}
+
+.step-2 .giftbox:after,
+.step-3 .giftbox:after {
+  opacity: 0;
+}
+
+.step-1 .giftbox .cover,
+.step-1 .giftbox .cover div {
+  transform: none;
+  animation: wobble 0.5s 0.1s linear infinite forwards;
+}
+
+.step-2 .giftbox .cover,
+.step-3 .giftbox .cover {
+  transform: none;
+  animation: flyUp 0.4s ease-out forwards;
+}
+
+.step-2 .giftbox .box,
+.step-2 .giftbox .box {
+  animation: fallDown 0.2s 0.05s ease-in forwards;
+}
+
+.winner {
+  opacity: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  transform-origin: center;
+}
+
+.step-2 .winner,
+.step-3 .winner {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    bottom: 0;
+    opacity: 0;
+    transform: translateX(-50%) scale(0);
+  }
+  100% {
+    bottom: 40%;
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes wobble {
+  25% {
+    transform: rotate(4deg);
+  }
+  75% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes flyUp {
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-1000px) rotate(20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes fallDown {
+  75% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}

@@ -1,0 +1,112 @@
+.admin {
+  width: 100%;
+  max-width: 33rem;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.settings {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
+.users {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.user {
+  position: relative;
+  padding: 1rem;
+  margin-right: 1rem;
+  margin-bottom: 1rem;
+  flex: 0;
+  text-align: center;
+  border: 0.125rem dashed var(--white);
+  background: var(--grey-2);
+}
+
+.form {
+  margin: 1rem 0;
+  display: flex;
+}
+
+.avatar {
+  height: 6rem;
+  width: 6rem;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto;
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.image {
+  height: inherit;
+  width: inherit;
+}
+
+.delete {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
+.upload {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.input {
+  border-radius: 0.1875rem;
+  border: 0;
+  box-shadow: 0 0.125rem 0 var(--grey-2);
+  padding: 0.375rem;
+  font-size: 1rem;
+  width: 3rem;
+  margin-left: 1rem;
+}
+
+.checkbox {
+  margin-right: 1rem;
+  margin-top: 0.5rem;
+}
+
+.label {
+  display: block;
+  text-align: left;
+  line-height: 2rem;
+}
+
+.button {
+  color: var(--white);
+  background: var(--red);
+  box-shadow: 0 0.125rem 0 var(--red);
+  padding: 0.625rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  font-size: 1rem;
+  border: 0;
+  position: relative;
+
+  &:hover {
+    color: var(--white);
+    background: var(--red);
+  }
+}
+
+.username {
+  border-radius: 0.1875rem;
+  border: 0;
+  box-shadow: 0 0.125rem 0 var(--grey-2);
+  padding: 0.375rem;
+  font-size: 1rem;
+}

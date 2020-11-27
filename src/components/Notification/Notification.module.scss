@@ -1,0 +1,11 @@
+.notification {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--red);
+  padding: 1rem;
+  border-radius: 0.25rem;
+  color: var(--white);
+  font-weight: 700;
+}

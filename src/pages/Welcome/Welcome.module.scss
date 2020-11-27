@@ -1,0 +1,29 @@
+.welcome {
+}
+
+.input {
+  border-radius: 0.1875rem;
+  border: 0;
+  box-shadow: 0 0.125rem 0 var(--grey-2);
+  padding: 0.375rem;
+  font-size: 2rem;
+}
+
+.button {
+  color: var(--white);
+  background: var(--red);
+  box-shadow: 0 0.125rem 0 var(--red);
+  padding: 0.625rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  font-size: 1.5rem;
+  border: 0;
+  position: relative;
+  top: -0.1875rem;
+  margin-left: 1rem;
+
+  &:hover {
+    color: var(--white);
+    background: var(--red);
+  }
+}

@@ -1,0 +1,46 @@
+.calendar {
+}
+
+.settings {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
+.days {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 62rem;
+  margin: 0 auto;
+  justify-content: center;
+}
+
+.day {
+  flex: 0 0 6.5rem;
+  color: var(--white);
+  background: var(--grey-2);
+  height: 6.5rem;
+  width: 6.5rem;
+  margin: 0.5rem;
+  box-sizing: border-box;
+  padding: 1.5rem 0 0 0;
+  border: 0.125rem dashed var(--white);
+  font-size: 3rem;
+  text-decoration: none;
+}
+
+.open {
+  background: var(--red);
+}
+
+.winner {
+  padding-top: 0;
+  background: var(--grey-3);
+}
+
+.avatar {
+  height: 6rem;
+  width: 6rem;
+  border-radius: 50%;
+}
