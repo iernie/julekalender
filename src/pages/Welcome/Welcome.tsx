@@ -36,7 +36,6 @@ const Welcome: React.FC = () => {
                 settings: {
                   fair: true,
                 },
-                winners: [],
               } as CalendarType)
               .then(() => {
                 history.push(`/${name}`);
