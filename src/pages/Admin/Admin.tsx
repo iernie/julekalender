@@ -41,6 +41,16 @@ const Admin: React.FC = () => {
         }}
       />
       <div className={styles.admin}>
+        <div className={styles.Form}>
+          <a
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.url}
+            href={`https://us-central1-julekal.cloudfunctions.net/api?name=${name.toLowerCase()}`}
+          >
+            API
+          </a>
+        </div>
         <div className={styles.form}>
           <label htmlFor="gifts" className={styles.label}>
             Antall gaver per person (tom = uendelig)

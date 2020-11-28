@@ -1,12 +1,9 @@
-import * as functions from "firebase-functions";
+const functions = require("firebase-functions");
 
-import * as admin from "firebase-admin";
+const admin = require("firebase-admin");
 admin.initializeApp();
 
-export const api = functions.https.onRequest(async (request, response) => {
-  functions.logger.info("Hello logs!", { structuredData: true });
-  response.send("Hello from Firebase!");
-
+exports.api = functions.https.onRequest(async (request, response) => {
   const name = request.query.name;
   if (!name) {
     response.json({ error: "Kalendernavn mangler" });
@@ -16,7 +13,7 @@ export const api = functions.https.onRequest(async (request, response) => {
   const calendarReference = admin
     .firestore()
     .collection("calendars")
-    .doc((name as string).toLocaleLowerCase());
+    .doc(name.toLocaleLowerCase());
 
   const users = await admin
     .firestore()
@@ -32,7 +29,7 @@ export const api = functions.https.onRequest(async (request, response) => {
   var today = new Date().getDate();
   const winner = users.docs
     .map((doc) => doc.data())
-    .find((user) => user.won.indexOf(today) !== -1);
+    .find((user) => user.won.indexOf(today.toString()) !== -1);
 
   if (!winner) {
     response.json({});

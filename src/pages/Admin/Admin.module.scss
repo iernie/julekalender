@@ -13,6 +13,16 @@
   cursor: pointer;
 }
 
+.url {
+  color: blue;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
+}
+
 .users {
   display: flex;
   flex-wrap: wrap;
