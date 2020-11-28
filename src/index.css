@@ -4,6 +4,8 @@
 :root {
   --white: rgb(255, 255, 255);
   --red: rgb(213, 43, 30);
+  --lighterRed: rgb(226, 56, 43);
+  --darkerRed: rgb(200, 30, 17);
   --green: rgb(0, 180, 0);
   --yellow: rgb(253, 197, 109);
   --grey-1: rgb(224, 225, 221);

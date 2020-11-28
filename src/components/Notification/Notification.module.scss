@@ -1,6 +1,6 @@
 .notification {
   position: fixed;
-  bottom: 2rem;
+  bottom: -100%;
   left: 50%;
   transform: translateX(-50%);
   background: var(--red);
@@ -8,4 +8,24 @@
   border-radius: 0.25rem;
   color: var(--white);
   font-weight: 700;
+  animation: fadeIn 4s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    bottom: -100%;
+  }
+  9% {
+    bottom: 2.5rem;
+  }
+  10% {
+    bottom: 2rem;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    bottom: 2rem;
+  }
 }

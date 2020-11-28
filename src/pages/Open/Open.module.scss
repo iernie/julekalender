@@ -1,5 +1,5 @@
 .settings {
-  position: absolute;
+  position: fixed;
   top: 1rem;
   right: 1rem;
   cursor: pointer;
@@ -25,104 +25,111 @@
 }
 
 .giftbox {
-  width: 300px;
-  height: 220px;
+  width: 19rem;
+  height: 14rem;
   position: fixed;
   bottom: 0;
   left: 50%;
-  margin-left: -150px;
+  margin-left: -9.5rem;
   z-index: 10;
   cursor: pointer;
 }
 
-.giftbox:after {
-  content: "";
-  color: #fff;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  font-size: 24px;
-  z-index: 1000;
-  transform: rotate(-20deg);
-  transform-origin: 0 0;
-}
-
-.giftbox > div {
+.cover {
   background: var(--red);
   position: absolute;
-}
-
-.giftbox .cover {
   top: 0;
   left: 0;
   height: 25%;
   width: 100%;
   z-index: 2;
   transition: all 0.4s ease-out;
+
+  &:after,
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+  }
+
+  &:before {
+    background: var(--yellow);
+    width: 3rem;
+    left: 50%;
+    height: 100%;
+    transform: translateX(-50%);
+  }
 }
 
 .giftbox:hover .cover {
   transform: translateY(-0.5rem) rotate(-2deg);
 }
 
-.giftbox .box {
+.box {
+  background: var(--red);
+  position: absolute;
   bottom: 0;
   height: 80%;
   left: 5%;
   right: 5%;
   z-index: 1;
+
+  &:after,
+  &:before {
+    content: "";
+    position: absolute;
+    top: 0;
+  }
+
+  &:before {
+    background: var(--yellow);
+    width: 3rem;
+    left: 50%;
+    height: 100%;
+    transform: translateX(-50%);
+  }
+
+  &:after {
+    background: rgba(0, 0, 0, 0.1);
+    left: 0;
+    height: 1.875rem;
+    width: 100%;
+  }
 }
 
-.giftbox > div:after,
-.giftbox > div:before {
-  content: "";
+.bow {
   position: absolute;
-  top: 0;
-}
-
-/* ribbon */
-.giftbox > div:before {
-  background: var(--yellow);
-  width: 50px;
-  left: 50%;
-  height: 100%;
-  transform: translateX(-50%);
-}
-
-/* shadow */
-.giftbox .box:after {
-  background: rgba(0, 0, 0, 0.1);
-  left: 0;
-  height: 30px;
-  width: 100%;
-}
-
-.giftbox .cover div {
-  position: absolute;
-  height: 60px;
-  width: 60px;
+  height: 3.75rem;
+  width: 3.75rem;
   bottom: 100%;
   left: 30%;
+
+  &:before,
+  &:after {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    content: "";
+    background: transparent;
+    border-radius: 1.875rem;
+    box-shadow: inset 0 0 0 1rem var(--yellow);
+  }
+
+  &:before {
+    transform: translateX(-45%) skewY(40deg);
+  }
+
+  &:after {
+    transform: translateX(45%) skewY(-40deg);
+  }
 }
 
-.giftbox .cover div:before,
-.giftbox .cover div:after {
+.winner {
+  opacity: 0;
   position: absolute;
-  width: 100%;
-  height: 100%;
-  content: "";
-  background: transparent;
-  border-radius: 30px;
-  box-shadow: inset 0 0 0 14px var(--yellow);
-}
-
-.giftbox .cover div:before {
-  transform: translateX(-45%) skewY(40deg);
-}
-
-.giftbox .cover div:after {
-  transform: translateX(45%) skewY(-40deg);
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  transform-origin: center;
 }
 
 .step-1 .giftbox {
@@ -151,14 +158,6 @@
   animation: fallDown 0.2s 0.05s ease-in forwards;
 }
 
-.winner {
-  opacity: 0;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%) scale(0);
-  transform-origin: center;
-}
-
 .step-2 .winner,
 .step-3 .winner {
   animation: fadeIn 0.4s ease-out forwards;
@@ -166,12 +165,12 @@
 
 @keyframes fadeIn {
   0% {
-    bottom: 0;
+    top: 100%;
     opacity: 0;
     transform: translateX(-50%) scale(0);
   }
   100% {
-    bottom: 40%;
+    top: 30%;
     opacity: 1;
     transform: translateX(-50%) scale(1);
   }
@@ -191,7 +190,7 @@
     opacity: 1;
   }
   100% {
-    transform: translateY(-1000px) rotate(20deg);
+    transform: translateY(-62rem) rotate(20deg);
     opacity: 0;
   }
 }

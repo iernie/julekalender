@@ -12,7 +12,7 @@
 .button {
   color: var(--white);
   background: var(--red);
-  box-shadow: 0 0.125rem 0 var(--red);
+  box-shadow: 0 0.125rem 0 var(--darkerRed);
   padding: 0.625rem;
   border-radius: 0.25rem;
   text-decoration: none;
@@ -21,9 +21,11 @@
   position: relative;
   top: -0.1875rem;
   margin-left: 1rem;
+  transition: all linear 0.1s;
+  cursor: pointer;
 
   &:hover {
     color: var(--white);
-    background: var(--red);
+    background: var(--lighterRed);
   }
 }

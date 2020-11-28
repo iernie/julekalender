@@ -7,7 +7,7 @@
 }
 
 .settings {
-  position: absolute;
+  position: fixed;
   top: 1rem;
   right: 1rem;
   cursor: pointer;
@@ -25,7 +25,7 @@
   margin-bottom: 1rem;
   flex: 0;
   text-align: center;
-  border: 0.125rem dashed var(--white);
+  border-radius: 0.125rem;
   background: var(--grey-2);
 }
 
@@ -65,8 +65,8 @@
 
 .delete {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.5rem;
+  right: 0.5rem;
   cursor: pointer;
 }
 
@@ -104,17 +104,19 @@
 .button {
   color: var(--white);
   background: var(--red);
-  box-shadow: 0 0.125rem 0 var(--red);
+  box-shadow: 0 0.125rem 0 var(--darkerRed);
   padding: 0.625rem;
   border-radius: 0.25rem;
   text-decoration: none;
   font-size: 1rem;
   border: 0;
   position: relative;
+  transition: all linear 0.1s;
+  cursor: pointer;
 
   &:hover {
     color: var(--white);
-    background: var(--red);
+    background: var(--lighterRed);
   }
 }
 

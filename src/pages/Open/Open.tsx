@@ -119,7 +119,7 @@ const Open: React.FC = () => {
             />
           </div>
 
-          <h2>{winner?.name}</h2>
+          <h1>{winner?.name}</h1>
         </div>
         {(step === null || step < 3) && (
           <div
@@ -127,7 +127,7 @@ const Open: React.FC = () => {
             onClick={() => (step !== 1 ? chooseWinner() : () => {})}
           >
             <div className={styles.cover}>
-              <div></div>
+              <div className={styles.bow}></div>
             </div>
             <div className={styles.box}></div>
           </div>
