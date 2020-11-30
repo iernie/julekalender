@@ -46,7 +46,7 @@ const Admin: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`https://us-central1-julekal.cloudfunctions.net/api?name=${name.toLowerCase()}`}
+            href={`/api/${name.toLowerCase()}`}
           >
             API
           </a>
