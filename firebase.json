@@ -12,6 +12,26 @@
         "function": "api"
       },
       {
+        "source": "/robots.txt",
+        "destination": "/robots.txt"
+      },
+      {
+        "source": "/manifest.json",
+        "destination": "/manifest.json"
+      },
+      {
+        "source": "/logo512.png",
+        "destination": "/logo512.png"
+      },
+      {
+        "source": "/logo192.png",
+        "destination": "/logo192.png"
+      },
+      {
+        "source": "/favicon.png",
+        "destination": "/favicon.png"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
