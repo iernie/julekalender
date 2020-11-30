@@ -4,3 +4,9 @@
   color: var(--red);
   text-shadow: 0.125rem 0.125rem 0 var(--white);
 }
+
+@media only screen and (max-width: 767px) {
+  .title {
+    font-size: 4rem;
+  }
+}

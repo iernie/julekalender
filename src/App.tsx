@@ -13,10 +13,13 @@ import "firebase/auth";
 import "firebase/firestore";
 import "firebase/storage";
 import Snowfall from "react-snowfall";
+import { useWindowSize } from "react-use";
 import styles from "./App.module.scss";
 
 function App() {
   const [config, setConfig] = React.useState<Object>();
+
+  const { width, height } = useWindowSize();
 
   React.useEffect(() => {
     fetch("/__/firebase/init.json")
@@ -65,7 +68,7 @@ function App() {
         </Router>
       </div>
       <Notification />
-      <Snowfall color="white" />
+      <Snowfall color="white" style={{ height, width }} />
     </StateProvider>
   );
 }

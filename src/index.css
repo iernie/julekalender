@@ -1,5 +1,5 @@
 @import-normalize;
-@import url("https://fonts.googleapis.com/css2?family=Calligraffitti&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Calligraffitti&family=Roboto:wght@400;700&display=swap");
 
 :root {
   --white: rgb(255, 255, 255);
@@ -27,8 +27,13 @@ body {
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-family: Helvetica, Arial, sans-serif;
   background: var(--grey-1);
+}
+
+@media only screen and (max-width: 767px) {
+  body {
+    padding: 0 1rem;
+  }
 }
 
 *,

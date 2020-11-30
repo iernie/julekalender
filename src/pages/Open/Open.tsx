@@ -6,12 +6,15 @@ import { Redirect, useHistory, useParams } from "react-router-dom";
 import Confetti from "react-confetti";
 import { FiHome, FiRefreshCcw } from "react-icons/fi";
 import Title from "../../components/Title";
+import { useWindowSize } from "react-use";
 import styles from "./Open.module.scss";
 
 const Open: React.FC = () => {
   const [{ calendar, users }, dispatch] = useState();
   const { name, day } = useParams<{ name: string; day: string }>();
   const history = useHistory();
+
+  const { width, height } = useWindowSize();
 
   const db = firebase.firestore();
 
@@ -149,7 +152,12 @@ const Open: React.FC = () => {
         )}
       </div>
       {step !== 0 && (
-        <Confetti recycle={false} run={step !== null && step > 1} />
+        <Confetti
+          recycle={false}
+          run={step !== null && step > 1}
+          width={width}
+          height={height}
+        />
       )}
     </div>
   );

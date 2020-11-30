@@ -39,6 +39,14 @@ const StateContainer: React.FC = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name]);
 
+  React.useEffect(() => {
+    if (calendar) {
+      document.title = `Julekalender - ${calendar.name}`;
+    } else {
+      document.title = "Julekalender";
+    }
+  }, [calendar]);
+
   if (Object.keys(calendar).length === 0) return <Loading />;
 
   return <>{children}</>;

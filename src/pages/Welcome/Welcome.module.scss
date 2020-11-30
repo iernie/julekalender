@@ -29,3 +29,17 @@
     background: var(--lighterRed);
   }
 }
+
+@media only screen and (max-width: 767px) {
+  .input {
+    font-size: 1.5rem;
+    width: 100%;
+  }
+
+  .button {
+    font-size: 1rem;
+    display: block;
+    top: 1rem;
+    margin: 0 auto;
+  }
+}
