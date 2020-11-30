@@ -1,6 +1,6 @@
 import React from "react";
 import classnames from "classnames";
-import { getDate } from "date-fns";
+import { getDate, getMonth } from "date-fns";
 import { useState } from "../../StateProvider";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
@@ -24,7 +24,7 @@ const Calendar: React.FC = () => {
       />
       <div className={styles.days}>
         {Array.from(Array(24).keys()).map((day) => {
-          const open = day < getDate(new Date()); // && getMonth(new Date()) === 11;
+          const open = day < getDate(new Date()) && getMonth(new Date()) === 11;
           const winner = users?.find(
             (user) => user.won.indexOf(`${day + 1}`) !== -1
           );
