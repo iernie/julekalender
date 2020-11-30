@@ -1,16 +1,19 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as express from "express";
+import * as cors from "cors";
 
 admin.initializeApp();
 const app = express();
+app.use(cors({ origin: true }));
 
-app.get("/:name?", (request, response) => {
+app.get("/api", (_, response) => {
+  response.json({ error: "Kalendernavn mangler" });
+  return;
+});
+
+app.get("/api/:name", (request, response) => {
   const { name } = request.params;
-  if (!name) {
-    response.json({ error: "Kalendernavn mangler" });
-    return;
-  }
 
   const calendarReference = admin
     .firestore()
