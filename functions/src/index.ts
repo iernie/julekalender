@@ -5,7 +5,7 @@ import * as cors from "cors";
 
 admin.initializeApp();
 const app = express();
-app.use(cors({ origin: true }));
+app.use(cors({ origin: "*" }));
 
 app.get("/api", (_, response) => {
   response.json({ error: "Kalendernavn mangler" });
