@@ -13,6 +13,20 @@
   cursor: pointer;
 }
 
+.login {
+  position: fixed;
+  top: 1rem;
+  right: 3rem;
+  cursor: pointer;
+}
+
+.lock {
+  position: fixed;
+  top: 1rem;
+  right: 5rem;
+  cursor: pointer;
+}
+
 .url {
   color: blue;
   text-decoration: none;
@@ -136,6 +150,7 @@
   box-shadow: 0 0.125rem 0 var(--grey-2);
   padding: 0.375rem;
   font-size: 1rem;
+  text-align: center;
 }
 
 @media only screen and (max-width: 541px) {

@@ -1,6 +1,6 @@
 import React from "react";
 import firebase from "firebase";
-import { useState, SET_CALENDAR, SET_USERS } from "../StateProvider";
+import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { useHistory, useParams } from "react-router-dom";
 import Loading from "./Loading";
 import { CalendarType, UserType } from "../types";
@@ -9,6 +9,15 @@ const StateContainer: React.FC = ({ children }) => {
   const [{ calendar }, dispatch] = useState();
   const history = useHistory();
   const { name } = useParams<{ name: string; day: string }>();
+
+  React.useEffect(() => {
+    firebase.auth().onAuthStateChanged((user) => {
+      dispatch({
+        type: SET_USER,
+        payload: user,
+      });
+    });
+  }, []);
 
   React.useEffect(() => {
     const db = firebase.firestore();
@@ -45,6 +54,9 @@ const StateContainer: React.FC = ({ children }) => {
     } else {
       document.title = "Julekalender";
     }
+    return () => {
+      document.title = "Julekalender";
+    };
   }, [calendar]);
 
   if (Object.keys(calendar).length === 0) return <Loading />;

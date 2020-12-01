@@ -1,8 +1,26 @@
 rules_version = '2';
 service cloud.firestore {
+  function isEmpty(resource) {
+   return resource == null || !("data" in resource);
+  }
+	function isOwner(resource) {
+  	return ("owner" in resource.data) && request.auth.uid == resource.data.owner;
+  }
+	function isSignedIn() {
+  	return request.auth != null;
+  }
+  function isPublic(resource) {
+   return !("public" in resource.data) || resource.data.public == true;
+  }
+  
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    match /calendars/{calendar} {
+      allow read, update, delete: if isEmpty(resource) || isPublic(resource) || (isSignedIn() && isOwner(resource));
+      allow create;
+    }
+    match /users/{user} {
+      allow read, update, delete: if isEmpty(resource) || isPublic(get(resource.data.calendar)) || (isSignedIn() && isOwner(get(resource.data.calendar)));
+      allow create: if isPublic(getAfter(resource.data.calendar)) || (isSignedIn() && isOwner(getAfter(resource.data.calendar)));
     }
   }
 }

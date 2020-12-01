@@ -17,4 +17,6 @@ export type CalendarType = {
     giftsPerUser?: number;
     fair?: boolean;
   };
+  owner?: string;
+  public?: boolean;
 };

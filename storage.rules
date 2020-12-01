@@ -1,8 +1,23 @@
 rules_version = '2';
 service firebase.storage {
+  function isEmpty() {
+   return resource == null || !("metadata" in resource);
+  }
+	function isOwner() {
+  	return ("owner" in resource.metadata) && request.auth.uid == resource.metadata.owner;
+  }
+	function isSignedIn() {
+  	return request.auth != null;
+  }
+  function isPublic() {
+   return !("public" in resource.metadata) || resource.metadata.public == 'true';
+  }
+  
   match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if true;
+    match /{folder}/{imageId} {
+      allow read: if folder == "avatars" || isEmpty() || isPublic() || (isSignedIn() && isOwner());
+      allow update, delete: if folder != "avatars" && (isEmpty() || isPublic() || (isSignedIn() && isOwner()));
+      allow create;
     }
   }
 }

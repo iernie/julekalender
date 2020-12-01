@@ -30,6 +30,13 @@
   }
 }
 
+.login {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+}
+
 @media only screen and (max-width: 767px) {
   .input {
     font-size: 1.5rem;

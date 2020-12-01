@@ -31,7 +31,7 @@ const Calendar: React.FC = () => {
           const dayClass = classnames({
             [styles.day]: true,
             [styles.winner]: winner !== undefined,
-            [styles.open]: open,
+            [styles.open]: open && !winner,
           });
 
           if (open && !winner) {

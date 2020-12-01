@@ -95,7 +95,8 @@ const Open: React.FC = () => {
       })
       .then(() => {
         setStep(1);
-      });
+      })
+      .catch(() => {});
   };
 
   const stepClass = classnames({
@@ -146,7 +147,8 @@ const Open: React.FC = () => {
                 .update({
                   won: winner?.won.filter((d) => d !== day),
                 })
-                .then(() => {});
+                .then(() => {})
+                .catch(() => {});
             }}
           />
         )}

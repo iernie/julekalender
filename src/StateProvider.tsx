@@ -1,14 +1,17 @@
 import React from "react";
+import firebase from "firebase";
 import { CalendarType, UserType } from "./types";
 
 export const SET_NOTIFICATION = "SET_NOTIFICATION";
 export const SET_CALENDAR = "SET_CALENDAR";
 export const SET_USERS = "SET_USERS";
+export const SET_USER = "SET_USER";
 
 type State = {
   notification?: string;
   calendar: CalendarType;
   users?: Array<UserType>;
+  user?: firebase.User | null;
 };
 type Action =
   | {
@@ -22,6 +25,10 @@ type Action =
   | {
       type: typeof SET_USERS;
       payload: Array<UserType>;
+    }
+  | {
+      type: typeof SET_USER;
+      payload: firebase.User | null;
     };
 
 const intitialState: State = {
@@ -43,6 +50,8 @@ const reducer = (state: State = intitialState, action: Action): State => {
       return { ...state, calendar: action.payload };
     case SET_USERS:
       return { ...state, users: action.payload };
+    case SET_USER:
+      return { ...state, user: action.payload };
     default:
       return state;
   }

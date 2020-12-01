@@ -12,13 +12,24 @@ app.get("/api", (_, response) => {
   return;
 });
 
-app.get("/api/:name", (request, response) => {
+app.get("/api/:name", async (request, response) => {
   const { name } = request.params;
+  const { apiKey } = request.query;
 
   const calendarReference = admin
     .firestore()
     .collection("calendars")
     .doc(name.toLocaleLowerCase());
+
+  const calendar = (await calendarReference.get()).data();
+  if (!calendar) {
+    response.json({ error: "Kalender ikke funnet" });
+    return;
+  }
+  if (calendar.public === false && calendar.owner !== apiKey) {
+    response.json({ error: "Mangler tilgang til kalender" });
+    return;
+  }
 
   admin
     .firestore()

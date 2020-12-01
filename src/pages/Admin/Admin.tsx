@@ -2,15 +2,22 @@ import React from "react";
 import firebase from "firebase";
 import { useParams, useHistory } from "react-router-dom";
 import { UserType } from "../../types";
-import { useState } from "../../StateProvider";
+import { SET_NOTIFICATION, useState } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";
-import { FiHome, FiX } from "react-icons/fi";
+import {
+  FiHome,
+  FiLock,
+  FiX,
+  FiLogIn,
+  FiUnlock,
+  FiLogOut,
+} from "react-icons/fi";
 import Title from "../../components/Title";
 import styles from "./Admin.module.scss";
 import { compareAsc } from "date-fns";
 
 const Admin: React.FC = () => {
-  const [{ calendar, users }] = useState();
+  const [{ calendar, users, user }, dispatch] = useState();
   const { name } = useParams<{ name: string }>();
   const history = useHistory();
 
@@ -30,6 +37,65 @@ const Admin: React.FC = () => {
 
   const db = firebase.firestore();
 
+  const login = () => {
+    firebase
+      .auth()
+      .signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .then((result) => {
+        if (result.user) {
+          setPublic(false);
+        } else {
+          dispatch({
+            type: SET_NOTIFICATION,
+            payload: "Klarte ikke logge inn.",
+          });
+        }
+      })
+      .catch(() => {
+        dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke logge inn." });
+      });
+  };
+
+  const logout = () => {
+    firebase
+      .auth()
+      .signOut()
+      .then(() => {})
+      .catch(() => {});
+  };
+
+  const setPublic = (isPublic: boolean) => {
+    if (user) {
+      const uid = user.uid;
+      db.collection("calendars")
+        .doc(name.toLocaleLowerCase())
+        .update({
+          owner: uid,
+          public: isPublic,
+        })
+        .then(() => {})
+        .catch(() => {});
+      users?.forEach((user) => {
+        const ref = firebase
+          .storage()
+          .ref()
+          .child(`${name.toLowerCase()}/${user.id}`);
+
+        var newMetadata = {
+          customMetadata: {
+            owner: uid,
+            public: isPublic ? "true" : "false",
+          },
+        };
+
+        ref
+          .updateMetadata(newMetadata)
+          .then(() => {})
+          .catch(() => {});
+      });
+    }
+  };
+
   return (
     <div>
       <Title>Innstillinger</Title>
@@ -40,13 +106,37 @@ const Admin: React.FC = () => {
           history.push(`/${name}`);
         }}
       />
+      {!user ? (
+        <FiLogIn size="1.5rem" className={styles.login} onClick={login} />
+      ) : (
+        <FiLogOut size="1.5rem" className={styles.login} onClick={logout} />
+      )}
+      {user && (
+        <>
+          {calendar.public === false ? (
+            <FiLock
+              size="1.5rem"
+              className={styles.lock}
+              onClick={() => setPublic(true)}
+            />
+          ) : (
+            <FiUnlock
+              size="1.5rem"
+              className={styles.lock}
+              onClick={() => setPublic(false)}
+            />
+          )}
+        </>
+      )}
       <div className={styles.admin}>
         <div className={styles.Form}>
           <a
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`/api/${name.toLowerCase()}`}
+            href={`/api/${name.toLowerCase()}${
+              user ? `?apiKey=${user.uid}` : ""
+            }`}
           >
             API
           </a>
@@ -87,7 +177,8 @@ const Admin: React.FC = () => {
                 .update({
                   "settings.fair": e.target.checked,
                 })
-                .then(() => {});
+                .then(() => {})
+                .catch(() => {});
             }}
           />
           <label htmlFor="fair" className={styles.label}>
@@ -121,14 +212,18 @@ const Admin: React.FC = () => {
                         type="file"
                         onChange={(e) => {
                           if (e.target.files?.length === 1) {
-                            ref.put(e.target.files[0]).then(async () => {
-                              db.collection("users")
-                                .doc(user.id)
-                                .update({
-                                  image: await ref.getDownloadURL(),
-                                })
-                                .then(() => {});
-                            });
+                            ref
+                              .put(e.target.files[0])
+                              .then(async () => {
+                                db.collection("users")
+                                  .doc(user.id)
+                                  .update({
+                                    image: await ref.getDownloadURL(),
+                                  })
+                                  .then(() => {})
+                                  .catch(() => {});
+                              })
+                              .catch(() => {});
                           }
                         }}
                       />
@@ -144,7 +239,8 @@ const Admin: React.FC = () => {
                           .update({
                             name: e.target.value,
                           })
-                          .then(() => {});
+                          .then(() => {})
+                          .catch(() => {});
                       }}
                     />
                     <FiX
@@ -159,7 +255,8 @@ const Admin: React.FC = () => {
                               .delete()
                               .then(() => {})
                               .catch(() => {});
-                          });
+                          })
+                          .catch(() => {});
                       }}
                     />
                   </div>
@@ -187,7 +284,8 @@ const Admin: React.FC = () => {
                   .child(`avatars/${getAvatar()}.png`)
                   .getDownloadURL(),
               } as UserType)
-              .then(() => {});
+              .then(() => {})
+              .catch(() => {});
           }}
         >
           Legg til ny bruker
