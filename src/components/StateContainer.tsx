@@ -1,5 +1,5 @@
 import React from "react";
-import firebase from "firebase";
+import firebase from "firebase/app";
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { useHistory, useParams } from "react-router-dom";
 import Loading from "./Loading";

@@ -20,7 +20,7 @@ service cloud.firestore {
     }
     match /users/{user} {
       allow read, update, delete: if isEmpty(resource) || isPublic(get(resource.data.calendar)) || (isSignedIn() && isOwner(get(resource.data.calendar)));
-      allow create: if isPublic(getAfter(resource.data.calendar)) || (isSignedIn() && isOwner(getAfter(resource.data.calendar)));
+      allow create;
     }
   }
 }

@@ -35,12 +35,6 @@ function App() {
   if (config && !firebase.apps.length) {
     firebase.initializeApp(config);
     firebase.analytics();
-
-    if (window.location.hostname === "localhost") {
-      firebase.auth().useEmulator("http://localhost:9099/");
-      firebase.firestore().useEmulator("localhost", 8081);
-      firebase.functions().useEmulator("localhost", 5001);
-    }
   }
 
   if (!firebase.apps.length) {
