@@ -1,7 +1,7 @@
 import React from "react";
 import firebase from "firebase/app";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
@@ -10,7 +10,8 @@ import styles from "./Welcome.module.scss";
 
 const Welcome: React.FC = () => {
   const [, dispatch] = useState();
-  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [user, setUser] = React.useState<firebase.User | null>(null);
+  const [calendars, setCalendars] = React.useState<Array<CalendarType>>([]);
   const history = useHistory();
   const [name, setName] = React.useState<string>();
 
@@ -35,15 +36,31 @@ const Welcome: React.FC = () => {
 
   React.useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
-      setLoggedIn(!!user);
+      setUser(user);
     });
   }, []);
+
+  React.useEffect(() => {
+    if (user) {
+      firebase
+        .firestore()
+        .collection("calendars")
+        .where("owner", "==", user.uid)
+        .onSnapshot((snapshot) => {
+          setCalendars(
+            snapshot.docs.map((doc) => ({ ...doc.data() } as CalendarType))
+          );
+        });
+    }
+  }, [user]);
 
   const logout = () => {
     firebase
       .auth()
       .signOut()
-      .then(() => {})
+      .then(() => {
+        setCalendars([]);
+      })
       .catch(() => {});
   };
 
@@ -88,7 +105,7 @@ const Welcome: React.FC = () => {
 
   return (
     <div className={styles.welcome}>
-      {!loggedIn ? (
+      {!user ? (
         <FiLogIn size="1.5rem" className={styles.login} onClick={login} />
       ) : (
         <FiLogOut size="1.5rem" className={styles.login} onClick={logout} />
@@ -110,6 +127,22 @@ const Welcome: React.FC = () => {
           Legg til
         </button>
       </div>
+      {calendars.length > 0 && (
+        <>
+          <h2 className={styles.calendars}>Dine kalendere</h2>
+          {calendars.map((calendar) => {
+            return (
+              <Link
+                key={calendar.name}
+                className={styles.link}
+                to={`/${calendar.name}`}
+              >
+                {calendar.name}
+              </Link>
+            );
+          })}
+        </>
+      )}
     </div>
   );
 };

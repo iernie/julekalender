@@ -1,5 +1,5 @@
 import React from "react";
-import firebase from "firebase";
+import firebase from "firebase/app";
 import { useParams, useHistory } from "react-router-dom";
 import { UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
@@ -11,12 +11,14 @@ import {
   FiLogIn,
   FiUnlock,
   FiLogOut,
+  FiTrash,
 } from "react-icons/fi";
 import Title from "../../components/Title";
 import styles from "./Admin.module.scss";
 import { compareAsc } from "date-fns";
 
 const Admin: React.FC = () => {
+  const [confirm, setConfirm] = React.useState(true);
   const [{ calendar, users, user }, dispatch] = useState();
   const { name } = useParams<{ name: string }>();
   const history = useHistory();
@@ -37,13 +39,38 @@ const Admin: React.FC = () => {
 
   const db = firebase.firestore();
 
+  const deleteCalendar = async () => {
+    if (confirm) {
+      setConfirm(false);
+      dispatch({
+        type: SET_NOTIFICATION,
+        payload:
+          "Er du sikker på at du vil slette kalenderen og alle brukerene? Trykk en gang til.",
+      });
+      return;
+    }
+    const ids = users?.map((user) => user.id) ?? [];
+    ids.forEach(async (id) => {
+      try {
+        await db.collection("users").doc(id).delete();
+        await firebase
+          .storage()
+          .ref()
+          .child(`${name.toLowerCase()}/${id}`)
+          .delete();
+      } catch (e) {}
+    });
+    await db.collection("calendars").doc(name.toLowerCase()).delete();
+    history.push("/");
+  };
+
   const login = () => {
     firebase
       .auth()
       .signInWithPopup(new firebase.auth.GoogleAuthProvider())
       .then((result) => {
         if (result.user) {
-          setPublic(false);
+          setPublic(true);
         } else {
           dispatch({
             type: SET_NOTIFICATION,
@@ -66,7 +93,7 @@ const Admin: React.FC = () => {
 
   const setPublic = (isPublic: boolean) => {
     if (user) {
-      const uid = user.uid;
+      const uid = calendar.owner ?? user.uid;
       db.collection("calendars")
         .doc(name.toLocaleLowerCase())
         .update({
@@ -75,30 +102,19 @@ const Admin: React.FC = () => {
         })
         .then(() => {})
         .catch(() => {});
-      users?.forEach((user) => {
-        const ref = firebase
-          .storage()
-          .ref()
-          .child(`${name.toLowerCase()}/${user.id}`);
-
-        var newMetadata = {
-          customMetadata: {
-            owner: uid,
-            public: isPublic ? "true" : "false",
-          },
-        };
-
-        ref
-          .updateMetadata(newMetadata)
-          .then(() => {})
-          .catch(() => {});
-      });
     }
   };
 
   return (
     <div>
       <Title>Innstillinger</Title>
+      {!calendar.owner || calendar.owner === user?.uid ? (
+        <FiTrash
+          size="1.5rem"
+          className={styles.delete}
+          onClick={deleteCalendar}
+        />
+      ) : null}
       <FiHome
         size="1.5rem"
         className={styles.settings}
@@ -245,7 +261,7 @@ const Admin: React.FC = () => {
                     />
                     <FiX
                       size="1.5rem"
-                      className={styles.delete}
+                      className={styles.deleteuser}
                       onClick={() => {
                         db.collection("users")
                           .doc(user.id)

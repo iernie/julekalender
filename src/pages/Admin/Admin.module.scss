@@ -27,6 +27,13 @@
   cursor: pointer;
 }
 
+.delete {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  cursor: pointer;
+}
+
 .url {
   color: blue;
   text-decoration: none;
@@ -87,7 +94,7 @@
   width: inherit;
 }
 
-.delete {
+.deleteuser {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;

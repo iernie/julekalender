@@ -37,6 +37,22 @@
   cursor: pointer;
 }
 
+.calendars {
+  margin-top: 4rem;
+}
+
+.link {
+  display: inline-block;
+  margin: 0 1rem;
+  color: blue;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
+}
+
 @media only screen and (max-width: 767px) {
   .input {
     font-size: 1.5rem;
