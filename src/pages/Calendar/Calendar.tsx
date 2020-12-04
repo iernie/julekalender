@@ -6,6 +6,7 @@ import { useHistory, useParams, Link } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
 import Title from "../../components/Title";
 import styles from "./Calendar.module.scss";
+import ReactTooltip from "react-tooltip";
 
 const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
@@ -16,12 +17,17 @@ const Calendar: React.FC = () => {
     <div className={styles.calendar}>
       <Title>{calendar.name}</Title>
       <FiSettings
+        data-tip
+        data-for="admin"
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
           history.push(`/${name}/settings`);
         }}
       />
+      <ReactTooltip id="admin" place="bottom" effect="solid">
+        Innstillinger
+      </ReactTooltip>
       <div className={styles.days}>
         {Array.from(Array(24).keys()).map((day) => {
           const open = day < getDate(new Date()) && getMonth(new Date()) === 11;

@@ -16,6 +16,7 @@ import {
 import Title from "../../components/Title";
 import styles from "./Admin.module.scss";
 import { compareAsc } from "date-fns";
+import ReactTooltip from "react-tooltip";
 
 const Admin: React.FC = () => {
   const [confirm, setConfirm] = React.useState(true);
@@ -100,7 +101,9 @@ const Admin: React.FC = () => {
           owner: uid,
           public: isPublic,
         })
-        .then(() => {})
+        .then(() => {
+          ReactTooltip.rebuild();
+        })
         .catch(() => {});
     }
   };
@@ -108,14 +111,30 @@ const Admin: React.FC = () => {
   return (
     <div>
       <Title>Innstillinger</Title>
+      <ReactTooltip id="login" place="bottom" effect="solid">
+        {!user ? "Logg inn" : "Logg ut"}
+      </ReactTooltip>
+      <ReactTooltip id="home" place="bottom" effect="solid">
+        Hjem
+      </ReactTooltip>
+      <ReactTooltip id="lock" place="bottom" effect="solid">
+        {user && calendar.public === false ? "Åpne" : "Skjul"}
+      </ReactTooltip>
+      <ReactTooltip id="delete" place="right" effect="solid">
+        Slett kalender
+      </ReactTooltip>
       {!calendar.owner || calendar.owner === user?.uid ? (
         <FiTrash
+          data-tip
+          data-for="delete"
           size="1.5rem"
           className={styles.delete}
           onClick={deleteCalendar}
         />
       ) : null}
       <FiHome
+        data-tip
+        data-for="home"
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
@@ -123,20 +142,36 @@ const Admin: React.FC = () => {
         }}
       />
       {!user ? (
-        <FiLogIn size="1.5rem" className={styles.login} onClick={login} />
+        <FiLogIn
+          data-tip
+          data-for="login"
+          size="1.5rem"
+          className={styles.login}
+          onClick={login}
+        />
       ) : (
-        <FiLogOut size="1.5rem" className={styles.login} onClick={logout} />
+        <FiLogOut
+          data-tip
+          data-for="login"
+          size="1.5rem"
+          className={styles.login}
+          onClick={logout}
+        />
       )}
       {user && (
         <>
           {calendar.public === false ? (
             <FiLock
+              data-tip
+              data-for="lock"
               size="1.5rem"
               className={styles.lock}
               onClick={() => setPublic(true)}
             />
           ) : (
             <FiUnlock
+              data-tip
+              data-for="lock"
               size="1.5rem"
               className={styles.lock}
               onClick={() => setPublic(false)}

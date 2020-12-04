@@ -5,6 +5,7 @@ import { Link, useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
+import ReactTooltip from "react-tooltip";
 import Title from "../../components/Title";
 import styles from "./Welcome.module.scss";
 
@@ -37,6 +38,7 @@ const Welcome: React.FC = () => {
   React.useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
       setUser(user);
+      ReactTooltip.rebuild();
     });
   }, []);
 
@@ -106,10 +108,25 @@ const Welcome: React.FC = () => {
   return (
     <div className={styles.welcome}>
       {!user ? (
-        <FiLogIn size="1.5rem" className={styles.login} onClick={login} />
+        <FiLogIn
+          data-tip
+          data-for="login"
+          size="1.5rem"
+          className={styles.login}
+          onClick={login}
+        />
       ) : (
-        <FiLogOut size="1.5rem" className={styles.login} onClick={logout} />
+        <FiLogOut
+          data-tip
+          data-for="login"
+          size="1.5rem"
+          className={styles.login}
+          onClick={logout}
+        />
       )}
+      <ReactTooltip id="login" place="bottom" effect="solid">
+        {!user ? "Logg inn" : "Logg ut"}
+      </ReactTooltip>
       <Title>Julekalender as a Service</Title>
       <div className={styles.form}>
         <input

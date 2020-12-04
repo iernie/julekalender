@@ -4,6 +4,7 @@ import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { useHistory, useParams } from "react-router-dom";
 import Loading from "./Loading";
 import { CalendarType, UserType } from "../types";
+import ReactTooltip from "react-tooltip";
 
 const StateContainer: React.FC = ({ children }) => {
   const [{ calendar }, dispatch] = useState();
@@ -16,6 +17,7 @@ const StateContainer: React.FC = ({ children }) => {
         type: SET_USER,
         payload: user,
       });
+      ReactTooltip.rebuild();
     });
   }, []);
 

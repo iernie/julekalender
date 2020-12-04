@@ -4,10 +4,11 @@ import classnames from "classnames";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Redirect, useHistory, useParams } from "react-router-dom";
 import Confetti from "react-confetti";
-import { FiHome, FiRefreshCcw } from "react-icons/fi";
+import { FiHome, FiRotateCcw } from "react-icons/fi";
 import Title from "../../components/Title";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.scss";
+import ReactTooltip from "react-tooltip";
 
 const Open: React.FC = () => {
   const [{ calendar, users }, dispatch] = useState();
@@ -23,6 +24,8 @@ const Open: React.FC = () => {
   const [step, setStep] = React.useState<number | null>(null);
 
   React.useEffect(() => {
+    ReactTooltip.rebuild();
+
     if (step === 1) {
       setTimeout(() => {
         setStep(2);
@@ -107,12 +110,17 @@ const Open: React.FC = () => {
     <div>
       <Title>Vinneren er...</Title>
       <FiHome
+        data-tip
+        data-for="home"
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
           history.push(`/${name}`);
         }}
       />
+      <ReactTooltip id="home" place="bottom" effect="solid">
+        Hjem
+      </ReactTooltip>
       <div className={stepClass}>
         <div className={styles.winner}>
           <div className={styles.avatar}>
@@ -137,7 +145,9 @@ const Open: React.FC = () => {
           </div>
         )}
         {step !== null && step === 3 && (
-          <FiRefreshCcw
+          <FiRotateCcw
+            data-tip
+            data-for="refresh"
             size="1.5rem"
             className={styles.refresh}
             onClick={() => {
@@ -161,6 +171,9 @@ const Open: React.FC = () => {
           height={height}
         />
       )}
+      <ReactTooltip id="refresh" place="bottom" effect="solid">
+        Nullstill vinner
+      </ReactTooltip>
     </div>
   );
 };
