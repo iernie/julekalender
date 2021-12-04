@@ -1,5 +1,5 @@
 import React from "react";
-import firebase from "firebase/app";
+import firebase from "firebase/compat/app";
 import classnames from "classnames";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Redirect, useHistory, useParams } from "react-router-dom";
@@ -9,6 +9,7 @@ import Title from "../../components/Title";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.scss";
 import ReactTooltip from "react-tooltip";
+import { UserType } from "../../types";
 
 const Open: React.FC = () => {
   const [{ calendar, users }, dispatch] = useState();
@@ -21,6 +22,7 @@ const Open: React.FC = () => {
 
   const winner = users?.find((user) => user.won.indexOf(day) !== -1);
 
+  const refreshedWinners = React.useRef<Array<UserType["id"]>>([]);
   const [step, setStep] = React.useState<number | null>(null);
 
   React.useEffect(() => {
@@ -59,6 +61,7 @@ const Open: React.FC = () => {
     const lowestWins = Math.min(...users.map((user) => user.won.length));
 
     const filteredUsers = users
+      .filter((user) => refreshedWinners.current.indexOf(user.id) === -1)
       .filter(
         (user) =>
           !calendar.settings.fair ||
@@ -90,6 +93,8 @@ const Open: React.FC = () => {
       });
       return;
     }
+
+    refreshedWinners.current.push(newWinner.id);
 
     db.collection("users")
       .doc(newWinner.id)
