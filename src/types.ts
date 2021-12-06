@@ -16,6 +16,7 @@ export type CalendarType = {
   settings: {
     giftsPerUser?: number;
     fair?: boolean;
+    ignoreWeekends?: boolean;
   };
   owner?: string;
   public?: boolean;

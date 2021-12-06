@@ -1,6 +1,6 @@
 import React from "react";
 import classnames from "classnames";
-import { getDate, getMonth } from "date-fns";
+import { getDate, getMonth, getYear, getDay } from "date-fns";
 import { useState } from "../../StateProvider";
 import { useHistory, useParams, Link } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
@@ -12,6 +12,11 @@ const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
   const history = useHistory();
   const { name } = useParams<{ name: string }>();
+
+  const firstDayOfTheMonth =
+    getDay(new Date(getYear(new Date()), 11, 1)) === 0
+      ? 6
+      : getDay(new Date(getYear(new Date()), 11, 1)) - 1;
 
   return (
     <div className={styles.calendar}>
@@ -29,32 +34,39 @@ const Calendar: React.FC = () => {
         Innstillinger
       </ReactTooltip>
       <div className={styles.days}>
+        {Array.from(Array(firstDayOfTheMonth).keys()).map((day) => (
+          <div className={styles.hidden}>{day}</div>
+        ))}
         {Array.from(Array(24).keys()).map((day) => {
           const open = day < getDate(new Date()) && getMonth(new Date()) === 11;
           const winner = users?.find(
             (user) => user.won.indexOf(`${day + 1}`) !== -1
           );
+          const ignoreWeekend =
+            calendar.settings.ignoreWeekends &&
+            (getDay(new Date(getYear(new Date()), 11, day + 1)) === 0 ||
+              getDay(new Date(getYear(new Date()), 11, day + 1)) === 6);
           const dayClass = classnames({
             [styles.day]: true,
             [styles.winner]: winner !== undefined,
             [styles.open]: open && !winner,
+            [styles.ignore]: ignoreWeekend,
           });
 
-          if (open && !winner) {
+          if (open && !winner && !ignoreWeekend) {
             return (
               <Link
                 to={`${calendar.name}/open/${day + 1}`}
                 key={day + 1}
                 className={dayClass}
               >
-                {day + 1}
+                <span className={styles.number}>{day + 1}</span>
               </Link>
             );
           }
 
           return (
             <div key={day + 1} className={dayClass}>
-              {!winner && day + 1}
               {winner && (
                 <div className={styles.avatar}>
                   <img
@@ -64,6 +76,7 @@ const Calendar: React.FC = () => {
                   />
                 </div>
               )}
+              <span className={styles.number}>{day + 1}</span>
             </div>
           );
         })}

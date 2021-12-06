@@ -237,6 +237,27 @@ const Admin: React.FC = () => {
           </label>
         </div>
 
+        <div className={styles.form}>
+          <input
+            id="weekends"
+            type="checkbox"
+            className={styles.checkbox}
+            checked={calendar.settings.ignoreWeekends}
+            onChange={(e) => {
+              db.collection("calendars")
+                .doc(name.toLocaleLowerCase())
+                .update({
+                  "settings.ignoreWeekends": e.target.checked,
+                })
+                .then(() => {})
+                .catch(() => {});
+            }}
+          />
+          <label htmlFor="weekends" className={styles.label}>
+            Ignorer helgene
+          </label>
+        </div>
+
         <h2>Brukere</h2>
 
         <div className={styles.users}>
