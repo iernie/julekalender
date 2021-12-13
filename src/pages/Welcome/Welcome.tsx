@@ -91,7 +91,7 @@ const Welcome: React.FC = () => {
                 },
               } as CalendarType)
               .then(() => {
-                history.push(`/${name}`);
+                history.push(`/${name.toLowerCase()}`);
               })
               .catch(() => {});
           }
@@ -152,7 +152,7 @@ const Welcome: React.FC = () => {
               <Link
                 key={calendar.name}
                 className={styles.link}
-                to={`/${calendar.name}`}
+                to={`/${calendar.name.toLowerCase()}`}
               >
                 {calendar.name}
               </Link>

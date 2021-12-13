@@ -138,7 +138,7 @@ const Admin: React.FC = () => {
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
-          history.push(`/${name}`);
+          history.push(`/${name.toLowerCase()}`);
         }}
       />
       {!user ? (

@@ -52,7 +52,7 @@ const Open: React.FC = () => {
       type: SET_NOTIFICATION,
       payload: "Fant ingen brukere",
     });
-    return <Redirect to={`/${name}`} />;
+    return <Redirect to={`/${name.toLowerCase()}`} />;
   }
 
   const chooseWinner = () => {
@@ -79,7 +79,7 @@ const Open: React.FC = () => {
         type: SET_NOTIFICATION,
         payload: "Tom for vinnere",
       });
-      history.push(`/${name}`);
+      history.push(`/${name.toLowerCase()}`);
       return;
     }
 
@@ -120,7 +120,7 @@ const Open: React.FC = () => {
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
-          history.push(`/${name}`);
+          history.push(`/${name.toLowerCase()}`);
         }}
       />
       <ReactTooltip id="home" place="bottom" effect="solid">

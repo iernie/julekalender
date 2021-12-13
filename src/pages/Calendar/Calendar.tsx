@@ -27,7 +27,7 @@ const Calendar: React.FC = () => {
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
-          history.push(`/${name}/settings`);
+          history.push(`/${name.toLowerCase()}/settings`);
         }}
       />
       <ReactTooltip id="admin" place="bottom" effect="solid">
@@ -56,7 +56,7 @@ const Calendar: React.FC = () => {
           if (open && !winner && !ignoreWeekend) {
             return (
               <Link
-                to={`${calendar.name}/open/${day + 1}`}
+                to={`/${calendar.name.toLowerCase()}/open/${day + 1}`}
                 key={day + 1}
                 className={dayClass}
               >
