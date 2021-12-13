@@ -2,7 +2,7 @@ import React from "react";
 import firebase from "firebase/compat/app";
 import classnames from "classnames";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
-import { Redirect, useHistory, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw } from "react-icons/fi";
 import Title from "../../components/Title";
@@ -13,8 +13,8 @@ import { UserType } from "../../types";
 
 const Open: React.FC = () => {
   const [{ calendar, users }, dispatch] = useState();
-  const { name, day } = useParams<{ name: string; day: string }>();
-  const history = useHistory();
+  const { name, day } = useParams() as { name: string; day: string };
+  const navigate = useNavigate();
 
   const { width, height } = useWindowSize();
 
@@ -52,7 +52,7 @@ const Open: React.FC = () => {
       type: SET_NOTIFICATION,
       payload: "Fant ingen brukere",
     });
-    return <Redirect to={`/${name.toLowerCase()}`} />;
+    return <Navigate to={`/${name.toLocaleLowerCase()}`} />;
   }
 
   const chooseWinner = () => {
@@ -79,7 +79,7 @@ const Open: React.FC = () => {
         type: SET_NOTIFICATION,
         payload: "Tom for vinnere",
       });
-      history.push(`/${name.toLowerCase()}`);
+      navigate(`/${name.toLocaleLowerCase()}`);
       return;
     }
 
@@ -120,7 +120,7 @@ const Open: React.FC = () => {
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
-          history.push(`/${name.toLowerCase()}`);
+          navigate(`/${name.toLocaleLowerCase()}`);
         }}
       />
       <ReactTooltip id="home" place="bottom" effect="solid">

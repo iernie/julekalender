@@ -1,7 +1,7 @@
 import React from "react";
 import firebase from "firebase/compat/app";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
@@ -13,7 +13,7 @@ const Welcome: React.FC = () => {
   const [, dispatch] = useState();
   const [user, setUser] = React.useState<firebase.User | null>(null);
   const [calendars, setCalendars] = React.useState<Array<CalendarType>>([]);
-  const history = useHistory();
+  const navigate = useNavigate();
   const [name, setName] = React.useState<string>();
 
   const db = firebase.firestore();
@@ -91,7 +91,7 @@ const Welcome: React.FC = () => {
                 },
               } as CalendarType)
               .then(() => {
-                history.push(`/${name.toLowerCase()}`);
+                navigate(`/${name.toLocaleLowerCase()}`);
               })
               .catch(() => {});
           }
@@ -152,7 +152,7 @@ const Welcome: React.FC = () => {
               <Link
                 key={calendar.name}
                 className={styles.link}
-                to={`/${calendar.name.toLowerCase()}`}
+                to={`/${calendar.name.toLocaleLowerCase()}`}
               >
                 {calendar.name}
               </Link>

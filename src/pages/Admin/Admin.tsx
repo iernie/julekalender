@@ -1,6 +1,6 @@
 import React from "react";
 import firebase from "firebase/compat/app";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";
@@ -21,8 +21,8 @@ import ReactTooltip from "react-tooltip";
 const Admin: React.FC = () => {
   const [confirm, setConfirm] = React.useState(true);
   const [{ calendar, users, user }, dispatch] = useState();
-  const { name } = useParams<{ name: string }>();
-  const history = useHistory();
+  const { name } = useParams() as { name: string };
+  const navigate = useNavigate();
 
   const usedAvatars = React.useRef<Array<number>>([]);
 
@@ -57,12 +57,12 @@ const Admin: React.FC = () => {
         await firebase
           .storage()
           .ref()
-          .child(`${name.toLowerCase()}/${id}`)
+          .child(`${name.toLocaleLowerCase()}/${id}`)
           .delete();
       } catch (e) {}
     });
-    await db.collection("calendars").doc(name.toLowerCase()).delete();
-    history.push("/");
+    await db.collection("calendars").doc(name.toLocaleLowerCase()).delete();
+    navigate("/");
   };
 
   const login = () => {
@@ -138,7 +138,7 @@ const Admin: React.FC = () => {
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
-          history.push(`/${name.toLowerCase()}`);
+          navigate(`/${name.toLocaleLowerCase()}`);
         }}
       />
       {!user ? (
@@ -185,7 +185,7 @@ const Admin: React.FC = () => {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`/api/${name.toLowerCase()}${
+            href={`/api/${name.toLocaleLowerCase()}${
               user ? `?apiKey=${user.uid}` : ""
             }`}
           >
@@ -270,7 +270,7 @@ const Admin: React.FC = () => {
                 const ref = firebase
                   .storage()
                   .ref()
-                  .child(`${name.toLowerCase()}/${user.id}`);
+                  .child(`${name.toLocaleLowerCase()}/${user.id}`);
                 return (
                   <div className={styles.user} key={user.id}>
                     <div className={styles.avatar}>

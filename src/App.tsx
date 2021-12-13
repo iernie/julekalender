@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import StateProvider from "./StateProvider";
 import StateContainer from "./components/StateContainer";
 import Notification from "./components/Notification";
@@ -45,26 +45,21 @@ function App() {
     <StateProvider>
       <div className={styles.content}>
         <Router>
-          <Switch>
-            <Route path="/:name">
-              <StateContainer>
-                <Switch>
-                  <Route exact path="/:name/settings">
-                    <Admin />
-                  </Route>
-                  <Route exact path="/:name/open/:day">
-                    <Open />
-                  </Route>
-                  <Route>
-                    <Calendar />
-                  </Route>
-                </Switch>
-              </StateContainer>
-            </Route>
-            <Route>
-              <Welcome />
-            </Route>
-          </Switch>
+          <Routes>
+            <Route
+              path=":name/*"
+              element={
+                <StateContainer>
+                  <Routes>
+                    <Route path="/settings" element={<Admin />} />
+                    <Route path="/open/:day" element={<Open />} />
+                    <Route path="/" element={<Calendar />} />
+                  </Routes>
+                </StateContainer>
+              }
+            />
+            <Route path="/" element={<Welcome />} />
+          </Routes>
         </Router>
       </div>
       <Notification />

@@ -2,7 +2,7 @@ import React from "react";
 import classnames from "classnames";
 import { getDate, getMonth, getYear, getDay } from "date-fns";
 import { useState } from "../../StateProvider";
-import { useHistory, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
 import Title from "../../components/Title";
 import styles from "./Calendar.module.scss";
@@ -10,8 +10,8 @@ import ReactTooltip from "react-tooltip";
 
 const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
-  const history = useHistory();
-  const { name } = useParams<{ name: string }>();
+  const navigate = useNavigate();
+  const { name } = useParams() as { name: string };
 
   const firstDayOfTheMonth =
     getDay(new Date(getYear(new Date()), 11, 1)) === 0
@@ -27,7 +27,7 @@ const Calendar: React.FC = () => {
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
-          history.push(`/${name.toLowerCase()}/settings`);
+          navigate(`/${name.toLocaleLowerCase()}/settings`);
         }}
       />
       <ReactTooltip id="admin" place="bottom" effect="solid">
@@ -56,7 +56,7 @@ const Calendar: React.FC = () => {
           if (open && !winner && !ignoreWeekend) {
             return (
               <Link
-                to={`/${calendar.name.toLowerCase()}/open/${day + 1}`}
+                to={`/${calendar.name.toLocaleLowerCase()}/open/${day + 1}`}
                 key={day + 1}
                 className={dayClass}
               >
