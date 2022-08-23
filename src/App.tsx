@@ -12,19 +12,20 @@ import "firebase/compat/analytics";
 import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import "firebase/compat/storage";
-import Snowfall from "react-snowfall";
-import { useWindowSize } from "react-use";
+// import Snowfall from "react-snowfall";
+// import { useWindowSize } from "react-use";
 import styles from "./App.module.scss";
 
 function App() {
   const [config, setConfig] = React.useState<Object>();
 
-  const { width, height } = useWindowSize();
+  // const { width, height } = useWindowSize();
 
   React.useEffect(() => {
     fetch("/__/firebase/init.json")
       .then((res) => res.json())
       .then((config) => {
+        firebase.initializeApp(config);
         setConfig(config);
       })
       .catch((error) => {
@@ -33,7 +34,6 @@ function App() {
   }, []);
 
   if (config && !firebase.apps.length) {
-    firebase.initializeApp(config);
     firebase.analytics();
   }
 
@@ -63,7 +63,7 @@ function App() {
         </Router>
       </div>
       <Notification />
-      <Snowfall color="white" style={{ height, width }} />
+      {/* <Snowfall color="white" style={{ height, width }} /> */}
     </StateProvider>
   );
 }

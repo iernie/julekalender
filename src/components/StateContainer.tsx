@@ -6,7 +6,9 @@ import Loading from "./Loading";
 import { CalendarType, UserType } from "../types";
 import ReactTooltip from "react-tooltip";
 
-const StateContainer: React.FC = ({ children }) => {
+const StateContainer: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [{ calendar }, dispatch] = useState();
   const navigate = useNavigate();
   const { name } = useParams() as { name: string; day: string };

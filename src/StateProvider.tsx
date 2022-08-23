@@ -57,7 +57,9 @@ const reducer = (state: State = intitialState, action: Action): State => {
   }
 };
 
-const StateProvider: React.FC = ({ children }) => {
+const StateProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   return (
     <Context.Provider value={React.useReducer(reducer, intitialState)}>
       {children}

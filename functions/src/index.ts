@@ -1,9 +1,10 @@
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
 import * as express from "express";
 import * as cors from "cors";
+import { initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 
-admin.initializeApp();
+initializeApp();
 const app = express();
 app.use(cors({ origin: "*" }));
 
@@ -16,8 +17,7 @@ app.get("/api/:name", async (request, response) => {
   const { name } = request.params;
   const { apiKey } = request.query;
 
-  const calendarReference = admin
-    .firestore()
+  const calendarReference = getFirestore()
     .collection("calendars")
     .doc(name.toLocaleLowerCase());
 
@@ -31,8 +31,7 @@ app.get("/api/:name", async (request, response) => {
     return;
   }
 
-  admin
-    .firestore()
+  getFirestore()
     .collection("users")
     .where("calendar", "==", calendarReference)
     .get()
