@@ -67,4 +67,4 @@ app.get("/api/:name", async (request, response) => {
       });
 });
 
-exports.api = functions.region('europe-west1').https.onRequest(app);
+exports.api = functions.region("europe-west1").https.onRequest(app);
