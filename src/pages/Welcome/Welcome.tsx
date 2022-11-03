@@ -84,6 +84,9 @@ const Welcome: React.FC = () => {
               .set({
                 id: uuidv4(),
                 createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
+                deleteBy: firebase.firestore.Timestamp.fromDate(
+                  new Date(new Date().getFullYear() + 1, 0, 1)
+                ),
                 name,
                 public: true,
                 settings: {
