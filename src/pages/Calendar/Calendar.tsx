@@ -16,7 +16,7 @@ const Calendar: React.FC = () => {
 
   React.useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "KeyO") {
+      if ((e.ctrlKey || e.metaKey) && e.key === "o") {
         e.preventDefault();
         setHotkey(true);
       } else {
@@ -29,7 +29,7 @@ const Calendar: React.FC = () => {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  });
+  }, []);
 
   const firstDayOfTheMonth =
     getDay(new Date(getYear(new Date()), 11, 1)) === 0
