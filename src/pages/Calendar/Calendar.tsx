@@ -12,6 +12,24 @@ const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
   const navigate = useNavigate();
   const { name } = useParams() as { name: string };
+  const [hotkey, setHotkey] = React.useState(false);
+
+  React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "KeyO") {
+        e.preventDefault();
+        setHotkey(true);
+      } else {
+        setHotkey(false);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown, false);
+
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  });
 
   const firstDayOfTheMonth =
     getDay(new Date(getYear(new Date()), 11, 1)) === 0
@@ -38,7 +56,9 @@ const Calendar: React.FC = () => {
           <div className={styles.hidden}>{day}</div>
         ))}
         {Array.from(Array(24).keys()).map((day) => {
-          const open = day < getDate(new Date()) && getMonth(new Date()) === 11;
+          const open =
+            hotkey ||
+            (day < getDate(new Date()) && getMonth(new Date()) === 11);
           const winner = users?.find(
             (user) => user.won.indexOf(`${day + 1}`) !== -1
           );
