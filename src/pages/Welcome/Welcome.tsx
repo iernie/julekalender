@@ -111,7 +111,6 @@ const Welcome: React.FC = () => {
     <div className={styles.welcome}>
       {!user ? (
         <FiLogIn
-          data-tooltip-content
           data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
@@ -119,7 +118,6 @@ const Welcome: React.FC = () => {
         />
       ) : (
         <FiLogOut
-          data-tooltip-content
           data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}

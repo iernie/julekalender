@@ -40,7 +40,6 @@ const Calendar: React.FC = () => {
     <div className={styles.calendar}>
       <Title>{calendar.name}</Title>
       <FiSettings
-        data-tooltip-content
         data-tooltip-id="admin"
         size="1.5rem"
         className={styles.settings}

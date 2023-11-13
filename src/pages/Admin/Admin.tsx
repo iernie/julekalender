@@ -123,7 +123,6 @@ const Admin: React.FC = () => {
       </ReactTooltip>
       {!calendar.owner || calendar.owner === user?.uid ? (
         <FiTrash
-          data-tooltip-content
           data-tooltip-id="delete"
           size="1.5rem"
           className={styles.delete}
@@ -131,7 +130,6 @@ const Admin: React.FC = () => {
         />
       ) : null}
       <FiHome
-        data-tooltip-content
         data-tooltip-id="home"
         size="1.5rem"
         className={styles.settings}
@@ -141,7 +139,6 @@ const Admin: React.FC = () => {
       />
       {!user ? (
         <FiLogIn
-          data-tooltip-content
           data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
@@ -149,7 +146,6 @@ const Admin: React.FC = () => {
         />
       ) : (
         <FiLogOut
-          data-tooltip-content
           data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
@@ -160,7 +156,6 @@ const Admin: React.FC = () => {
         <>
           {calendar.public === false ? (
             <FiLock
-              data-tooltip-content
               data-tooltip-id="lock"
               size="1.5rem"
               className={styles.lock}
@@ -168,7 +163,6 @@ const Admin: React.FC = () => {
             />
           ) : (
             <FiUnlock
-              data-tooltip-content
               data-tooltip-id="lock"
               size="1.5rem"
               className={styles.lock}

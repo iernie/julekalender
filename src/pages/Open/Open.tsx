@@ -116,7 +116,6 @@ const Open: React.FC = () => {
     <div>
       <Title>Vinneren er...</Title>
       <FiHome
-        data-tooltip-content
         data-tooltip-id="home"
         size="1.5rem"
         className={styles.settings}
@@ -152,7 +151,6 @@ const Open: React.FC = () => {
         )}
         {step !== null && step === 3 && (
           <FiRotateCcw
-            data-tooltip-content
             data-tooltip-id="refresh"
             size="1.5rem"
             className={styles.refresh}
