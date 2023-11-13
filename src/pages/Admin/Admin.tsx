@@ -339,7 +339,7 @@ const Admin: React.FC = () => {
                 name: "",
                 createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                 deleteBy: firebase.firestore.Timestamp.fromDate(
-                  new Date(new Date().getFullYear() + 1, 0, 1),
+                  new Date(new Date().getFullYear() + 1, 1, 1),
                 ),
                 won: [],
                 calendar: db
