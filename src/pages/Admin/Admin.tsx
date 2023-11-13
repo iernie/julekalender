@@ -16,7 +16,7 @@ import {
 import Title from "../../components/Title";
 import styles from "./Admin.module.scss";
 import { compareAsc } from "date-fns";
-import ReactTooltip from "react-tooltip";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 
 const Admin: React.FC = () => {
   const [confirm, setConfirm] = React.useState(true);
@@ -101,9 +101,7 @@ const Admin: React.FC = () => {
           owner: uid,
           public: isPublic,
         })
-        .then(() => {
-          ReactTooltip.rebuild();
-        })
+        .then(() => {})
         .catch(() => {});
     }
   };
@@ -111,30 +109,30 @@ const Admin: React.FC = () => {
   return (
     <div>
       <Title>Innstillinger</Title>
-      <ReactTooltip id="login" place="bottom" effect="solid">
+      <ReactTooltip id="login" place="bottom">
         {!user ? "Logg inn" : "Logg ut"}
       </ReactTooltip>
-      <ReactTooltip id="home" place="bottom" effect="solid">
+      <ReactTooltip id="home" place="bottom">
         Hjem
       </ReactTooltip>
-      <ReactTooltip id="lock" place="bottom" effect="solid">
+      <ReactTooltip id="lock" place="bottom">
         {user && calendar.public === false ? "Åpne" : "Skjul"}
       </ReactTooltip>
-      <ReactTooltip id="delete" place="right" effect="solid">
+      <ReactTooltip id="delete" place="right">
         Slett kalender
       </ReactTooltip>
       {!calendar.owner || calendar.owner === user?.uid ? (
         <FiTrash
-          data-tip
-          data-for="delete"
+          data-tooltip-content
+          data-tooltip-id="delete"
           size="1.5rem"
           className={styles.delete}
           onClick={deleteCalendar}
         />
       ) : null}
       <FiHome
-        data-tip
-        data-for="home"
+        data-tooltip-content
+        data-tooltip-id="home"
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
@@ -143,16 +141,16 @@ const Admin: React.FC = () => {
       />
       {!user ? (
         <FiLogIn
-          data-tip
-          data-for="login"
+          data-tooltip-content
+          data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
           onClick={login}
         />
       ) : (
         <FiLogOut
-          data-tip
-          data-for="login"
+          data-tooltip-content
+          data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
           onClick={logout}
@@ -162,16 +160,16 @@ const Admin: React.FC = () => {
         <>
           {calendar.public === false ? (
             <FiLock
-              data-tip
-              data-for="lock"
+              data-tooltip-content
+              data-tooltip-id="lock"
               size="1.5rem"
               className={styles.lock}
               onClick={() => setPublic(true)}
             />
           ) : (
             <FiUnlock
-              data-tip
-              data-for="lock"
+              data-tooltip-content
+              data-tooltip-id="lock"
               size="1.5rem"
               className={styles.lock}
               onClick={() => setPublic(false)}
@@ -264,7 +262,7 @@ const Admin: React.FC = () => {
           {users &&
             users
               .sort((a, b) =>
-                compareAsc(a.createdAt.seconds, b.createdAt.seconds)
+                compareAsc(a.createdAt.seconds, b.createdAt.seconds),
               )
               .map((user) => {
                 const ref = firebase
@@ -347,7 +345,7 @@ const Admin: React.FC = () => {
                 name: "",
                 createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                 deleteBy: firebase.firestore.Timestamp.fromDate(
-                  new Date(new Date().getFullYear() + 1, 0, 1)
+                  new Date(new Date().getFullYear() + 1, 0, 1),
                 ),
                 won: [],
                 calendar: db

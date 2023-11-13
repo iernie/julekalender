@@ -8,7 +8,7 @@ import { FiHome, FiRotateCcw } from "react-icons/fi";
 import Title from "../../components/Title";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.scss";
-import ReactTooltip from "react-tooltip";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import { UserType } from "../../types";
 
 const Open: React.FC = () => {
@@ -26,12 +26,13 @@ const Open: React.FC = () => {
   const [step, setStep] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    ReactTooltip.rebuild();
-
     if (step === 1) {
-      setTimeout(() => {
-        setStep(2);
-      }, Math.random() * 6000 + 2000);
+      setTimeout(
+        () => {
+          setStep(2);
+        },
+        Math.random() * 6000 + 2000,
+      );
     }
 
     if (step === 2) {
@@ -66,12 +67,12 @@ const Open: React.FC = () => {
         (user) =>
           !calendar.settings.fair ||
           highestWins === lowestWins ||
-          user.won.length < highestWins
+          user.won.length < highestWins,
       )
       .filter(
         (user) =>
           !calendar.settings.giftsPerUser ||
-          user.won.length < calendar.settings.giftsPerUser
+          user.won.length < calendar.settings.giftsPerUser,
       );
 
     if (filteredUsers.length === 0) {
@@ -115,15 +116,15 @@ const Open: React.FC = () => {
     <div>
       <Title>Vinneren er...</Title>
       <FiHome
-        data-tip
-        data-for="home"
+        data-tooltip-content
+        data-tooltip-id="home"
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
           navigate(`/${name.toLocaleLowerCase()}`);
         }}
       />
-      <ReactTooltip id="home" place="bottom" effect="solid">
+      <ReactTooltip id="home" place="bottom">
         Hjem
       </ReactTooltip>
       <div className={stepClass}>
@@ -151,8 +152,8 @@ const Open: React.FC = () => {
         )}
         {step !== null && step === 3 && (
           <FiRotateCcw
-            data-tip
-            data-for="refresh"
+            data-tooltip-content
+            data-tooltip-id="refresh"
             size="1.5rem"
             className={styles.refresh}
             onClick={() => {
@@ -176,7 +177,7 @@ const Open: React.FC = () => {
           height={height}
         />
       )}
-      <ReactTooltip id="refresh" place="bottom" effect="solid">
+      <ReactTooltip id="refresh" place="bottom">
         Nullstill vinner
       </ReactTooltip>
     </div>

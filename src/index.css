@@ -1,5 +1,5 @@
-@import-normalize;
 @import url("https://fonts.googleapis.com/css2?family=Calligraffitti&family=Roboto:wght@400;700&display=swap");
+@import-normalize;
 
 :root {
   --white: rgb(255, 255, 255);

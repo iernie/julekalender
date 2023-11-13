@@ -6,7 +6,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
 import Title from "../../components/Title";
 import styles from "./Calendar.module.scss";
-import ReactTooltip from "react-tooltip";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 
 const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
@@ -40,15 +40,15 @@ const Calendar: React.FC = () => {
     <div className={styles.calendar}>
       <Title>{calendar.name}</Title>
       <FiSettings
-        data-tip
-        data-for="admin"
+        data-tooltip-content
+        data-tooltip-id="admin"
         size="1.5rem"
         className={styles.settings}
         onClick={() => {
           navigate(`/${name.toLocaleLowerCase()}/settings`);
         }}
       />
-      <ReactTooltip id="admin" place="bottom" effect="solid">
+      <ReactTooltip id="admin" place="bottom">
         Innstillinger
       </ReactTooltip>
       <div className={styles.days}>
@@ -60,7 +60,7 @@ const Calendar: React.FC = () => {
             hotkey ||
             (day < getDate(new Date()) && getMonth(new Date()) === 11);
           const winner = users?.find(
-            (user) => user.won.indexOf(`${day + 1}`) !== -1
+            (user) => user.won.indexOf(`${day + 1}`) !== -1,
           );
           const ignoreWeekend =
             calendar.settings.ignoreWeekends &&

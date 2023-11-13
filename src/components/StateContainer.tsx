@@ -4,7 +4,6 @@ import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "./Loading";
 import { CalendarType, UserType } from "../types";
-import ReactTooltip from "react-tooltip";
 
 const StateContainer: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -19,7 +18,6 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
         type: SET_USER,
         payload: user,
       });
-      ReactTooltip.rebuild();
     });
   }, []);
 
@@ -46,7 +44,7 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
       .onSnapshot((users) => {
         dispatch({
           type: SET_USERS,
-          payload: users.docs.map((user) => ({ ...user.data() } as UserType)),
+          payload: users.docs.map((user) => ({ ...user.data() }) as UserType),
         });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -5,7 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import { CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
-import ReactTooltip from "react-tooltip";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import Title from "../../components/Title";
 import styles from "./Welcome.module.scss";
 
@@ -38,7 +38,6 @@ const Welcome: React.FC = () => {
   React.useEffect(() => {
     firebase.auth().onAuthStateChanged((user) => {
       setUser(user);
-      ReactTooltip.rebuild();
     });
   }, []);
 
@@ -50,7 +49,7 @@ const Welcome: React.FC = () => {
         .where("owner", "==", user.uid)
         .onSnapshot((snapshot) => {
           setCalendars(
-            snapshot.docs.map((doc) => ({ ...doc.data() } as CalendarType))
+            snapshot.docs.map((doc) => ({ ...doc.data() }) as CalendarType),
           );
         });
     }
@@ -85,7 +84,7 @@ const Welcome: React.FC = () => {
                 id: uuidv4(),
                 createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
                 deleteBy: firebase.firestore.Timestamp.fromDate(
-                  new Date(new Date().getFullYear() + 1, 0, 1)
+                  new Date(new Date().getFullYear() + 1, 0, 1),
                 ),
                 name,
                 public: true,
@@ -112,22 +111,22 @@ const Welcome: React.FC = () => {
     <div className={styles.welcome}>
       {!user ? (
         <FiLogIn
-          data-tip
-          data-for="login"
+          data-tooltip-content
+          data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
           onClick={login}
         />
       ) : (
         <FiLogOut
-          data-tip
-          data-for="login"
+          data-tooltip-content
+          data-tooltip-id="login"
           size="1.5rem"
           className={styles.login}
           onClick={logout}
         />
       )}
-      <ReactTooltip id="login" place="bottom" effect="solid">
+      <ReactTooltip id="login" place="bottom">
         {!user ? "Logg inn" : "Logg ut"}
       </ReactTooltip>
       <Title>Julekalender as a Service</Title>
