@@ -271,7 +271,7 @@ const Admin: React.FC = () => {
               .sort((a, b) =>
                 compareAsc(a.createdAt.seconds, b.createdAt.seconds),
               )
-              .map((user) => {
+              .map((user, i) => {
                 const storageRef = ref(
                   storage,
                   `${name.toLocaleLowerCase()}/${user.id}`,
@@ -306,6 +306,7 @@ const Admin: React.FC = () => {
                       className={styles.username}
                       value={user.name}
                       placeholder="Navn..."
+                      autoFocus={i === users.length - 1}
                       onChange={async (e) => {
                         const userReference = doc(db, "users", user.id);
                         await updateDoc(userReference, {
