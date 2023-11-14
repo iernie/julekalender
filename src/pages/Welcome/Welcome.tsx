@@ -96,6 +96,7 @@ const Welcome: React.FC = () => {
           deleteBy: Timestamp.fromDate(
             new Date(new Date().getFullYear() + 1, 1, 1),
           ),
+          owner: user?.uid ?? undefined,
           name,
           public: true,
           settings: {
