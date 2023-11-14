@@ -263,6 +263,11 @@ const Admin: React.FC = () => {
           </label>
         </div>
 
+        <p>
+          Din julekalender og alt tilhørende data slettes automatisk:{" "}
+          {calendar.deleteBy.toDate().toLocaleDateString("nb-no")} :)
+        </p>
+
         <h2>Brukere</h2>
 
         <div className={styles.users}>
