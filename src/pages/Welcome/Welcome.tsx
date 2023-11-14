@@ -4,8 +4,8 @@ import {
   collection,
   doc,
   getDoc,
-  getDocs,
   getFirestore,
+  onSnapshot,
   query,
   setDoc,
   where,
@@ -62,14 +62,12 @@ const Welcome: React.FC = () => {
           calendarReference,
           where("owner", "==", user.uid),
         );
-        const calendarSnap = await getDocs(calendarQuery);
-        const calendars = [] as Array<CalendarType>;
 
-        calendarSnap.forEach((calendar) => {
-          calendars.push(calendar.data() as CalendarType);
+        onSnapshot(calendarQuery, (calendars) => {
+          setCalendars(
+            calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType),
+          );
         });
-
-        setCalendars(calendars);
       }
     };
     getCalendars();

@@ -4,10 +4,9 @@ import {
   getFirestore,
   collection,
   doc,
-  getDoc,
   query,
   where,
-  getDocs,
+  onSnapshot,
 } from "firebase/firestore";
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { useNavigate, useParams } from "react-router-dom";
@@ -35,32 +34,28 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
     const getCalendar = async () => {
       const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
 
-      const calendarSnap = await getDoc(calendarReference);
-
-      if (calendarSnap.exists()) {
-        const calendar = calendarSnap.data() as CalendarType;
-
-        dispatch({
-          type: SET_CALENDAR,
-          payload: calendar,
-        });
-      } else {
-        navigate("/");
-      }
+      onSnapshot(calendarReference, (calendarSnap) => {
+        if (calendarSnap.exists()) {
+          dispatch({
+            type: SET_CALENDAR,
+            payload: calendarSnap.data() as CalendarType,
+          });
+        } else {
+          navigate("/");
+        }
+      });
 
       const userReference = collection(db, "users");
       const userQuery = query(
         userReference,
         where("calendar", "==", calendarReference),
       );
-      const userSnap = await getDocs(userQuery);
-      const users = [] as Array<UserType>;
-      userSnap.forEach((doc) => {
-        users.push(doc.data() as UserType);
-      });
-      dispatch({
-        type: SET_USERS,
-        payload: users,
+
+      onSnapshot(userQuery, (users) => {
+        dispatch({
+          type: SET_USERS,
+          payload: users.docs.map((doc) => ({ ...doc.data() }) as UserType),
+        });
       });
     };
     getCalendar();
