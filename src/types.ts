@@ -20,6 +20,6 @@ export type CalendarType = {
     fair?: boolean;
     ignoreWeekends?: boolean;
   };
-  owner?: string;
+  owner?: string | null;
   public?: boolean;
 };

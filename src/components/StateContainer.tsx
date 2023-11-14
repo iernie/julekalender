@@ -1,5 +1,5 @@
 import React from "react";
-import { getAuth } from "firebase/auth";
+import { Unsubscribe, getAuth } from "firebase/auth";
 import {
   getFirestore,
   collection,
@@ -31,10 +31,12 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   React.useEffect(() => {
+    let unsub1: Unsubscribe | null;
+    let unsub2: Unsubscribe | null;
     const getCalendar = async () => {
       const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
 
-      onSnapshot(calendarReference, (calendarSnap) => {
+      unsub1 = onSnapshot(calendarReference, (calendarSnap) => {
         if (calendarSnap.exists()) {
           dispatch({
             type: SET_CALENDAR,
@@ -51,7 +53,7 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
         where("calendar", "==", calendarReference),
       );
 
-      onSnapshot(userQuery, (users) => {
+      unsub2 = onSnapshot(userQuery, (users) => {
         dispatch({
           type: SET_USERS,
           payload: users.docs.map((doc) => ({ ...doc.data() }) as UserType),
@@ -59,6 +61,10 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
       });
     };
     getCalendar();
+    return () => {
+      if (unsub1) unsub1();
+      if (unsub2) unsub2();
+    };
   }, [name]);
 
   React.useEffect(() => {

@@ -15,6 +15,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  Unsubscribe,
 } from "firebase/auth";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Link, useNavigate } from "react-router-dom";
@@ -55,6 +56,7 @@ const Welcome: React.FC = () => {
   }, []);
 
   React.useEffect(() => {
+    let unsub: Unsubscribe | null;
     const getCalendars = async () => {
       if (user) {
         const calendarReference = collection(db, "calendars");
@@ -63,7 +65,7 @@ const Welcome: React.FC = () => {
           where("owner", "==", user.uid),
         );
 
-        onSnapshot(calendarQuery, (calendars) => {
+        unsub = onSnapshot(calendarQuery, (calendars) => {
           setCalendars(
             calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType),
           );
@@ -71,6 +73,9 @@ const Welcome: React.FC = () => {
       }
     };
     getCalendars();
+    return () => {
+      if (unsub) unsub();
+    };
   }, [user]);
 
   const logout = async () => {
@@ -96,7 +101,7 @@ const Welcome: React.FC = () => {
           deleteBy: Timestamp.fromDate(
             new Date(new Date().getFullYear() + 1, 1, 1),
           ),
-          owner: user?.uid ?? undefined,
+          owner: user?.uid ?? null,
           name,
           public: true,
           settings: {

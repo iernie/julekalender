@@ -72,7 +72,9 @@ const Admin: React.FC = () => {
         await deleteDoc(userReference);
 
         const storageRef = ref(storage, `${name.toLocaleLowerCase()}/${id}`);
-        await deleteObject(storageRef);
+        try {
+          await deleteObject(storageRef);
+        } catch {}
       } catch (e) {}
     });
     const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
@@ -313,7 +315,9 @@ const Admin: React.FC = () => {
                       onClick={async () => {
                         const userReference = doc(db, "users", user.id);
                         await deleteDoc(userReference);
-                        await deleteObject(storageRef);
+                        try {
+                          await deleteObject(storageRef);
+                        } catch {}
                       }}
                     />
                   </div>
