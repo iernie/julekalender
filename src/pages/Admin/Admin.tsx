@@ -20,6 +20,7 @@ import {
   Timestamp,
   deleteDoc,
   doc,
+  getDoc,
   getFirestore,
   setDoc,
   updateDoc,
@@ -67,15 +68,15 @@ const Admin: React.FC = () => {
     }
     const ids = users?.map((user) => user.id) ?? [];
     ids.forEach(async (id) => {
-      try {
-        const userReference = doc(db, "users", id);
-        await deleteDoc(userReference);
-
+      const userReference = doc(db, "users", id);
+      const userSnap = await getDoc(userReference);
+      if (userSnap.exists()) {
         const storageRef = ref(storage, `${name.toLocaleLowerCase()}/${id}`);
-        try {
+        if (userSnap.data().image.includes(storageRef.name)) {
           await deleteObject(storageRef);
-        } catch {}
-      } catch (e) {}
+        }
+        await deleteDoc(userReference);
+      }
     });
     const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
     await deleteDoc(calendarReference);
@@ -288,10 +289,13 @@ const Admin: React.FC = () => {
                         type="file"
                         onChange={async (e) => {
                           if (e.target.files?.length === 1) {
-                            await uploadBytes(storageRef, e.target.files[0]);
+                            const uploadResult = await uploadBytes(
+                              storageRef,
+                              e.target.files[0],
+                            );
                             const userReference = doc(db, "users", user.id);
                             await updateDoc(userReference, {
-                              image: await getDownloadURL(storageRef),
+                              image: await getDownloadURL(uploadResult.ref),
                             });
                           }
                         }}
@@ -314,10 +318,13 @@ const Admin: React.FC = () => {
                       className={styles.deleteuser}
                       onClick={async () => {
                         const userReference = doc(db, "users", user.id);
-                        await deleteDoc(userReference);
-                        try {
-                          await deleteObject(storageRef);
-                        } catch {}
+                        const userSnap = await getDoc(userReference);
+                        if (userSnap.exists()) {
+                          if (userSnap.data().image.includes(storageRef.name)) {
+                            await deleteObject(storageRef);
+                          }
+                          await deleteDoc(userReference);
+                        }
                       }}
                     />
                   </div>
@@ -336,6 +343,7 @@ const Admin: React.FC = () => {
             const id = uuidv4();
             const storageRef = ref(storage, `avatars/${getAvatar()}.png`);
             const downloadUrl = await getDownloadURL(storageRef);
+
             const userReference = doc(db, "users", id);
             await setDoc(userReference, {
               id,
