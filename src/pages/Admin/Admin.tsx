@@ -306,7 +306,7 @@ const Admin: React.FC = () => {
                       className={styles.username}
                       value={user.name}
                       placeholder="Navn..."
-                      autoFocus={i === users.length - 1}
+                      autoFocus={user.name === ""}
                       onChange={async (e) => {
                         const userReference = doc(db, "users", user.id);
                         await updateDoc(userReference, {
