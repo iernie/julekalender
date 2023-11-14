@@ -17,6 +17,7 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 function App() {
+  const [init, setInit] = React.useState(false);
   const { width, height } = useWindowSize();
 
   React.useEffect(() => {
@@ -28,13 +29,14 @@ function App() {
         getAnalytics(app);
         getFirestore(app);
         getStorage(app);
+        setInit(true);
       })
       .catch((error) => {
         console.error(error);
       });
   }, []);
 
-  if (!getApps().length) {
+  if (!init) {
     return null;
   }
 
