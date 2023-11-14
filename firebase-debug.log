@@ -166,3 +166,91 @@
 [debug] [2023-11-13T15:25:37.859Z] Got response from /__/functions.yaml {"endpoints":{"api":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"region":["europe-west1"],"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[]}
 [info] +  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
 [info] +  functions[europe-west1-api]: http function initialized (http://localhost:5001/julekal/europe-west1/api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://localhost:5001/julekal/europe-west1/api)."}}
+[debug] [2023-11-14T09:41:37.203Z] ----------------------------------------------------------------------
+[debug] [2023-11-14T09:41:37.205Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Ernie\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js serve
+[debug] [2023-11-14T09:41:37.206Z] CLI Version:   12.8.1
+[debug] [2023-11-14T09:41:37.206Z] Platform:      win32
+[debug] [2023-11-14T09:41:37.206Z] Node Version:  v20.9.0
+[debug] [2023-11-14T09:41:37.206Z] Time:          Tue Nov 14 2023 10:41:37 GMT+0100 (sentraleuropeisk normaltid)
+[debug] [2023-11-14T09:41:37.206Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2023-11-14T09:41:37.269Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2023-11-14T09:41:37.270Z] > authorizing via signed-in user (einar.afiouni@gmail.com)
+[debug] [2023-11-14T09:41:37.270Z] [iam] checking project julekal for permissions ["firebase.projects.get"]
+[debug] [2023-11-14T09:41:37.271Z] > refreshing access token with scopes: []
+[debug] [2023-11-14T09:41:37.273Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2023-11-14T09:41:37.273Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-11-14T09:41:37.417Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2023-11-14T09:41:37.417Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2023-11-14T09:41:37.425Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/julekal:testIamPermissions [none]
+[debug] [2023-11-14T09:41:37.425Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/julekal:testIamPermissions x-goog-quota-user=projects/julekal
+[debug] [2023-11-14T09:41:37.425Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/julekal:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2023-11-14T09:41:38.149Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/julekal:testIamPermissions 200
+[debug] [2023-11-14T09:41:38.149Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/julekal:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2023-11-14T09:41:38.149Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/julekal [none]
+[debug] [2023-11-14T09:41:38.404Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/julekal 200
+[debug] [2023-11-14T09:41:38.405Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/julekal {"projectId":"julekal","projectNumber":"741307821579","displayName":"Julekalender","name":"projects/julekal","resources":{"hostingSite":"julekal","realtimeDatabaseInstance":"julekal","storageBucket":"julekal.appspot.com","locationId":"europe-west"},"state":"ACTIVE","etag":"1_933f3c3e-a08e-4dab-a4d1-682253c2a41e"}
+[info] 
+[info] === Serving from 'C:\Repos\julekalender'...
+[info] 
+[debug] [2023-11-14T09:41:38.408Z] defaultcredentials: writing to file C:\Users\Ernie\AppData\Roaming\firebase\einar_afiouni_gmail.com_application_default_credentials.json
+[debug] [2023-11-14T09:41:38.409Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/julekal/sites 
+[debug] [2023-11-14T09:41:38.411Z] Setting GAC to C:\Users\Ernie\AppData\Roaming\firebase\einar_afiouni_gmail.com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\Ernie\\AppData\\Roaming\\firebase\\einar_afiouni_gmail.com_application_default_credentials.json"}}
+[debug] [2023-11-14T09:41:38.412Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/julekal/adminSdkConfig [none]
+[debug] [2023-11-14T09:41:38.635Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/julekal/adminSdkConfig 200
+[debug] [2023-11-14T09:41:38.635Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/julekal/adminSdkConfig {"projectId":"julekal","databaseURL":"https://julekal.firebaseio.com","storageBucket":"julekal.appspot.com","locationId":"europe-west"}
+[debug] [2023-11-14T09:41:39.609Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/julekal/sites 200
+[debug] [2023-11-14T09:41:39.609Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/julekal/sites {"sites":[{"name":"projects/julekal/sites/julekal","defaultUrl":"https://julekal.web.app","appId":"1:741307821579:web:f8114d72fb4b18a1a3e10e","type":"DEFAULT_SITE"}]}
+[debug] [2023-11-14T09:41:39.610Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/julekal/webApps/1:741307821579:web:f8114d72fb4b18a1a3e10e/config [none]
+[debug] [2023-11-14T09:41:40.321Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/julekal/webApps/1:741307821579:web:f8114d72fb4b18a1a3e10e/config 200
+[debug] [2023-11-14T09:41:40.321Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/julekal/webApps/1:741307821579:web:f8114d72fb4b18a1a3e10e/config {"projectId":"julekal","appId":"1:741307821579:web:f8114d72fb4b18a1a3e10e","databaseURL":"https://julekal.firebaseio.com","storageBucket":"julekal.appspot.com","locationId":"europe-west","apiKey":"AIzaSyA-pgkKm_IMoDHTcWKKhjFOFLbujVVA-qA","authDomain":"julekal.firebaseapp.com","messagingSenderId":"741307821579"}
+[debug] [2023-11-14T09:41:40.325Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/julekal [none]
+[debug] [2023-11-14T09:41:40.556Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/julekal 200
+[debug] [2023-11-14T09:41:40.556Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/julekal {"projectId":"julekal","projectNumber":"741307821579","displayName":"Julekalender","name":"projects/julekal","resources":{"hostingSite":"julekal","realtimeDatabaseInstance":"julekal","storageBucket":"julekal.appspot.com","locationId":"europe-west"},"state":"ACTIVE","etag":"1_933f3c3e-a08e-4dab-a4d1-682253c2a41e"}
+[info] i  functions: Watching "C:\Repos\julekalender\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Repos\\julekalender\\functions\" for Cloud Functions..."}}
+[info] i  hosting[julekal]: Serving hosting files from: dist {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mdist\u001b[22m"}}
+[info] +  hosting[julekal]: Local server: http://localhost:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://localhost:5000\u001b[22m\u001b[24m"}}
+[debug] [2023-11-14T09:41:40.572Z] Validating nodejs source
+[debug] [2023-11-14T09:41:41.588Z] > [functions] package.json contents: {
+  "name": "functions",
+  "scripts": {
+    "lint": "eslint --ext .js,.ts .",
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "serve": "npm run build && firebase emulators:start --only functions",
+    "shell": "npm run build && firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "lib/index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "firebase-admin": "^11.11.0",
+    "firebase-functions": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.16",
+    "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "@typescript-eslint/parser": "^6.11.0",
+    "eslint": "^8.53.0",
+    "eslint-config-google": "^0.14.0",
+    "eslint-plugin-import": "^2.29.0",
+    "typescript": "^5.2.2"
+  },
+  "private": true
+}
+[debug] [2023-11-14T09:41:41.589Z] Building nodejs source
+[debug] [2023-11-14T09:41:41.589Z] Failed to find version of module node: reached end of search path C:\Repos\julekalender\functions\node_modules
+[info] +  functions: Using node@20 from host. 
+[debug] [2023-11-14T09:41:41.590Z] Could not find functions.yaml. Must use http discovery
+[debug] [2023-11-14T09:41:41.597Z] Found firebase-functions binary at 'C:\Repos\julekalender\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8424
+
+[debug] [2023-11-14T09:41:42.088Z] Got response from /__/functions.yaml {"endpoints":{"api":{"platform":"gcfv1","availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"serviceAccountEmail":null,"vpc":null,"region":["europe-west1"],"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[]}
+[info] +  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}
+[info] +  functions[europe-west1-api]: http function initialized (http://localhost:5001/julekal/europe-west1/api). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://localhost:5001/julekal/europe-west1/api)."}}

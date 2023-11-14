@@ -1,20 +1,20 @@
-import firebase from "firebase/compat/app";
+import { Timestamp, DocumentReference, DocumentData } from "firebase/firestore";
 
 export type UserType = {
   id: string;
-  calendar: firebase.firestore.DocumentReference<firebase.firestore.DocumentData>;
+  calendar: DocumentReference<DocumentData>;
   name: string;
   image: string;
-  createdAt: firebase.firestore.Timestamp;
-  deleteBy: firebase.firestore.Timestamp;
+  createdAt: Timestamp;
+  deleteBy: Timestamp;
   won: Array<string>;
 };
 
 export type CalendarType = {
   id: string;
   name: string;
-  createdAt: firebase.firestore.Timestamp;
-  deleteBy: firebase.firestore.Timestamp;
+  createdAt: Timestamp;
+  deleteBy: Timestamp;
   settings: {
     giftsPerUser?: number;
     fair?: boolean;

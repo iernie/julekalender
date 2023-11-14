@@ -1,5 +1,4 @@
 import React from "react";
-import firebase from "firebase/compat/app";
 import { useParams, useNavigate } from "react-router-dom";
 import { UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
@@ -17,12 +16,30 @@ import Title from "../../components/Title";
 import styles from "./Admin.module.scss";
 import { compareAsc } from "date-fns";
 import { Tooltip as ReactTooltip } from "react-tooltip";
+import {
+  Timestamp,
+  deleteDoc,
+  doc,
+  getFirestore,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+import {
+  deleteObject,
+  getDownloadURL,
+  getStorage,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
+import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 
 const Admin: React.FC = () => {
   const [confirm, setConfirm] = React.useState(true);
   const [{ calendar, users, user }, dispatch] = useState();
   const { name } = useParams() as { name: string };
   const navigate = useNavigate();
+  const db = getFirestore();
+  const storage = getStorage();
 
   const usedAvatars = React.useRef<Array<number>>([]);
 
@@ -38,8 +55,6 @@ const Admin: React.FC = () => {
     return getAvatar();
   };
 
-  const db = firebase.firestore();
-
   const deleteCalendar = async () => {
     if (confirm) {
       setConfirm(false);
@@ -53,22 +68,20 @@ const Admin: React.FC = () => {
     const ids = users?.map((user) => user.id) ?? [];
     ids.forEach(async (id) => {
       try {
-        await db.collection("users").doc(id).delete();
-        await firebase
-          .storage()
-          .ref()
-          .child(`${name.toLocaleLowerCase()}/${id}`)
-          .delete();
+        const userReference = doc(db, "users", id);
+        await deleteDoc(userReference);
+
+        const storageRef = ref(storage, `${name.toLocaleLowerCase()}/${id}`);
+        await deleteObject(storageRef);
       } catch (e) {}
     });
-    await db.collection("calendars").doc(name.toLocaleLowerCase()).delete();
+    const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
+    await deleteDoc(calendarReference);
     navigate("/");
   };
 
   const login = () => {
-    firebase
-      .auth()
-      .signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    signInWithPopup(getAuth(), new GoogleAuthProvider())
       .then((result) => {
         if (result.user) {
           setPublic(true);
@@ -84,25 +97,18 @@ const Admin: React.FC = () => {
       });
   };
 
-  const logout = () => {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {})
-      .catch(() => {});
+  const logout = async () => {
+    await getAuth().signOut();
   };
 
-  const setPublic = (isPublic: boolean) => {
+  const setPublic = async (isPublic: boolean) => {
     if (user) {
       const uid = calendar.owner ?? user.uid;
-      db.collection("calendars")
-        .doc(name.toLocaleLowerCase())
-        .update({
-          owner: uid,
-          public: isPublic,
-        })
-        .then(() => {})
-        .catch(() => {});
+      const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
+      await updateDoc(calendarReference, {
+        owner: uid,
+        public: isPublic,
+      });
     }
   };
 
@@ -195,15 +201,17 @@ const Admin: React.FC = () => {
             min={1}
             value={calendar.settings.giftsPerUser}
             placeholder="∞"
-            onChange={(e) => {
-              db.collection("calendars")
-                .doc(name.toLocaleLowerCase())
-                .update({
-                  "settings.giftsPerUser": e.target.value
-                    ? parseInt(e.target.value, 10)
-                    : "",
-                })
-                .then(() => {});
+            onChange={async (e) => {
+              const calendarReference = doc(
+                db,
+                "calendars",
+                name.toLocaleLowerCase(),
+              );
+              await updateDoc(calendarReference, {
+                "settings.giftsPerUser": e.target.value
+                  ? parseInt(e.target.value, 10)
+                  : "",
+              });
             }}
           />
         </div>
@@ -214,14 +222,15 @@ const Admin: React.FC = () => {
             type="checkbox"
             className={styles.checkbox}
             checked={calendar.settings.fair}
-            onChange={(e) => {
-              db.collection("calendars")
-                .doc(name.toLocaleLowerCase())
-                .update({
-                  "settings.fair": e.target.checked,
-                })
-                .then(() => {})
-                .catch(() => {});
+            onChange={async (e) => {
+              const calendarReference = doc(
+                db,
+                "calendars",
+                name.toLocaleLowerCase(),
+              );
+              await updateDoc(calendarReference, {
+                "settings.fair": e.target.checked,
+              });
             }}
           />
           <label htmlFor="fair" className={styles.label}>
@@ -235,14 +244,15 @@ const Admin: React.FC = () => {
             type="checkbox"
             className={styles.checkbox}
             checked={calendar.settings.ignoreWeekends}
-            onChange={(e) => {
-              db.collection("calendars")
-                .doc(name.toLocaleLowerCase())
-                .update({
-                  "settings.ignoreWeekends": e.target.checked,
-                })
-                .then(() => {})
-                .catch(() => {});
+            onChange={async (e) => {
+              const calendarReference = doc(
+                db,
+                "calendars",
+                name.toLocaleLowerCase(),
+              );
+              await updateDoc(calendarReference, {
+                "settings.ignoreWeekends": e.target.checked,
+              });
             }}
           />
           <label htmlFor="weekends" className={styles.label}>
@@ -259,10 +269,10 @@ const Admin: React.FC = () => {
                 compareAsc(a.createdAt.seconds, b.createdAt.seconds),
               )
               .map((user) => {
-                const ref = firebase
-                  .storage()
-                  .ref()
-                  .child(`${name.toLocaleLowerCase()}/${user.id}`);
+                const storageRef = ref(
+                  storage,
+                  `${name.toLocaleLowerCase()}/${user.id}`,
+                );
                 return (
                   <div className={styles.user} key={user.id}>
                     <div className={styles.avatar}>
@@ -274,20 +284,13 @@ const Admin: React.FC = () => {
                       <input
                         className={styles.upload}
                         type="file"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           if (e.target.files?.length === 1) {
-                            ref
-                              .put(e.target.files[0])
-                              .then(async () => {
-                                db.collection("users")
-                                  .doc(user.id)
-                                  .update({
-                                    image: await ref.getDownloadURL(),
-                                  })
-                                  .then(() => {})
-                                  .catch(() => {});
-                              })
-                              .catch(() => {});
+                            await uploadBytes(storageRef, e.target.files[0]);
+                            const userReference = doc(db, "users", user.id);
+                            await updateDoc(userReference, {
+                              image: await getDownloadURL(storageRef),
+                            });
                           }
                         }}
                       />
@@ -297,30 +300,20 @@ const Admin: React.FC = () => {
                       className={styles.username}
                       value={user.name}
                       placeholder="Navn..."
-                      onChange={(e) => {
-                        db.collection("users")
-                          .doc(user.id)
-                          .update({
-                            name: e.target.value,
-                          })
-                          .then(() => {})
-                          .catch(() => {});
+                      onChange={async (e) => {
+                        const userReference = doc(db, "users", user.id);
+                        await updateDoc(userReference, {
+                          name: e.target.value,
+                        });
                       }}
                     />
                     <FiX
                       size="1.5rem"
                       className={styles.deleteuser}
-                      onClick={() => {
-                        db.collection("users")
-                          .doc(user.id)
-                          .delete()
-                          .then(() => {
-                            ref
-                              .delete()
-                              .then(() => {})
-                              .catch(() => {});
-                          })
-                          .catch(() => {});
+                      onClick={async () => {
+                        const userReference = doc(db, "users", user.id);
+                        await deleteDoc(userReference);
+                        await deleteObject(storageRef);
                       }}
                     />
                   </div>
@@ -331,28 +324,26 @@ const Admin: React.FC = () => {
           className={styles.button}
           type="button"
           onClick={async () => {
+            const calendarReference = doc(
+              db,
+              "calendars",
+              name.toLocaleLowerCase(),
+            );
             const id = uuidv4();
-            db.collection("users")
-              .doc(id)
-              .set({
-                id,
-                name: "",
-                createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
-                deleteBy: firebase.firestore.Timestamp.fromDate(
-                  new Date(new Date().getFullYear() + 1, 1, 1),
-                ),
-                won: [],
-                calendar: db
-                  .collection("calendars")
-                  .doc(name.toLocaleLowerCase()),
-                image: await firebase
-                  .storage()
-                  .ref()
-                  .child(`avatars/${getAvatar()}.png`)
-                  .getDownloadURL(),
-              } as UserType)
-              .then(() => {})
-              .catch(() => {});
+            const storageRef = ref(storage, `avatars/${getAvatar()}.png`);
+            const downloadUrl = await getDownloadURL(storageRef);
+            const userReference = doc(db, "users", id);
+            await setDoc(userReference, {
+              id,
+              name: "",
+              createdAt: Timestamp.fromDate(new Date()),
+              deleteBy: Timestamp.fromDate(
+                new Date(new Date().getFullYear() + 1, 1, 1),
+              ),
+              won: [],
+              calendar: calendarReference,
+              image: downloadUrl,
+            } as UserType);
           }}
         >
           Legg til ny bruker

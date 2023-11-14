@@ -1,5 +1,21 @@
 import React from "react";
-import firebase from "firebase/compat/app";
+import {
+  Timestamp,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
+import {
+  User,
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Link, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
@@ -11,17 +27,14 @@ import styles from "./Welcome.module.scss";
 
 const Welcome: React.FC = () => {
   const [, dispatch] = useState();
-  const [user, setUser] = React.useState<firebase.User | null>(null);
+  const [user, setUser] = React.useState<User | null>(null);
   const [calendars, setCalendars] = React.useState<Array<CalendarType>>([]);
   const navigate = useNavigate();
   const [name, setName] = React.useState<string>();
-
-  const db = firebase.firestore();
+  const db = getFirestore();
 
   const login = () => {
-    firebase
-      .auth()
-      .signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    signInWithPopup(getAuth(), new GoogleAuthProvider())
       .then((result) => {
         if (!result.user) {
           dispatch({
@@ -36,69 +49,63 @@ const Welcome: React.FC = () => {
   };
 
   React.useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
+    getAuth().onAuthStateChanged((user) => {
       setUser(user);
     });
   }, []);
 
   React.useEffect(() => {
-    if (user) {
-      firebase
-        .firestore()
-        .collection("calendars")
-        .where("owner", "==", user.uid)
-        .onSnapshot((snapshot) => {
-          setCalendars(
-            snapshot.docs.map((doc) => ({ ...doc.data() }) as CalendarType),
-          );
+    const getCalendars = async () => {
+      if (user) {
+        const calendarReference = collection(db, "calendars");
+        const calendarQuery = query(
+          calendarReference,
+          where("owner", "==", user.uid),
+        );
+        const calendarSnap = await getDocs(calendarQuery);
+        const calendars = [] as Array<CalendarType>;
+
+        calendarSnap.forEach((calendar) => {
+          calendars.push(calendar.data() as CalendarType);
         });
-    }
+
+        setCalendars(calendars);
+      }
+    };
+    getCalendars();
   }, [user]);
 
-  const logout = () => {
-    firebase
-      .auth()
-      .signOut()
-      .then(() => {
-        setCalendars([]);
-      })
-      .catch(() => {});
+  const logout = async () => {
+    await getAuth().signOut();
+    setCalendars([]);
   };
 
-  const createCalendar = () => {
+  const createCalendar = async () => {
     dispatch({ type: SET_NOTIFICATION });
     if (name) {
-      db.collection("calendars")
-        .doc(name.toLocaleLowerCase())
-        .get()
-        .then((calendar) => {
-          if (calendar.exists) {
-            dispatch({
-              type: SET_NOTIFICATION,
-              payload: "Kalender finnes allerede",
-            });
-          } else {
-            db.collection("calendars")
-              .doc(name.toLocaleLowerCase())
-              .set({
-                id: uuidv4(),
-                createdAt: firebase.firestore.Timestamp.fromDate(new Date()),
-                deleteBy: firebase.firestore.Timestamp.fromDate(
-                  new Date(new Date().getFullYear() + 1, 1, 1),
-                ),
-                name,
-                public: true,
-                settings: {
-                  fair: true,
-                },
-              } as CalendarType)
-              .then(() => {
-                navigate(`/${name.toLocaleLowerCase()}`);
-              })
-              .catch(() => {});
-          }
-        })
-        .catch(() => {});
+      const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
+      const calendarSnap = await getDoc(calendarReference);
+
+      if (calendarSnap.exists()) {
+        dispatch({
+          type: SET_NOTIFICATION,
+          payload: "Kalender finnes allerede",
+        });
+      } else {
+        await setDoc(calendarReference, {
+          id: uuidv4(),
+          createdAt: Timestamp.fromDate(new Date()),
+          deleteBy: Timestamp.fromDate(
+            new Date(new Date().getFullYear() + 1, 1, 1),
+          ),
+          name,
+          public: true,
+          settings: {
+            fair: true,
+          },
+        } as CalendarType);
+        navigate(`/${name.toLocaleLowerCase()}`);
+      }
     } else {
       dispatch({
         type: SET_NOTIFICATION,
@@ -131,7 +138,7 @@ const Welcome: React.FC = () => {
       <div className={styles.form}>
         <input
           type="text"
-          placeholder="Navn..."
+          placeholder="Kalendernavn..."
           className={styles.input}
           onChange={(event) => setName(event.target.value)}
         />
@@ -141,7 +148,7 @@ const Welcome: React.FC = () => {
           className={styles.button}
           onClick={createCalendar}
         >
-          Legg til
+          Opprett
         </button>
       </div>
       {calendars.length > 0 && (

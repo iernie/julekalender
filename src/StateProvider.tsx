@@ -1,5 +1,5 @@
 import React from "react";
-import firebase from "firebase/compat/app";
+import { User } from "firebase/auth";
 import { CalendarType, UserType } from "./types";
 
 export const SET_NOTIFICATION = "SET_NOTIFICATION";
@@ -11,7 +11,7 @@ type State = {
   notification?: string;
   calendar: CalendarType;
   users?: Array<UserType>;
-  user?: firebase.User | null;
+  user?: User | null;
 };
 type Action =
   | {
@@ -28,7 +28,7 @@ type Action =
     }
   | {
       type: typeof SET_USER;
-      payload: firebase.User | null;
+      payload: User | null;
     };
 
 const intitialState: State = {

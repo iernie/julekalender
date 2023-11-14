@@ -1,5 +1,4 @@
 import React from "react";
-import firebase from "firebase/compat/app";
 import classnames from "classnames";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -10,15 +9,15 @@ import { useWindowSize } from "react-use";
 import styles from "./Open.module.scss";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { UserType } from "../../types";
+import { doc, getFirestore, updateDoc } from "firebase/firestore";
 
 const Open: React.FC = () => {
   const [{ calendar, users }, dispatch] = useState();
   const { name, day } = useParams() as { name: string; day: string };
   const navigate = useNavigate();
+  const db = getFirestore();
 
   const { width, height } = useWindowSize();
-
-  const db = firebase.firestore();
 
   const winner = users?.find((user) => user.won.indexOf(day) !== -1);
 
@@ -56,7 +55,7 @@ const Open: React.FC = () => {
     return <Navigate to={`/${name.toLocaleLowerCase()}`} />;
   }
 
-  const chooseWinner = () => {
+  const chooseWinner = async () => {
     setStep(0);
     const highestWins = Math.max(...users.map((user) => user.won.length));
     const lowestWins = Math.min(...users.map((user) => user.won.length));
@@ -97,15 +96,11 @@ const Open: React.FC = () => {
 
     refreshedWinners.current.push(newWinner.id);
 
-    db.collection("users")
-      .doc(newWinner.id)
-      .update({
-        won: [...newWinner.won, day],
-      })
-      .then(() => {
-        setStep(1);
-      })
-      .catch(() => {});
+    const userReference = doc(db, "users", newWinner.id);
+    await updateDoc(userReference, {
+      won: [...newWinner.won, day],
+    });
+    setStep(1);
   };
 
   const stepClass = classnames({
@@ -154,15 +149,14 @@ const Open: React.FC = () => {
             data-tooltip-id="refresh"
             size="1.5rem"
             className={styles.refresh}
-            onClick={() => {
-              setStep(0);
-              db.collection("users")
-                .doc(winner?.id)
-                .update({
+            onClick={async () => {
+              if (winner) {
+                setStep(0);
+                const userReference = doc(db, "users", winner.id);
+                await updateDoc(userReference, {
                   won: winner?.won.filter((d) => d !== day),
-                })
-                .then(() => {})
-                .catch(() => {});
+                });
+              }
             }}
           />
         )}

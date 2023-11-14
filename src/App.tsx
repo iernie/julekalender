@@ -7,37 +7,34 @@ import Welcome from "./pages/Welcome";
 import Calendar from "./pages/Calendar";
 import Admin from "./pages/Admin";
 import Open from "./pages/Open";
-import firebase from "firebase/compat/app";
-import "firebase/compat/analytics";
-import "firebase/compat/auth";
-import "firebase/compat/firestore";
-import "firebase/compat/storage";
+import { getApps, initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 import Snowfall from "react-snowfall";
 import { useWindowSize } from "react-use";
 import styles from "./App.module.scss";
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 function App() {
-  const [config, setConfig] = React.useState<Object>();
-
   const { width, height } = useWindowSize();
 
   React.useEffect(() => {
     fetch("/__/firebase/init.json")
       .then((res) => res.json())
       .then((config) => {
-        firebase.initializeApp(config);
-        setConfig(config);
+        const app = initializeApp(config);
+        getAuth(app);
+        getAnalytics(app);
+        getFirestore(app);
+        getStorage(app);
       })
       .catch((error) => {
         console.error(error);
       });
   }, []);
 
-  if (config && !firebase.apps.length) {
-    firebase.analytics();
-  }
-
-  if (!firebase.apps.length) {
+  if (!getApps().length) {
     return null;
   }
 

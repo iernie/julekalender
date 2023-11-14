@@ -1,5 +1,14 @@
 import React from "react";
-import firebase from "firebase/compat/app";
+import { getAuth } from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  doc,
+  getDoc,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { useNavigate, useParams } from "react-router-dom";
 import Loading from "./Loading";
@@ -11,9 +20,10 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
   const [{ calendar }, dispatch] = useState();
   const navigate = useNavigate();
   const { name } = useParams() as { name: string; day: string };
+  const db = getFirestore();
 
   React.useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
+    getAuth().onAuthStateChanged((user) => {
       dispatch({
         type: SET_USER,
         payload: user,
@@ -22,32 +32,38 @@ const StateContainer: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   React.useEffect(() => {
-    const db = firebase.firestore();
+    const getCalendar = async () => {
+      const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
 
-    const calendarReference = db
-      .collection("calendars")
-      .doc(name.toLocaleLowerCase());
+      const calendarSnap = await getDoc(calendarReference);
 
-    calendarReference.onSnapshot((calendar) => {
-      if (calendar.exists) {
+      if (calendarSnap.exists()) {
+        const calendar = calendarSnap.data() as CalendarType;
+
         dispatch({
           type: SET_CALENDAR,
-          payload: calendar.data() as CalendarType,
+          payload: calendar,
         });
       } else {
         navigate("/");
       }
-    });
 
-    db.collection("users")
-      .where("calendar", "==", calendarReference)
-      .onSnapshot((users) => {
-        dispatch({
-          type: SET_USERS,
-          payload: users.docs.map((user) => ({ ...user.data() }) as UserType),
-        });
+      const userReference = collection(db, "users");
+      const userQuery = query(
+        userReference,
+        where("calendar", "==", calendarReference),
+      );
+      const userSnap = await getDocs(userQuery);
+      const users = [] as Array<UserType>;
+      userSnap.forEach((doc) => {
+        users.push(doc.data() as UserType);
       });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      dispatch({
+        type: SET_USERS,
+        payload: users,
+      });
+    };
+    getCalendar();
   }, [name]);
 
   React.useEffect(() => {
