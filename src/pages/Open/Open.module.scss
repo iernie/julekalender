@@ -5,6 +5,13 @@
   cursor: pointer;
 }
 
+.users {
+  position: fixed;
+  top: 1rem;
+  right: 3rem;
+  cursor: pointer;
+}
+
 .avatar {
   height: 25rem;
   width: 25rem;
@@ -63,6 +70,27 @@
 
 .giftbox:hover .cover {
   transform: translateY(-0.5rem) rotate(-2deg);
+}
+
+.userlist {
+  flex-direction: column;
+  display: none;
+  position: absolute;
+  top: 2rem;
+  right: 3rem;
+  min-width: 10rem;
+  list-style: none;
+  padding: 1rem;
+  text-align: left;
+  border-radius: 0.125rem;
+  background: var(--grey-2);
+  gap: 0.5rem;
+}
+.userlist li input {
+  margin-right: 0.5rem;
+}
+.userlist.visible {
+  display: flex;
 }
 
 .box {

@@ -3,7 +3,7 @@ import classnames from "classnames";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Confetti from "react-confetti";
-import { FiHome, FiRotateCcw } from "react-icons/fi";
+import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
 import Title from "../../components/Title";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.scss";
@@ -23,6 +23,11 @@ const Open: React.FC = () => {
 
   const refreshedWinners = React.useRef<Array<UserType["id"]>>([]);
   const [step, setStep] = React.useState<number | null>(null);
+  const [showUsers, setShowUsers] = React.useState<boolean>(false);
+
+  // Hack
+  const [, updateState] = React.useState({});
+  const forceUpdate = React.useCallback(() => updateState({}), []);
 
   React.useEffect(() => {
     if (step === 1) {
@@ -42,6 +47,26 @@ const Open: React.FC = () => {
   }, [step]);
 
   React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent): void => {
+      if (
+        !["INPUT", "LABEL", "UL", "LI"].includes(
+          (e.target as HTMLElement).nodeName,
+        )
+      ) {
+        setShowUsers(false);
+      }
+    };
+
+    if (showUsers) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showUsers]);
+
+  React.useEffect(() => {
     if (winner && step === null) setStep(3);
   }, [step, winner]);
 
@@ -55,24 +80,28 @@ const Open: React.FC = () => {
     return <Navigate to={`/${name.toLocaleLowerCase()}`} />;
   }
 
+  const highestWins = Math.max(...users.map((user) => user.won.length));
+  const lowestWins = Math.min(...users.map((user) => user.won.length));
+
+  const viableUsers = users
+    .filter(
+      (user) =>
+        !calendar.settings.fair ||
+        highestWins === lowestWins ||
+        user.won.length < highestWins,
+    )
+    .filter(
+      (user) =>
+        !calendar.settings.giftsPerUser ||
+        user.won.length < calendar.settings.giftsPerUser,
+    );
+
   const chooseWinner = async () => {
     setStep(0);
-    const highestWins = Math.max(...users.map((user) => user.won.length));
-    const lowestWins = Math.min(...users.map((user) => user.won.length));
 
-    const filteredUsers = users
-      .filter((user) => refreshedWinners.current.indexOf(user.id) === -1)
-      .filter(
-        (user) =>
-          !calendar.settings.fair ||
-          highestWins === lowestWins ||
-          user.won.length < highestWins,
-      )
-      .filter(
-        (user) =>
-          !calendar.settings.giftsPerUser ||
-          user.won.length < calendar.settings.giftsPerUser,
-      );
+    const filteredUsers = viableUsers.filter(
+      (user) => refreshedWinners.current.indexOf(user.id) === -1,
+    );
 
     if (filteredUsers.length === 0) {
       dispatch({
@@ -118,9 +147,51 @@ const Open: React.FC = () => {
           navigate(`/${name.toLocaleLowerCase()}`);
         }}
       />
+      <FiUserMinus
+        data-tooltip-id="users"
+        size="1.5rem"
+        className={styles.users}
+        onClick={() => setShowUsers(true)}
+      />
       <ReactTooltip id="home" place="bottom">
         Hjem
       </ReactTooltip>
+      <ReactTooltip id="users" place="bottom">
+        Fjern brukere fra dagens trekning
+      </ReactTooltip>
+      <ul
+        className={classnames({
+          [styles.userlist]: true,
+          [styles.visible]: showUsers,
+        })}
+      >
+        {users.map((user) => {
+          return (
+            <li key={user.id}>
+              <label>
+                <input
+                  disabled={viableUsers.every((u) => u.id !== user.id)}
+                  type="checkbox"
+                  checked={
+                    viableUsers.some((u) => u.id === user.id) &&
+                    refreshedWinners.current.indexOf(user.id) === -1
+                  }
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      refreshedWinners.current =
+                        refreshedWinners.current.filter((u) => u !== user.id);
+                    } else {
+                      refreshedWinners.current.push(user.id);
+                    }
+                    forceUpdate();
+                  }}
+                />
+                {user.name}
+              </label>
+            </li>
+          );
+        })}
+      </ul>
       <div className={stepClass}>
         <div className={styles.winner}>
           <div className={styles.avatar}>
