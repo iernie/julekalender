@@ -32,9 +32,9 @@ const Calendar: React.FC = () => {
   }, []);
 
   const firstDayOfTheMonth =
-    getDay(new Date(getYear(new Date()), 11, 1)) === 0
+    getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) === 0
       ? 6
-      : getDay(new Date(getYear(new Date()), 11, 1)) - 1;
+      : getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) - 1;
 
   return (
     <div className={styles.calendar}>
@@ -63,8 +63,12 @@ const Calendar: React.FC = () => {
           );
           const ignoreWeekend =
             calendar.settings.ignoreWeekends &&
-            (getDay(new Date(getYear(new Date()), 11, day + 1)) === 0 ||
-              getDay(new Date(getYear(new Date()), 11, day + 1)) === 6);
+            (getDay(
+              new Date(getYear(calendar.createdAt.toDate()), 11, day + 1),
+            ) === 0 ||
+              getDay(
+                new Date(getYear(calendar.createdAt.toDate()), 11, day + 1),
+              ) === 6);
           const dayClass = classnames({
             [styles.day]: true,
             [styles.winner]: winner !== undefined,
