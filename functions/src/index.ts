@@ -1,8 +1,11 @@
-import * as functions from "firebase-functions";
+import {setGlobalOptions} from "firebase-functions/v2";
+import {onRequest} from "firebase-functions/v2/https";
 import * as express from "express";
 import * as cors from "cors";
 import {initializeApp} from "firebase-admin/app";
 import {getFirestore} from "firebase-admin/firestore";
+
+setGlobalOptions({region: "europe-west1"});
 
 initializeApp();
 const app = express();
@@ -67,4 +70,4 @@ app.get("/api/:name", async (request, response) => {
       });
 });
 
-exports.api = functions.region("europe-west1").https.onRequest(app);
+exports.api = onRequest(app);
