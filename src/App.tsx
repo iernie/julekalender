@@ -42,7 +42,7 @@ function App() {
 
   return (
     <StateProvider>
-      <div className={styles.con2tent}>
+      <div className={styles.content}>
         <Router>
           <Routes>
             <Route

@@ -14,7 +14,7 @@
   --grey-4: rgb(77, 79, 83);
 }
 
-html {
+:global(html) {
   position: relative;
   width: 100%;
   height: 100%;
@@ -22,7 +22,7 @@ html {
   font-size: 1rem;
 }
 
-body {
+:global(body) {
   margin: 0;
   font-family: "Roboto", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -31,13 +31,13 @@ body {
 }
 
 @media only screen and (max-width: 767px) {
-  body {
+  :global(body) {
     padding: 0 1rem;
   }
 }
 
-*,
-*:before,
-*:after {
+:global(*),
+:global(*):before,
+:global(*):after {
   box-sizing: inherit;
 }
