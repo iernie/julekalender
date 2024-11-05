@@ -11,7 +11,7 @@ import { getApps, initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import Snowfall from "react-snowfall";
 import { useWindowSize } from "react-use";
-import styles from "./App.module.scss";
+import styles from "./App.module.css";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -42,7 +42,7 @@ function App() {
 
   return (
     <StateProvider>
-      <div className={styles.content}>
+      <div className={styles.con2tent}>
         <Router>
           <Routes>
             <Route

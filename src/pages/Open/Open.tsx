@@ -1,12 +1,12 @@
 import React from "react";
-import classnames from "classnames";
+import classnames from "clsx";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
 import Title from "../../components/Title";
 import { useWindowSize } from "react-use";
-import styles from "./Open.module.scss";
+import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { UserType } from "../../types";
 import { doc, getFirestore, updateDoc } from "firebase/firestore";

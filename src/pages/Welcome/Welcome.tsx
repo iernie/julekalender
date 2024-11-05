@@ -24,7 +24,7 @@ import { CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import Title from "../../components/Title";
-import styles from "./Welcome.module.scss";
+import styles from "./Welcome.module.css";
 
 const Welcome: React.FC = () => {
   const [, dispatch] = useState();

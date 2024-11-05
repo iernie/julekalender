@@ -1,6 +1,6 @@
 import React from "react";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
-import styles from "./Notification.module.scss";
+import styles from "./Notification.module.css";
 
 const Notification: React.FC = () => {
   const [{ notification }, dispatch] = useState();

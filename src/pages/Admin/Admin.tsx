@@ -13,7 +13,7 @@ import {
   FiTrash,
 } from "react-icons/fi";
 import Title from "../../components/Title";
-import styles from "./Admin.module.scss";
+import styles from "./Admin.module.css";
 import { compareAsc } from "date-fns";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import {

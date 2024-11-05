@@ -1,11 +1,11 @@
 import React from "react";
-import classnames from "classnames";
+import classnames from "clsx";
 import { getDate, getMonth, getYear, getDay } from "date-fns";
 import { useState } from "../../StateProvider";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
 import Title from "../../components/Title";
-import styles from "./Calendar.module.scss";
+import styles from "./Calendar.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
 const Calendar: React.FC = () => {
