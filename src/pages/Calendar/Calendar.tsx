@@ -33,8 +33,8 @@ const Calendar: React.FC = () => {
 
   const firstDayOfTheMonth =
     getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) === 0
-      ? 6
-      : getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) - 1;
+      ? 7
+      : getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1));
 
   return (
     <div className={styles.calendar}>
@@ -51,9 +51,6 @@ const Calendar: React.FC = () => {
         Innstillinger
       </ReactTooltip>
       <div className={styles.days}>
-        {Array.from(Array(firstDayOfTheMonth).keys()).map((day) => (
-          <div className={styles.hidden}>{day}</div>
-        ))}
         {Array.from(Array(24).keys()).map((day) => {
           const open =
             hotkey ||
@@ -74,6 +71,7 @@ const Calendar: React.FC = () => {
             [styles.winner]: winner !== undefined,
             [styles.open]: open && !winner,
             [styles.ignore]: ignoreWeekend,
+            [styles.firstday]: day === 0,
           });
 
           if (open && !winner && !ignoreWeekend) {
@@ -89,7 +87,11 @@ const Calendar: React.FC = () => {
           }
 
           return (
-            <div key={day + 1} className={dayClass}>
+            <div
+              key={day + 1}
+              className={dayClass}
+              data-column-start={day === 0 ? firstDayOfTheMonth : undefined}
+            >
               {winner && (
                 <div className={styles.avatar}>
                   <img
