@@ -1,3 +1,7 @@
+:root {
+  --grid-column-start: 0;
+}
+
 .calendar {
 }
 
@@ -17,9 +21,9 @@
   justify-content: center;
 }
 
-@media only screen and (max-width: 824px) {
+@media only screen and (min-width: 824px) {
   .firstday {
-    grid-column-start: none !important;
+    grid-column-start: var(--grid-column-start);
   }
 }
 

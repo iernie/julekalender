@@ -86,13 +86,15 @@ const Calendar: React.FC = () => {
             );
           }
 
+          const css = {
+            "--grid-column-start": firstDayOfTheMonth,
+          } as React.CSSProperties;
+
           return (
             <div
               key={day + 1}
               className={dayClass}
-              style={{
-                gridColumnStart: day === 0 ? firstDayOfTheMonth : undefined,
-              }}
+              style={day === 0 ? css : undefined}
             >
               {winner && (
                 <div className={styles.avatar}>
