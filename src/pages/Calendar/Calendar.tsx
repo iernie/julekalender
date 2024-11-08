@@ -71,7 +71,7 @@ const Calendar: React.FC = () => {
             [styles.winner]: winner !== undefined,
             [styles.open]: open && !winner,
             [styles.ignore]: ignoreWeekend,
-            [styles.firstday]: day === 0,
+            [styles.first]: day === 0,
           });
 
           if (open && !winner && !ignoreWeekend) {
@@ -90,7 +90,9 @@ const Calendar: React.FC = () => {
             <div
               key={day + 1}
               className={dayClass}
-              data-column-start={day === 0 ? firstDayOfTheMonth : undefined}
+              style={{
+                gridColumnStart: day === 0 ? firstDayOfTheMonth : undefined,
+              }}
             >
               {winner && (
                 <div className={styles.avatar}>
