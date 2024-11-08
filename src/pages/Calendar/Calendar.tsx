@@ -71,7 +71,7 @@ const Calendar: React.FC = () => {
             [styles.winner]: winner !== undefined,
             [styles.open]: open && !winner,
             [styles.ignore]: ignoreWeekend,
-            [styles.first]: day === 0,
+            [styles.firstday]: day === 0,
           });
 
           if (open && !winner && !ignoreWeekend) {
