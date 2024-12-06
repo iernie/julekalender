@@ -10,7 +10,7 @@ import { Tooltip as ReactTooltip } from "react-tooltip";
 
 const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
-  const [today, setToday] = React.useState(getDate(new Date()));
+  const [today, setToday] = React.useState(getDate(new Date()) - 1);
   const navigate = useNavigate();
   const { name } = useParams() as { name: string };
   const [hotkey, setHotkey] = React.useState(false);
