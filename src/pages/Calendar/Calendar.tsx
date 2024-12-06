@@ -37,10 +37,12 @@ const Calendar: React.FC = () => {
       setToday(getDate(new Date()));
     };
 
-    window.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("visibilitychange", onVisibilityChange, false);
+    window.addEventListener("focus", onVisibilityChange, false);
 
     return () => {
       window.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", onVisibilityChange);
     };
   }, []);
 
