@@ -1,7 +1,7 @@
 import React from "react";
 import classnames from "clsx";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router";
 import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
 import Title from "../../components/Title";

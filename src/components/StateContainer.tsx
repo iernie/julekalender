@@ -9,7 +9,7 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
 import { CalendarType, UserType } from "../types";
 

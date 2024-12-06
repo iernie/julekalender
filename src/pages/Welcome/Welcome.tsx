@@ -18,7 +18,7 @@ import {
   Unsubscribe,
 } from "firebase/auth";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
 import { CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";

@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router";
 import { UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";

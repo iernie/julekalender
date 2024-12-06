@@ -2,7 +2,7 @@ import React from "react";
 import classnames from "clsx";
 import { getDate, getMonth, getYear, getDay } from "date-fns";
 import { useState } from "../../StateProvider";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router";
 import { FiSettings } from "react-icons/fi";
 import Title from "../../components/Title";
 import styles from "./Calendar.module.css";
@@ -10,6 +10,7 @@ import { Tooltip as ReactTooltip } from "react-tooltip";
 
 const Calendar: React.FC = () => {
   const [{ calendar, users }] = useState();
+  const [today, setToday] = React.useState(getDate(new Date()));
   const navigate = useNavigate();
   const { name } = useParams() as { name: string };
   const [hotkey, setHotkey] = React.useState(false);
@@ -28,6 +29,18 @@ const Calendar: React.FC = () => {
 
     return () => {
       window.removeEventListener("keydown", onKeyDown);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const onVisibilityChange = () => {
+      setToday(getDate(new Date()));
+    };
+
+    window.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
@@ -52,9 +65,7 @@ const Calendar: React.FC = () => {
       </ReactTooltip>
       <div className={styles.days}>
         {Array.from(Array(24).keys()).map((day) => {
-          const open =
-            hotkey ||
-            (day < getDate(new Date()) && getMonth(new Date()) === 11);
+          const open = hotkey || (day < today && getMonth(new Date()) === 11);
           const winner = users?.find(
             (user) => user.won.indexOf(`${day + 1}`) !== -1,
           );
