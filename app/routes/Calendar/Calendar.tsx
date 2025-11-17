@@ -4,15 +4,15 @@ import { getDate, getMonth, getYear, getDay } from "date-fns";
 import { useState } from "../../StateProvider";
 import { useNavigate, useParams, Link } from "react-router";
 import { FiSettings } from "react-icons/fi";
-import Title from "../../components/Title";
+import PageTitle from "../../components/PageTitle";
 import styles from "./Calendar.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
-const Calendar: React.FC = () => {
+export default function Calendar() {
   const [{ calendar, users }] = useState();
   const [today, setToday] = React.useState(getDate(new Date()));
   const navigate = useNavigate();
-  const { name } = useParams() as { name: string };
+  const { name } = useParams<{ name: string }>();
   const [hotkey, setHotkey] = React.useState(false);
 
   React.useEffect(() => {
@@ -46,6 +46,8 @@ const Calendar: React.FC = () => {
     };
   }, []);
 
+  if (!name) return null;
+
   const firstDayOfTheMonth =
     getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) === 0
       ? 7
@@ -53,7 +55,7 @@ const Calendar: React.FC = () => {
 
   return (
     <div className={styles.calendar}>
-      <Title>{calendar.name}</Title>
+      <PageTitle>{calendar.name}</PageTitle>
       <FiSettings
         data-tooltip-id="admin"
         size="1.5rem"
@@ -69,15 +71,15 @@ const Calendar: React.FC = () => {
         {Array.from(Array(24).keys()).map((day) => {
           const open = hotkey || (day < today && getMonth(new Date()) === 11);
           const winner = users?.find(
-            (user) => user.won.indexOf(`${day + 1}`) !== -1,
+            (user) => user.won.indexOf(`${day + 1}`) !== -1
           );
           const ignoreWeekend =
             calendar.settings.ignoreWeekends &&
             (getDay(
-              new Date(getYear(calendar.createdAt.toDate()), 11, day + 1),
+              new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)
             ) === 0 ||
               getDay(
-                new Date(getYear(calendar.createdAt.toDate()), 11, day + 1),
+                new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)
               ) === 6);
           const dayClass = classnames({
             [styles.day]: true,
@@ -125,6 +127,4 @@ const Calendar: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default Calendar;
+}

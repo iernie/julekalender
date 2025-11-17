@@ -1,6 +1,6 @@
 .admin {
   width: 100%;
-  max-width: 33rem;
+  max-width: 35rem;
   margin: 0 auto;
   text-align: left;
   padding-bottom: 2rem;
@@ -160,7 +160,7 @@
   text-align: center;
 }
 
-@media only screen and (max-width: 541px) {
+@media only screen and (max-width: 560px) {
   .user {
     flex: 1 1 100%;
     margin-right: 0;

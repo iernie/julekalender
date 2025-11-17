@@ -11,22 +11,22 @@ import {
   where,
 } from "firebase/firestore";
 import {
-  User,
+  type User,
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
-  Unsubscribe,
+  type Unsubscribe,
 } from "firebase/auth";
 import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Link, useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
-import { CalendarType } from "../../types";
+import { type CalendarType } from "../../types";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import Title from "../../components/Title";
+import PageTitle from "../../components/PageTitle";
 import styles from "./Welcome.module.css";
 
-const Welcome: React.FC = () => {
+export default function Welcome() {
   const [, dispatch] = useState();
   const [user, setUser] = React.useState<User | null>(null);
   const [calendars, setCalendars] = React.useState<Array<CalendarType>>([]);
@@ -62,12 +62,12 @@ const Welcome: React.FC = () => {
         const calendarReference = collection(db, "calendars");
         const calendarQuery = query(
           calendarReference,
-          where("owner", "==", user.uid),
+          where("owner", "==", user.uid)
         );
 
         unsub = onSnapshot(calendarQuery, (calendars) => {
           setCalendars(
-            calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType),
+            calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType)
           );
         });
       }
@@ -99,7 +99,7 @@ const Welcome: React.FC = () => {
           id: uuidv4(),
           createdAt: Timestamp.fromDate(new Date()),
           deleteBy: Timestamp.fromDate(
-            new Date(new Date().getFullYear() + 1, 1, 1),
+            new Date(new Date().getFullYear() + 1, 1, 1)
           ),
           owner: user?.uid ?? null,
           name,
@@ -138,7 +138,7 @@ const Welcome: React.FC = () => {
       <ReactTooltip id="login" place="bottom">
         {!user ? "Logg inn" : "Logg ut"}
       </ReactTooltip>
-      <Title>Julekalender as a Service</Title>
+      <PageTitle>Julekalender as a Service</PageTitle>
       <div className={styles.form}>
         <input
           type="text"
@@ -173,6 +173,4 @@ const Welcome: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default Welcome;
+}

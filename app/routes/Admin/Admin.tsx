@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
-import { UserType } from "../../types";
+import { type UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";
 import {
@@ -12,7 +12,6 @@ import {
   FiLogOut,
   FiTrash,
 } from "react-icons/fi";
-import Title from "../../components/Title";
 import styles from "./Admin.module.css";
 import { compareAsc } from "date-fns";
 import { Tooltip as ReactTooltip } from "react-tooltip";
@@ -33,16 +32,19 @@ import {
   uploadBytes,
 } from "firebase/storage";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import PageTitle from "../../components/PageTitle";
 
-const Admin: React.FC = () => {
+export default function Admin() {
   const [confirm, setConfirm] = React.useState(true);
   const [{ calendar, users, user }, dispatch] = useState();
-  const { name } = useParams() as { name: string };
+  const { name } = useParams<{ name: string }>();
   const navigate = useNavigate();
   const db = getFirestore();
   const storage = getStorage();
 
   const usedAvatars = React.useRef<Array<number>>([]);
+
+  if (!name) return null;
 
   const getAvatar = (): number => {
     if (usedAvatars.current.length === 20) {
@@ -108,16 +110,13 @@ const Admin: React.FC = () => {
     if (user) {
       const uid = calendar.owner ?? user.uid;
       const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
-      await updateDoc(calendarReference, {
-        owner: uid,
-        public: isPublic,
-      });
+      await updateDoc(calendarReference, { owner: uid, public: isPublic });
     }
   };
 
   return (
     <div>
-      <Title>Innstillinger</Title>
+      <PageTitle>Innstillinger</PageTitle>
       <ReactTooltip id="login" place="bottom">
         {!user ? "Logg inn" : "Logg ut"}
       </ReactTooltip>
@@ -208,7 +207,7 @@ const Admin: React.FC = () => {
               const calendarReference = doc(
                 db,
                 "calendars",
-                name.toLocaleLowerCase(),
+                name.toLocaleLowerCase()
               );
               await updateDoc(calendarReference, {
                 "settings.giftsPerUser": e.target.value
@@ -229,7 +228,7 @@ const Admin: React.FC = () => {
               const calendarReference = doc(
                 db,
                 "calendars",
-                name.toLocaleLowerCase(),
+                name.toLocaleLowerCase()
               );
               await updateDoc(calendarReference, {
                 "settings.fair": e.target.checked,
@@ -251,7 +250,7 @@ const Admin: React.FC = () => {
               const calendarReference = doc(
                 db,
                 "calendars",
-                name.toLocaleLowerCase(),
+                name.toLocaleLowerCase()
               );
               await updateDoc(calendarReference, {
                 "settings.ignoreWeekends": e.target.checked,
@@ -274,12 +273,12 @@ const Admin: React.FC = () => {
           {users &&
             users
               .sort((a, b) =>
-                compareAsc(a.createdAt.seconds, b.createdAt.seconds),
+                compareAsc(a.createdAt.seconds, b.createdAt.seconds)
               )
               .map((user, i) => {
                 const storageRef = ref(
                   storage,
-                  `${name.toLocaleLowerCase()}/${user.id}`,
+                  `${name.toLocaleLowerCase()}/${user.id}`
                 );
                 return (
                   <div className={styles.user} key={user.id}>
@@ -296,7 +295,7 @@ const Admin: React.FC = () => {
                           if (e.target.files?.length === 1) {
                             const uploadResult = await uploadBytes(
                               storageRef,
-                              e.target.files[0],
+                              e.target.files[0]
                             );
                             const userReference = doc(db, "users", user.id);
                             await updateDoc(userReference, {
@@ -344,7 +343,7 @@ const Admin: React.FC = () => {
             const calendarReference = doc(
               db,
               "calendars",
-              name.toLocaleLowerCase(),
+              name.toLocaleLowerCase()
             );
             const id = uuidv4();
             const storageRef = ref(storage, `avatars/${getAvatar()}.png`);
@@ -356,7 +355,7 @@ const Admin: React.FC = () => {
               name: "",
               createdAt: Timestamp.fromDate(new Date()),
               deleteBy: Timestamp.fromDate(
-                new Date(new Date().getFullYear() + 1, 1, 1),
+                new Date(new Date().getFullYear() + 1, 1, 1)
               ),
               won: [],
               calendar: calendarReference,
@@ -369,6 +368,4 @@ const Admin: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default Admin;
+}

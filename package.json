@@ -3,35 +3,33 @@
   "version": "2.0.0",
   "private": true,
   "dependencies": {
-    "@types/node": "^22.10.1",
-    "@types/react": "^18.3.14",
-    "@types/react-dom": "^18.3.2",
-    "@types/uuid": "^10.0.0",
-    "browserslist": "^4.24.2",
+    "@react-router/node": "^7.9.6",
+    "@react-router/serve": "^7.9.6",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
-    "firebase": "^11.0.2",
-    "lightningcss": "^1.28.2",
-    "lint-staged": "^15.2.10",
+    "firebase": "^12.6.0",
+    "isbot": "^5.1.32",
+    "lint-staged": "^16.2.7",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.4.2",
-    "react": "^18.3.1",
-    "react-confetti": "^6.1.0",
-    "react-dom": "^18.3.1",
-    "react-icons": "^5.4.0",
-    "react-router": "^7.0.2",
-    "react-snowfall": "^2.2.0",
-    "react-tooltip": "^5.28.0",
-    "react-use": "^17.5.1",
-    "typescript": "^5.7.2",
-    "uuid": "^11.0.3"
+    "prettier": "^3.6.2",
+    "react": "^19.2.0",
+    "react-confetti": "^6.4.0",
+    "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
+    "react-router": "^7.9.6",
+    "react-snowfall": "^2.3.0",
+    "react-tooltip": "^5.30.0",
+    "react-use": "^17.6.0",
+    "typescript": "^5.9.3",
+    "uuid": "^13.0.0"
   },
   "scripts": {
-    "start": "run-p --race start:firebase start:react",
-    "start:firebase": "firebase serve",
-    "start:react": "vite",
-    "build": "tsc && vite build",
-    "serve": "vite preview",
+    "dev": "run-p --race dev:firebase dev:react",
+    "dev:firebase": "firebase serve",
+    "dev:react": "react-router dev",
+    "build": "react-router build",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc",
     "prepare": "husky"
   },
   "eslintConfig": {
@@ -57,9 +55,12 @@
     ]
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
+    "@react-router/dev": "^7.9.6",
+    "@types/node": "^24",
+    "@types/react": "^19.2.6",
+    "@types/react-dom": "^19.2.3",
     "husky": "^9.1.7",
-    "typescript-plugin-css-modules": "^5.1.0",
-    "vite": "^6.0.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.2.4"
   }
 }

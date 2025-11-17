@@ -1,6 +1,6 @@
 import React from "react";
-import { User } from "firebase/auth";
-import { CalendarType, UserType } from "./types";
+import { type User } from "firebase/auth";
+import { type CalendarType, type UserType } from "./types";
 
 export const SET_NOTIFICATION = "SET_NOTIFICATION";
 export const SET_CALENDAR = "SET_CALENDAR";

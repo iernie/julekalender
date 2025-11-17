@@ -1,4 +1,8 @@
-import { Timestamp, DocumentReference, DocumentData } from "firebase/firestore";
+import {
+  Timestamp,
+  DocumentReference,
+  type DocumentData,
+} from "firebase/firestore";
 
 export type UserType = {
   id: string;

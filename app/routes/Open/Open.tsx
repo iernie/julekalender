@@ -4,22 +4,24 @@ import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Navigate, useNavigate, useParams } from "react-router";
 import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
-import Title from "../../components/Title";
+import PageTitle from "../../components/PageTitle";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { UserType } from "../../types";
+import { type UserType } from "../../types";
 import { doc, getFirestore, updateDoc } from "firebase/firestore";
 
-const Open: React.FC = () => {
+export default function Open() {
   const [{ calendar, users }, dispatch] = useState();
-  const { name, day } = useParams() as { name: string; day: string };
+  const { name, day } = useParams<{ name: string; day: string }>();
   const navigate = useNavigate();
   const db = getFirestore();
 
   const { width, height } = useWindowSize();
 
-  const winner = users?.find((user) => user.won.indexOf(day) !== -1);
+  const winner = day
+    ? users?.find((user) => user.won.indexOf(day) !== -1)
+    : undefined;
 
   const refreshedWinners = React.useRef<Array<UserType["id"]>>([]);
   const [step, setStep] = React.useState<number | null>(null);
@@ -35,7 +37,7 @@ const Open: React.FC = () => {
         () => {
           setStep(2);
         },
-        Math.random() * 6000 + 2000,
+        Math.random() * 6000 + 2000
       );
     }
 
@@ -50,7 +52,7 @@ const Open: React.FC = () => {
     const handleClickOutside = (e: MouseEvent): void => {
       if (
         !["INPUT", "LABEL", "UL", "LI"].includes(
-          (e.target as HTMLElement).nodeName,
+          (e.target as HTMLElement).nodeName
         )
       ) {
         setShowUsers(false);
@@ -70,13 +72,11 @@ const Open: React.FC = () => {
     if (winner && step === null) setStep(3);
   }, [step, winner]);
 
+  if (!name) return null;
   if (!users) return null;
 
   if (users.length === 0) {
-    dispatch({
-      type: SET_NOTIFICATION,
-      payload: "Fant ingen brukere",
-    });
+    dispatch({ type: SET_NOTIFICATION, payload: "Fant ingen brukere" });
     return <Navigate to={`/${name.toLocaleLowerCase()}`} />;
   }
 
@@ -88,26 +88,23 @@ const Open: React.FC = () => {
       (user) =>
         !calendar.settings.fair ||
         highestWins === lowestWins ||
-        user.won.length < highestWins,
+        user.won.length < highestWins
     )
     .filter(
       (user) =>
         !calendar.settings.giftsPerUser ||
-        user.won.length < calendar.settings.giftsPerUser,
+        user.won.length < calendar.settings.giftsPerUser
     );
 
   const chooseWinner = async () => {
     setStep(0);
 
     const filteredUsers = viableUsers.filter(
-      (user) => refreshedWinners.current.indexOf(user.id) === -1,
+      (user) => refreshedWinners.current.indexOf(user.id) === -1
     );
 
     if (filteredUsers.length === 0) {
-      dispatch({
-        type: SET_NOTIFICATION,
-        payload: "Tom for vinnere",
-      });
+      dispatch({ type: SET_NOTIFICATION, payload: "Tom for vinnere" });
       navigate(`/${name.toLocaleLowerCase()}`);
       return;
     }
@@ -126,19 +123,15 @@ const Open: React.FC = () => {
     refreshedWinners.current.push(newWinner.id);
 
     const userReference = doc(db, "users", newWinner.id);
-    await updateDoc(userReference, {
-      won: [...newWinner.won, day],
-    });
+    await updateDoc(userReference, { won: [...newWinner.won, day] });
     setStep(1);
   };
 
-  const stepClass = classnames({
-    [styles[`step-${step}`]]: true,
-  });
+  const stepClass = classnames({ [styles[`step-${step}`]]: true });
 
   return (
     <div>
-      <Title>Vinneren er...</Title>
+      <PageTitle>Vinneren er...</PageTitle>
       <FiHome
         data-tooltip-id="home"
         size="1.5rem"
@@ -245,6 +238,4 @@ const Open: React.FC = () => {
       </ReactTooltip>
     </div>
   );
-};
-
-export default Open;
+}

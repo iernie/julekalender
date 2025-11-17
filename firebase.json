@@ -1,58 +1,30 @@
 {
   "firestore": {
+    "database": "(default)",
+    "location": "eur3",
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
-  },
-  "hosting": {
-    "public": "dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [
-      {
-        "source": "/api{,/**}",
-        "function": "api"
-      },
-      {
-        "source": "/robots.txt",
-        "destination": "/robots.txt"
-      },
-      {
-        "source": "/manifest.json",
-        "destination": "/manifest.json"
-      },
-      {
-        "source": "/logo512.png",
-        "destination": "/logo512.png"
-      },
-      {
-        "source": "/logo192.png",
-        "destination": "/logo192.png"
-      },
-      {
-        "source": "/favicon.png",
-        "destination": "/favicon.png"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
   },
   "storage": {
     "rules": "storage.rules"
   },
-  "functions": {
-    "ignore": [
-      "node_modules",
-      ".git",
-      "firebase-debug.log",
-      "firebase-debug.*.log"
-    ],
-    "predeploy": [
-      "npm --prefix \"$RESOURCE_DIR\" run lint",
-      "npm --prefix \"$RESOURCE_DIR\" run build"
-    ],
-    "source": "functions"
-  },
+  "functions": [
+    {
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ],
+      "source": "functions"
+    }
+  ],
   "emulators": {
     "auth": {
       "port": 9099
@@ -73,5 +45,16 @@
       "port": 9199
     },
     "singleProjectMode": true
+  },
+  "apphosting": {
+    "backendId": "julekalender",
+    "rootDir": "/",
+    "ignore": [
+      "node_modules",
+      ".git",
+      "firebase-debug.log",
+      "firebase-debug.*.log",
+      "functions"
+    ]
   }
 }
