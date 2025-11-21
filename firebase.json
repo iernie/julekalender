@@ -60,12 +60,6 @@
       "firebase-debug.*.log",
       "functions"
     ],
-    "rewrites": [
-      {
-        "source": "/api{,/**}",
-        "function": "api"
-      }
-    ],
     "alwaysDeployFromSource": true
   }
 }
