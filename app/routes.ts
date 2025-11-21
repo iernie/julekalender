@@ -9,8 +9,8 @@ import {
 export default [
   layout("routes/App/App.tsx", [
     index("routes/Welcome/Welcome.tsx"),
-    layout("components/StateContainer.tsx", [
-      ...prefix(":name", [
+    ...prefix(":name", [
+      layout("components/StateContainer.tsx", [
         index("routes/Calendar/Calendar.tsx"),
         route("open/:day", "routes/Open/Open.tsx"),
         route("settings", "routes/Admin/Admin.tsx"),

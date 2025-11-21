@@ -7,13 +7,48 @@ import {
   query,
   where,
   onSnapshot,
+  getDoc,
+  getDocs,
 } from "firebase/firestore";
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { Outlet, useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
 import { type CalendarType, type UserType } from "../types";
+import { initializeServerApp } from "firebase/app";
+import type { Route } from "./+types/StateContainer";
 
-const StateContainer = () => {
+export async function loader({ params }: Route.LoaderArgs) {
+  const app = initializeServerApp(import.meta.env.FIREBASE_WEBAPP_CONFIG);
+  const db = getFirestore(app);
+
+  const calendarReference = doc(
+    db,
+    "calendars",
+    params.name!.toLocaleLowerCase()
+  );
+
+  const calendarSnapshot = await getDoc(calendarReference);
+
+  const userReference = collection(db, "users");
+  const userQuery = query(
+    userReference,
+    where("calendar", "==", calendarReference)
+  );
+
+  const userSnapshot = await getDocs(userQuery);
+
+  return {
+    calendar: calendarSnapshot.data(),
+    users: userSnapshot.docs.map((u) => u.data()),
+  };
+}
+
+export function HydrateFallback() {
+  return <Loading />;
+}
+
+export default function StateContainer({ loaderData }: Route.ComponentProps) {
+  console.log(loaderData);
   const [{ calendar }, dispatch] = useState();
   const navigate = useNavigate();
   const { name } = useParams<{ name: string }>();
@@ -70,6 +105,4 @@ const StateContainer = () => {
       <Outlet />
     </>
   );
-};
-
-export default StateContainer;
+}
