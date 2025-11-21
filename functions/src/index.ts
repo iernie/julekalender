@@ -7,12 +7,12 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import { setGlobalOptions } from "firebase-functions/v2";
-import { onRequest } from "firebase-functions/v2/https";
+import {setGlobalOptions} from "firebase-functions/v2";
+import {onRequest} from "firebase-functions/v2/https";
 import express from "express";
 import cors from "cors";
-import { initializeApp } from "firebase-admin/app";
-import { getFirestore } from "firebase-admin/firestore";
+import {initializeApp} from "firebase-admin/app";
+import {getFirestore} from "firebase-admin/firestore";
 
 // Start writing functions
 // https://firebase.google.com/docs/functions/typescript
@@ -28,20 +28,20 @@ import { getFirestore } from "firebase-admin/firestore";
 // In the v1 API, each function can only serve one request per container, so
 // this will be the maximum concurrent request count.
 
-setGlobalOptions({ maxInstances: 10, region: "europe-west1" });
+setGlobalOptions({maxInstances: 10, region: "europe-west1"});
 
 initializeApp();
 const app = express();
-app.use(cors({ origin: "*" }));
+app.use(cors({origin: "*"}));
 
 app.get("/api", (_, response) => {
-  response.json({ error: "Kalendernavn mangler" });
+  response.json({error: "Kalendernavn mangler"});
   return;
 });
 
 app.get("/api/:name", async (request, response) => {
-  const { name } = request.params;
-  const { apiKey } = request.query;
+  const {name} = request.params;
+  const {apiKey} = request.query;
 
   const calendarReference = getFirestore()
     .collection("calendars")
@@ -49,11 +49,11 @@ app.get("/api/:name", async (request, response) => {
 
   const calendar = (await calendarReference.get()).data();
   if (!calendar) {
-    response.json({ error: "Kalender ikke funnet" });
+    response.json({error: "Kalender ikke funnet"});
     return;
   }
   if (calendar.public === false && calendar.owner !== apiKey) {
-    response.json({ error: "Mangler tilgang til kalender" });
+    response.json({error: "Mangler tilgang til kalender"});
     return;
   }
 
@@ -63,7 +63,7 @@ app.get("/api/:name", async (request, response) => {
     .get()
     .then((users) => {
       if (users.empty) {
-        response.json({ error: "Ingen brukere funnet" });
+        response.json({error: "Ingen brukere funnet"});
         return;
       }
 
