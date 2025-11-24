@@ -5,6 +5,14 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
+  "hosting": {
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "api"
+      }
+    ]
+  },
   "storage": {
     "rules": "storage.rules",
     "bucket": "julekal.appspot.com"
@@ -60,6 +68,6 @@
       "firebase-debug.*.log",
       "functions"
     ],
-    "alwaysDeployFromSource": true
+    "alwaysDeployFromSource": false
   }
 }

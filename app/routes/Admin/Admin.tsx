@@ -185,7 +185,7 @@ export default function Admin() {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`/api/${name.toLocaleLowerCase()}${
+            href={`https://api.kalender.christmas/api/${name.toLocaleLowerCase()}${
               user ? `?apiKey=${user.uid}` : ""
             }`}
           >

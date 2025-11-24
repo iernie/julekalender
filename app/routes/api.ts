@@ -7,9 +7,6 @@ export async function loader({ params, request }: Route.LoaderArgs) {
       ? new URLSearchParams(searchParams[1]).get("apiKey")
       : "";
   return fetch(
-    "https://api-ozorugzyza-ew.a.run.app/api/" +
-      params.name +
-      "?apiKey=" +
-      apiKey
+    "https://api.kalender.christmas/api/" + params.name + "?apiKey=" + apiKey
   );
 }
