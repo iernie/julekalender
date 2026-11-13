@@ -11,6 +11,7 @@ import {
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { Outlet, useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
+import { toCalendarId } from "../helpers";
 import { type CalendarType, type UserType } from "../types";
 
 const StateContainer = () => {
@@ -20,18 +21,19 @@ const StateContainer = () => {
   const db = getFirestore();
 
   React.useEffect(() => {
-    getAuth().onAuthStateChanged((user) => {
+    return getAuth().onAuthStateChanged((user) => {
       dispatch({ type: SET_USER, payload: user });
     });
-  }, []);
+  }, [dispatch]);
 
   React.useEffect(() => {
-    let unsub1: Unsubscribe | null;
-    let unsub2: Unsubscribe | null;
-    const getCalendar = async () => {
-      const calendarReference = doc(db, "calendars", name!.toLocaleLowerCase());
+    if (!name) return;
 
-      unsub1 = onSnapshot(calendarReference, (calendarSnap) => {
+    const calendarReference = doc(db, "calendars", toCalendarId(name));
+
+    const unsubCalendar = onSnapshot(
+      calendarReference,
+      (calendarSnap) => {
         if (calendarSnap.exists()) {
           dispatch({
             type: SET_CALENDAR,
@@ -40,27 +42,33 @@ const StateContainer = () => {
         } else {
           navigate("/");
         }
-      });
+      },
+      () => navigate("/")
+    );
 
-      const userReference = collection(db, "users");
-      const userQuery = query(
-        userReference,
-        where("calendar", "==", calendarReference)
-      );
+    const userQuery = query(
+      collection(db, "users"),
+      where("calendar", "==", calendarReference)
+    );
 
-      unsub2 = onSnapshot(userQuery, (users) => {
+    const unsubUsers: Unsubscribe = onSnapshot(
+      userQuery,
+      (users) => {
         dispatch({
           type: SET_USERS,
           payload: users.docs.map((doc) => ({ ...doc.data() }) as UserType),
         });
-      });
-    };
-    getCalendar();
+      },
+      () => {
+        dispatch({ type: SET_USERS, payload: [] });
+      }
+    );
+
     return () => {
-      if (unsub1) unsub1();
-      if (unsub2) unsub2();
+      unsubCalendar();
+      unsubUsers();
     };
-  }, [name]);
+  }, [db, dispatch, name, navigate]);
 
   if (Object.keys(calendar).length === 0) return <Loading />;
 

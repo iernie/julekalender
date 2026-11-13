@@ -41,6 +41,12 @@
   margin-top: 4rem;
 }
 
+.hint {
+  margin-top: 2rem;
+  color: var(--grey-4);
+  font-size: 0.875rem;
+}
+
 .link {
   display: inline-block;
   margin: 0 1rem;

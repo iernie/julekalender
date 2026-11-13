@@ -7,6 +7,8 @@ import {
 export type UserType = {
   id: string;
   calendar: DocumentReference<DocumentData>;
+  calendarId: string;
+  owner: string;
   name: string;
   image: string;
   createdAt: Timestamp;
@@ -24,6 +26,6 @@ export type CalendarType = {
     fair?: boolean;
     ignoreWeekends?: boolean;
   };
-  owner?: string | null;
-  public?: boolean;
+  owner: string;
+  public: boolean;
 };

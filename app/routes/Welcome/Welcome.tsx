@@ -14,6 +14,8 @@ import {
   type User,
   getAuth,
   GoogleAuthProvider,
+  linkWithPopup,
+  signInAnonymously,
   signInWithPopup,
   type Unsubscribe,
 } from "firebase/auth";
@@ -21,9 +23,11 @@ import { useState, SET_NOTIFICATION } from "../../StateProvider";
 import { Link, useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
 import { type CalendarType } from "../../types";
+import { expiresAt, isValidCalendarId, toCalendarId } from "../../helpers";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import PageTitle from "../../components/PageTitle";
+import IconButton from "../../components/IconButton";
 import styles from "./Welcome.module.css";
 
 export default function Welcome() {
@@ -31,112 +35,135 @@ export default function Welcome() {
   const [user, setUser] = React.useState<User | null>(null);
   const [calendars, setCalendars] = React.useState<Array<CalendarType>>([]);
   const navigate = useNavigate();
-  const [name, setName] = React.useState<string>();
+  const [name, setName] = React.useState<string>("");
   const db = getFirestore();
 
-  const login = () => {
-    signInWithPopup(getAuth(), new GoogleAuthProvider())
-      .then((result) => {
-        if (!result.user) {
-          dispatch({
-            type: SET_NOTIFICATION,
-            payload: "Klarte ikke logge inn.",
-          });
+  const isAnonymous = user?.isAnonymous ?? true;
+
+  const login = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    try {
+      // Upgrade the anonymous account so calendars created before signing in
+      // stay owned by the same uid.
+      if (auth.currentUser?.isAnonymous) {
+        await linkWithPopup(auth.currentUser, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (
+        code === "auth/credential-already-in-use" ||
+        code === "auth/email-already-in-use"
+      ) {
+        // The Google account already exists; sign into it instead. Calendars
+        // created under the throwaway anonymous uid are left behind.
+        try {
+          await signInWithPopup(auth, provider);
+          return;
+        } catch {
+          // fall through to the generic failure notice
         }
-      })
-      .catch(() => {
-        dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke logge inn." });
-      });
+      }
+      if (code === "auth/popup-closed-by-user") return;
+      dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke logge inn." });
+    }
   };
 
   React.useEffect(() => {
-    getAuth().onAuthStateChanged((user) => {
+    return getAuth().onAuthStateChanged((user) => {
       setUser(user);
     });
   }, []);
 
   React.useEffect(() => {
-    let unsub: Unsubscribe | null;
-    const getCalendars = async () => {
-      if (user) {
-        const calendarReference = collection(db, "calendars");
-        const calendarQuery = query(
-          calendarReference,
-          where("owner", "==", user.uid)
+    let unsub: Unsubscribe | null = null;
+    if (user) {
+      const calendarQuery = query(
+        collection(db, "calendars"),
+        where("owner", "==", user.uid)
+      );
+      unsub = onSnapshot(calendarQuery, (calendars) => {
+        setCalendars(
+          calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType)
         );
-
-        unsub = onSnapshot(calendarQuery, (calendars) => {
-          setCalendars(
-            calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType)
-          );
-        });
-      }
-    };
-    getCalendars();
+      });
+    } else {
+      setCalendars([]);
+    }
     return () => {
       if (unsub) unsub();
     };
-  }, [user]);
+  }, [db, user]);
 
   const logout = async () => {
-    await getAuth().signOut();
+    const auth = getAuth();
+    await auth.signOut();
     setCalendars([]);
+    // Keep an identity around so the user can still create calendars.
+    await signInAnonymously(auth);
   };
 
   const createCalendar = async () => {
     dispatch({ type: SET_NOTIFICATION });
-    if (name) {
-      const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
-      const calendarSnap = await getDoc(calendarReference);
 
-      if (calendarSnap.exists()) {
-        dispatch({
-          type: SET_NOTIFICATION,
-          payload: "Kalender finnes allerede",
-        });
-      } else {
-        await setDoc(calendarReference, {
-          id: uuidv4(),
-          createdAt: Timestamp.fromDate(new Date()),
-          deleteBy: Timestamp.fromDate(
-            new Date(new Date().getFullYear() + 1, 1, 1)
-          ),
-          owner: user?.uid ?? null,
-          name,
-          public: true,
-          settings: {
-            fair: true,
-          },
-        } as CalendarType);
-        navigate(`/${name.toLocaleLowerCase()}`);
-      }
-    } else {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      dispatch({ type: SET_NOTIFICATION, payload: "Navn kan ikke være tomt" });
+      return;
+    }
+
+    const calendarId = toCalendarId(trimmed);
+    if (!isValidCalendarId(calendarId)) {
       dispatch({
         type: SET_NOTIFICATION,
-        payload: "Navn kan ikke være tomt",
+        payload:
+          "Navnet må være 2-40 tegn og kan kun inneholde bokstaver, tall, - og _",
       });
+      return;
     }
+
+    const uid = getAuth().currentUser?.uid;
+    if (!uid) {
+      dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke logge inn." });
+      return;
+    }
+
+    const calendarReference = doc(db, "calendars", calendarId);
+    const calendarSnap = await getDoc(calendarReference);
+
+    if (calendarSnap.exists()) {
+      dispatch({ type: SET_NOTIFICATION, payload: "Kalender finnes allerede" });
+      return;
+    }
+
+    await setDoc(calendarReference, {
+      id: uuidv4(),
+      createdAt: Timestamp.fromDate(new Date()),
+      deleteBy: expiresAt(),
+      owner: uid,
+      name: trimmed,
+      public: true,
+      settings: {
+        fair: true,
+      },
+    } as CalendarType);
+    navigate(`/${calendarId}`);
   };
 
   return (
     <div className={styles.welcome}>
-      {!user ? (
-        <FiLogIn
-          data-tooltip-id="login"
-          size="1.5rem"
-          className={styles.login}
-          onClick={login}
-        />
-      ) : (
-        <FiLogOut
-          data-tooltip-id="login"
-          size="1.5rem"
-          className={styles.login}
-          onClick={logout}
-        />
-      )}
+      <IconButton
+        data-tooltip-id="login"
+        className={styles.login}
+        label={isAnonymous ? "Logg inn" : "Logg ut"}
+        onClick={isAnonymous ? login : logout}
+      >
+        {isAnonymous ? <FiLogIn size="1.5rem" /> : <FiLogOut size="1.5rem" />}
+      </IconButton>
       <ReactTooltip id="login" place="bottom">
-        {!user ? "Logg inn" : "Logg ut"}
+        {isAnonymous ? "Logg inn" : "Logg ut"}
       </ReactTooltip>
       <PageTitle>Julekalender as a Service</PageTitle>
       <div className={styles.form}>
@@ -144,10 +171,11 @@ export default function Welcome() {
           type="text"
           placeholder="Kalendernavn..."
           className={styles.input}
+          value={name}
           onChange={(event) => setName(event.target.value)}
         />
         <button
-          disabled={!name || name === ""}
+          disabled={name.trim() === ""}
           type="button"
           className={styles.button}
           onClick={createCalendar}
@@ -155,6 +183,11 @@ export default function Welcome() {
           Opprett
         </button>
       </div>
+      {isAnonymous && (
+        <p className={styles.hint}>
+          Logg inn med Google for å beholde kalenderne dine på tvers av enheter.
+        </p>
+      )}
       {calendars.length > 0 && (
         <>
           <h2 className={styles.calendars}>Dine kalendere</h2>
@@ -163,7 +196,7 @@ export default function Welcome() {
               <Link
                 key={calendar.name}
                 className={styles.link}
-                to={`/${calendar.name.toLocaleLowerCase()}`}
+                to={`/${toCalendarId(calendar.name)}`}
               >
                 {calendar.name}
               </Link>
