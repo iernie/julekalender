@@ -5,17 +5,19 @@ import { Navigate, useNavigate, useParams } from "react-router";
 import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
 import PageTitle from "../../components/PageTitle";
+import IconButton from "../../components/IconButton";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { type UserType } from "../../types";
-import { doc, getFirestore, updateDoc } from "firebase/firestore";
+import { toCalendarId } from "../../helpers";
+import { getFunctions, httpsCallable } from "firebase/functions";
+
+const REGION = "europe-west1";
 
 export default function Open() {
   const [{ calendar, users }, dispatch] = useState();
   const { name, day } = useParams<{ name: string; day: string }>();
   const navigate = useNavigate();
-  const db = getFirestore();
 
   const { width, height } = useWindowSize();
 
@@ -23,29 +25,17 @@ export default function Open() {
     ? users?.find((user) => user.won.indexOf(day) !== -1)
     : undefined;
 
-  const refreshedWinners = React.useRef<Array<UserType["id"]>>([]);
+  const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(
+    () => new Set()
+  );
   const [step, setStep] = React.useState<number | null>(null);
   const [showUsers, setShowUsers] = React.useState<boolean>(false);
 
-  // Hack
-  const [, updateState] = React.useState({});
-  const forceUpdate = React.useCallback(() => updateState({}), []);
-
   React.useEffect(() => {
-    if (step === 1) {
-      setTimeout(
-        () => {
-          setStep(2);
-        },
-        Math.random() * 6000 + 2000
-      );
-    }
-
-    if (step === 2) {
-      setTimeout(() => {
-        setStep(3);
-      }, 400);
-    }
+    if (step !== 1 && step !== 2) return;
+    const delay = step === 1 ? Math.random() * 6000 + 2000 : 400;
+    const timer = setTimeout(() => setStep(step + 1), delay);
+    return () => clearTimeout(timer);
   }, [step]);
 
   React.useEffect(() => {
@@ -77,12 +67,14 @@ export default function Open() {
 
   if (users.length === 0) {
     dispatch({ type: SET_NOTIFICATION, payload: "Fant ingen brukere" });
-    return <Navigate to={`/${name.toLocaleLowerCase()}`} />;
+    return <Navigate to={`/${toCalendarId(name)}`} />;
   }
 
   const highestWins = Math.max(...users.map((user) => user.won.length));
   const lowestWins = Math.min(...users.map((user) => user.won.length));
 
+  // Mirrors the authoritative filtering in the drawWinner callable; used only
+  // to render the checkbox list.
   const viableUsers = users
     .filter(
       (user) =>
@@ -96,35 +88,48 @@ export default function Open() {
         user.won.length < calendar.settings.giftsPerUser
     );
 
+  const notify = (error: unknown, fallback: string) => {
+    const message =
+      (error as { message?: string })?.message?.replace(/^.*?: /, "") ??
+      fallback;
+    dispatch({ type: SET_NOTIFICATION, payload: message || fallback });
+  };
+
   const chooseWinner = async () => {
+    if (!day) return;
     setStep(0);
+    try {
+      const draw = httpsCallable<
+        { calendarId: string; day: string; excluded: Array<string> },
+        { id: string; name: string; image: string }
+      >(getFunctions(undefined, REGION), "drawWinner");
 
-    const filteredUsers = viableUsers.filter(
-      (user) => refreshedWinners.current.indexOf(user.id) === -1
-    );
-
-    if (filteredUsers.length === 0) {
-      dispatch({ type: SET_NOTIFICATION, payload: "Tom for vinnere" });
-      navigate(`/${name.toLocaleLowerCase()}`);
-      return;
-    }
-
-    const newWinner =
-      filteredUsers[Math.floor(Math.random() * filteredUsers.length)];
-
-    if (!newWinner) {
-      dispatch({
-        type: SET_NOTIFICATION,
-        payload: "Klarte ikke velge ny vinner",
+      await draw({
+        calendarId: toCalendarId(name),
+        day,
+        excluded: [...excluded],
       });
-      return;
+      setStep(1);
+    } catch (error) {
+      setStep(null);
+      notify(error, "Klarte ikke velge ny vinner");
     }
+  };
 
-    refreshedWinners.current.push(newWinner.id);
-
-    const userReference = doc(db, "users", newWinner.id);
-    await updateDoc(userReference, { won: [...newWinner.won, day] });
-    setStep(1);
+  const resetWinner = async () => {
+    if (!day) return;
+    setStep(0);
+    try {
+      const reset = httpsCallable<{ calendarId: string; day: string }, unknown>(
+        getFunctions(undefined, REGION),
+        "resetWinner"
+      );
+      await reset({ calendarId: toCalendarId(name), day });
+      setStep(null);
+    } catch (error) {
+      setStep(3);
+      notify(error, "Klarte ikke nullstille vinner");
+    }
   };
 
   const stepClass = classnames({ [styles[`step-${step}`]]: true });
@@ -132,20 +137,22 @@ export default function Open() {
   return (
     <div>
       <PageTitle>Vinneren er...</PageTitle>
-      <FiHome
+      <IconButton
         data-tooltip-id="home"
-        size="1.5rem"
         className={styles.settings}
-        onClick={() => {
-          navigate(`/${name.toLocaleLowerCase()}`);
-        }}
-      />
-      <FiUserMinus
+        label="Hjem"
+        onClick={() => navigate(`/${toCalendarId(name)}`)}
+      >
+        <FiHome size="1.5rem" />
+      </IconButton>
+      <IconButton
         data-tooltip-id="users"
-        size="1.5rem"
         className={styles.users}
+        label="Fjern brukere fra dagens trekning"
         onClick={() => setShowUsers(true)}
-      />
+      >
+        <FiUserMinus size="1.5rem" />
+      </IconButton>
       <ReactTooltip id="home" place="bottom">
         Hjem
       </ReactTooltip>
@@ -167,16 +174,18 @@ export default function Open() {
                   type="checkbox"
                   checked={
                     viableUsers.some((u) => u.id === user.id) &&
-                    refreshedWinners.current.indexOf(user.id) === -1
+                    !excluded.has(user.id)
                   }
                   onChange={(e) => {
-                    if (e.target.checked) {
-                      refreshedWinners.current =
-                        refreshedWinners.current.filter((u) => u !== user.id);
-                    } else {
-                      refreshedWinners.current.push(user.id);
-                    }
-                    forceUpdate();
+                    setExcluded((current) => {
+                      const next = new Set(current);
+                      if (e.target.checked) {
+                        next.delete(user.id);
+                      } else {
+                        next.add(user.id);
+                      }
+                      return next;
+                    });
                   }}
                 />
                 {user.name}
@@ -198,31 +207,28 @@ export default function Open() {
           <h1>{winner?.name}</h1>
         </div>
         {(step === null || step < 3) && (
-          <div
+          <button
+            type="button"
             className={styles.giftbox}
-            onClick={() => (step !== 1 ? chooseWinner() : () => {})}
+            aria-label="Trekk dagens vinner"
+            disabled={step === 0 || step === 1}
+            onClick={chooseWinner}
           >
             <div className={styles.cover}>
               <div className={styles.bow}></div>
             </div>
             <div className={styles.box}></div>
-          </div>
+          </button>
         )}
-        {step !== null && step === 3 && (
-          <FiRotateCcw
+        {step === 3 && (
+          <IconButton
             data-tooltip-id="refresh"
-            size="1.5rem"
             className={styles.refresh}
-            onClick={async () => {
-              if (winner) {
-                setStep(0);
-                const userReference = doc(db, "users", winner.id);
-                await updateDoc(userReference, {
-                  won: winner?.won.filter((d) => d !== day),
-                });
-              }
-            }}
-          />
+            label="Nullstill vinner"
+            onClick={resetWinner}
+          >
+            <FiRotateCcw size="1.5rem" />
+          </IconButton>
         )}
       </div>
       {step !== 0 && (

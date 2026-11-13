@@ -18,6 +18,7 @@ import { Tooltip as ReactTooltip } from "react-tooltip";
 import {
   Timestamp,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   getFirestore,
@@ -31,8 +32,26 @@ import {
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  getAuth,
+  linkWithPopup,
+  signInAnonymously,
+  signInWithPopup,
+} from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import PageTitle from "../../components/PageTitle";
+import IconButton from "../../components/IconButton";
+import { expiresAt, toCalendarId } from "../../helpers";
+
+const REGION = "europe-west1";
+const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+const ALLOWED_AVATAR_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+];
 
 export default function Admin() {
   const [confirm, setConfirm] = React.useState(true);
@@ -43,8 +62,26 @@ export default function Admin() {
   const storage = getStorage();
 
   const usedAvatars = React.useRef<Array<number>>([]);
+  const nameTimers = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map()
+  );
+  const [draftNames, setDraftNames] = React.useState<Record<string, string>>(
+    {}
+  );
+
+  React.useEffect(() => {
+    const timers = nameTimers.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
 
   if (!name) return null;
+
+  const calendarId = toCalendarId(name);
+  const isAnonymous = user?.isAnonymous ?? true;
+  const isOwner = Boolean(user && calendar.owner === user.uid);
 
   const getAvatar = (): number => {
     if (usedAvatars.current.length === 20) {
@@ -58,126 +95,142 @@ export default function Admin() {
     return getAvatar();
   };
 
+  const notify = (payload: string) =>
+    dispatch({ type: SET_NOTIFICATION, payload });
+
   const deleteCalendar = async () => {
     if (confirm) {
       setConfirm(false);
-      dispatch({
-        type: SET_NOTIFICATION,
-        payload:
-          "Er du sikker på at du vil slette kalenderen og alle brukerene? Trykk en gang til.",
-      });
+      notify(
+        "Er du sikker på at du vil slette kalenderen og alle brukerene? Trykk en gang til."
+      );
       return;
     }
-    const ids = users?.map((user) => user.id) ?? [];
-    ids.forEach(async (id) => {
-      const userReference = doc(db, "users", id);
-      const userSnap = await getDoc(userReference);
-      if (userSnap.exists()) {
-        const storageRef = ref(storage, `${name.toLocaleLowerCase()}/${id}`);
-        if (userSnap.data().image.includes(storageRef.name)) {
-          await deleteObject(storageRef);
-        }
-        await deleteDoc(userReference);
-      }
-    });
-    const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
-    await deleteDoc(calendarReference);
-    navigate("/");
+    try {
+      const remove = httpsCallable<{ calendarId: string }, unknown>(
+        getFunctions(undefined, REGION),
+        "deleteCalendar"
+      );
+      await remove({ calendarId });
+      navigate("/");
+    } catch {
+      setConfirm(true);
+      notify("Klarte ikke slette kalenderen");
+    }
   };
 
-  const login = () => {
-    signInWithPopup(getAuth(), new GoogleAuthProvider())
-      .then((result) => {
-        if (result.user) {
-          setPublic(true);
-        } else {
-          dispatch({
-            type: SET_NOTIFICATION,
-            payload: "Klarte ikke logge inn.",
-          });
+  const login = async () => {
+    const auth = getAuth();
+    const provider = new GoogleAuthProvider();
+    try {
+      if (auth.currentUser?.isAnonymous) {
+        await linkWithPopup(auth.currentUser, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+    } catch (error) {
+      const code = (error as { code?: string }).code;
+      if (code === "auth/popup-closed-by-user") return;
+      if (
+        code === "auth/credential-already-in-use" ||
+        code === "auth/email-already-in-use"
+      ) {
+        try {
+          await signInWithPopup(auth, provider);
+          return;
+        } catch {
+          // fall through
         }
-      })
-      .catch(() => {
-        dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke logge inn." });
-      });
+      }
+      notify("Klarte ikke logge inn.");
+    }
   };
 
   const logout = async () => {
-    await getAuth().signOut();
+    const auth = getAuth();
+    await auth.signOut();
+    await signInAnonymously(auth);
   };
 
   const setPublic = async (isPublic: boolean) => {
-    if (user) {
-      const uid = calendar.owner ?? user.uid;
-      const calendarReference = doc(db, "calendars", name.toLocaleLowerCase());
-      await updateDoc(calendarReference, { owner: uid, public: isPublic });
-    }
+    if (!isOwner) return;
+    await updateDoc(doc(db, "calendars", calendarId), { public: isPublic });
+  };
+
+  const updateSettings = async (patch: Record<string, unknown>) => {
+    await updateDoc(doc(db, "calendars", calendarId), patch);
+  };
+
+  const renameUser = (id: string, value: string) => {
+    setDraftNames((current) => ({ ...current, [id]: value }));
+    const timers = nameTimers.current;
+    const existing = timers.get(id);
+    if (existing) clearTimeout(existing);
+    timers.set(
+      id,
+      setTimeout(() => {
+        timers.delete(id);
+        updateDoc(doc(db, "users", id), { name: value }).catch(() =>
+          notify("Klarte ikke lagre navnet")
+        );
+      }, 500)
+    );
   };
 
   return (
     <div>
       <PageTitle>Innstillinger</PageTitle>
       <ReactTooltip id="login" place="bottom">
-        {!user ? "Logg inn" : "Logg ut"}
+        {isAnonymous ? "Logg inn" : "Logg ut"}
       </ReactTooltip>
       <ReactTooltip id="home" place="bottom">
         Hjem
       </ReactTooltip>
       <ReactTooltip id="lock" place="bottom">
-        {user && calendar.public === false ? "Åpne" : "Skjul"}
+        {calendar.public === false ? "Åpne" : "Skjul"}
       </ReactTooltip>
       <ReactTooltip id="delete" place="right">
         Slett kalender
       </ReactTooltip>
-      {!calendar.owner || calendar.owner === user?.uid ? (
-        <FiTrash
+      {isOwner && (
+        <IconButton
           data-tooltip-id="delete"
-          size="1.5rem"
           className={styles.delete}
+          label="Slett kalender"
           onClick={deleteCalendar}
-        />
-      ) : null}
-      <FiHome
-        data-tooltip-id="home"
-        size="1.5rem"
-        className={styles.settings}
-        onClick={() => {
-          navigate(`/${name.toLocaleLowerCase()}`);
-        }}
-      />
-      {!user ? (
-        <FiLogIn
-          data-tooltip-id="login"
-          size="1.5rem"
-          className={styles.login}
-          onClick={login}
-        />
-      ) : (
-        <FiLogOut
-          data-tooltip-id="login"
-          size="1.5rem"
-          className={styles.login}
-          onClick={logout}
-        />
+        >
+          <FiTrash size="1.5rem" />
+        </IconButton>
       )}
-      {user && (
-        <>
+      <IconButton
+        data-tooltip-id="home"
+        className={styles.settings}
+        label="Hjem"
+        onClick={() => navigate(`/${calendarId}`)}
+      >
+        <FiHome size="1.5rem" />
+      </IconButton>
+      <IconButton
+        data-tooltip-id="login"
+        className={styles.login}
+        label={isAnonymous ? "Logg inn" : "Logg ut"}
+        onClick={isAnonymous ? login : logout}
+      >
+        {isAnonymous ? <FiLogIn size="1.5rem" /> : <FiLogOut size="1.5rem" />}
+      </IconButton>
+      {isOwner && (
+        <IconButton
+          data-tooltip-id="lock"
+          className={styles.lock}
+          label={calendar.public === false ? "Åpne kalender" : "Skjul kalender"}
+          onClick={() => setPublic(calendar.public === false)}
+        >
           {calendar.public === false ? (
-            <FiLock
-              data-tooltip-id="lock"
-              size="1.5rem"
-              className={styles.lock}
-              onClick={() => setPublic(true)}
-            />
+            <FiLock size="1.5rem" />
           ) : (
-            <FiUnlock
-              data-tooltip-id="lock"
-              size="1.5rem"
-              className={styles.lock}
-              onClick={() => setPublic(false)}
-            />
+            <FiUnlock size="1.5rem" />
           )}
-        </>
+        </IconButton>
       )}
       <div className={styles.admin}>
         <div className={styles.Form}>
@@ -185,8 +238,8 @@ export default function Admin() {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`https://api.kalender.christmas/api/${name.toLocaleLowerCase()}${
-              user ? `?apiKey=${user.uid}` : ""
+            href={`https://api.kalender.christmas/api/${calendarId}${
+              calendar.public === false && user ? `?apiKey=${user.uid}` : ""
             }`}
           >
             API
@@ -201,20 +254,16 @@ export default function Admin() {
             className={styles.input}
             type="number"
             min={1}
-            value={calendar.settings.giftsPerUser}
+            disabled={!isOwner}
+            value={calendar.settings.giftsPerUser ?? ""}
             placeholder="∞"
-            onChange={async (e) => {
-              const calendarReference = doc(
-                db,
-                "calendars",
-                name.toLocaleLowerCase()
-              );
-              await updateDoc(calendarReference, {
+            onChange={(e) =>
+              updateSettings({
                 "settings.giftsPerUser": e.target.value
                   ? parseInt(e.target.value, 10)
-                  : "",
-              });
-            }}
+                  : deleteField(),
+              })
+            }
           />
         </div>
 
@@ -223,17 +272,11 @@ export default function Admin() {
             id="fair"
             type="checkbox"
             className={styles.checkbox}
-            checked={calendar.settings.fair}
-            onChange={async (e) => {
-              const calendarReference = doc(
-                db,
-                "calendars",
-                name.toLocaleLowerCase()
-              );
-              await updateDoc(calendarReference, {
-                "settings.fair": e.target.checked,
-              });
-            }}
+            disabled={!isOwner}
+            checked={calendar.settings.fair ?? false}
+            onChange={(e) =>
+              updateSettings({ "settings.fair": e.target.checked })
+            }
           />
           <label htmlFor="fair" className={styles.label}>
             Jevn gavefordeling (alle får gave før neste runde starter)
@@ -245,17 +288,11 @@ export default function Admin() {
             id="weekends"
             type="checkbox"
             className={styles.checkbox}
-            checked={calendar.settings.ignoreWeekends}
-            onChange={async (e) => {
-              const calendarReference = doc(
-                db,
-                "calendars",
-                name.toLocaleLowerCase()
-              );
-              await updateDoc(calendarReference, {
-                "settings.ignoreWeekends": e.target.checked,
-              });
-            }}
+            disabled={!isOwner}
+            checked={calendar.settings.ignoreWeekends ?? false}
+            onChange={(e) =>
+              updateSettings({ "settings.ignoreWeekends": e.target.checked })
+            }
           />
           <label htmlFor="weekends" className={styles.label}>
             Ignorer helgene
@@ -267,40 +304,58 @@ export default function Admin() {
           {calendar.deleteBy.toDate().toLocaleDateString("nb-no")} :)
         </p>
 
+        {isAnonymous && (
+          <p className={styles.hint}>
+            Du er ikke innlogget. Logg inn med Google for å beholde tilgangen
+            til kalenderen på andre enheter.
+          </p>
+        )}
+
         <h2>Brukere</h2>
 
         <div className={styles.users}>
           {users &&
-            users
+            [...users]
               .sort((a, b) =>
                 compareAsc(a.createdAt.seconds, b.createdAt.seconds)
               )
-              .map((user, i) => {
-                const storageRef = ref(
-                  storage,
-                  `${name.toLocaleLowerCase()}/${user.id}`
-                );
+              .map((listed) => {
+                const storageRef = ref(storage, `${calendarId}/${listed.id}`);
                 return (
-                  <div className={styles.user} key={user.id}>
+                  <div className={styles.user} key={listed.id}>
                     <div className={styles.avatar}>
                       <img
                         className={styles.image}
-                        src={user.image}
-                        alt={user.name}
+                        src={listed.image}
+                        alt={listed.name}
                       />
                       <input
                         className={styles.upload}
                         type="file"
+                        accept={ALLOWED_AVATAR_TYPES.join(",")}
+                        disabled={!isOwner}
+                        aria-label={`Last opp bilde for ${listed.name || "bruker"}`}
                         onChange={async (e) => {
-                          if (e.target.files?.length === 1) {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
+                            notify("Bildet må være PNG, JPEG, WEBP eller GIF");
+                            return;
+                          }
+                          if (file.size > MAX_AVATAR_BYTES) {
+                            notify("Bildet kan maks være 2 MB");
+                            return;
+                          }
+                          try {
                             const uploadResult = await uploadBytes(
                               storageRef,
-                              e.target.files[0]
+                              file
                             );
-                            const userReference = doc(db, "users", user.id);
-                            await updateDoc(userReference, {
+                            await updateDoc(doc(db, "users", listed.id), {
                               image: await getDownloadURL(uploadResult.ref),
                             });
+                          } catch {
+                            notify("Klarte ikke laste opp bildet");
                           }
                         }}
                       />
@@ -308,30 +363,31 @@ export default function Admin() {
                     <input
                       type="text"
                       className={styles.username}
-                      value={user.name}
+                      value={draftNames[listed.id] ?? listed.name}
                       placeholder="Navn..."
-                      autoFocus={user.name === ""}
-                      onChange={async (e) => {
-                        const userReference = doc(db, "users", user.id);
-                        await updateDoc(userReference, {
-                          name: e.target.value,
-                        });
-                      }}
+                      disabled={!isOwner}
+                      aria-label="Navn"
+                      autoFocus={listed.name === ""}
+                      onChange={(e) => renameUser(listed.id, e.target.value)}
                     />
-                    <FiX
-                      size="1.5rem"
+                    <IconButton
                       className={styles.deleteuser}
+                      label={`Slett ${listed.name || "bruker"}`}
+                      disabled={!isOwner}
                       onClick={async () => {
-                        const userReference = doc(db, "users", user.id);
+                        const userReference = doc(db, "users", listed.id);
                         const userSnap = await getDoc(userReference);
-                        if (userSnap.exists()) {
-                          if (userSnap.data().image.includes(storageRef.name)) {
-                            await deleteObject(storageRef);
-                          }
-                          await deleteDoc(userReference);
+                        if (!userSnap.exists()) return;
+                        if (userSnap.data().image.includes(storageRef.name)) {
+                          await deleteObject(storageRef).catch(
+                            () => undefined
+                          );
                         }
+                        await deleteDoc(userReference);
                       }}
-                    />
+                    >
+                      <FiX size="1.5rem" />
+                    </IconButton>
                   </div>
                 );
               })}
@@ -339,26 +395,23 @@ export default function Admin() {
         <button
           className={styles.button}
           type="button"
+          disabled={!isOwner}
           onClick={async () => {
-            const calendarReference = doc(
-              db,
-              "calendars",
-              name.toLocaleLowerCase()
-            );
+            const calendarReference = doc(db, "calendars", calendarId);
             const id = uuidv4();
-            const storageRef = ref(storage, `avatars/${getAvatar()}.png`);
-            const downloadUrl = await getDownloadURL(storageRef);
+            const downloadUrl = await getDownloadURL(
+              ref(storage, `avatars/${getAvatar()}.png`)
+            );
 
-            const userReference = doc(db, "users", id);
-            await setDoc(userReference, {
+            await setDoc(doc(db, "users", id), {
               id,
               name: "",
               createdAt: Timestamp.fromDate(new Date()),
-              deleteBy: Timestamp.fromDate(
-                new Date(new Date().getFullYear() + 1, 1, 1)
-              ),
+              deleteBy: expiresAt(),
               won: [],
               calendar: calendarReference,
+              calendarId,
+              owner: calendar.owner,
               image: downloadUrl,
             } as UserType);
           }}

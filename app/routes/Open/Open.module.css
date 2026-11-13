@@ -40,6 +40,14 @@
   margin-left: -9.5rem;
   z-index: 10;
   cursor: pointer;
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.giftbox:disabled {
+  cursor: default;
 }
 
 .cover {
@@ -68,7 +76,7 @@
   }
 }
 
-.giftbox:hover .cover {
+.giftbox:hover:not(:disabled) .cover {
   transform: translateY(-0.5rem) rotate(-2deg);
 }
 

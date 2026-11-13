@@ -5,6 +5,8 @@ import { useState } from "../../StateProvider";
 import { useNavigate, useParams, Link } from "react-router";
 import { FiSettings } from "react-icons/fi";
 import PageTitle from "../../components/PageTitle";
+import IconButton from "../../components/IconButton";
+import { toCalendarId } from "../../helpers";
 import styles from "./Calendar.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
@@ -56,14 +58,14 @@ export default function Calendar() {
   return (
     <div className={styles.calendar}>
       <PageTitle>{calendar.name}</PageTitle>
-      <FiSettings
+      <IconButton
         data-tooltip-id="admin"
-        size="1.5rem"
         className={styles.settings}
-        onClick={() => {
-          navigate(`/${name.toLocaleLowerCase()}/settings`);
-        }}
-      />
+        label="Innstillinger"
+        onClick={() => navigate(`/${toCalendarId(name)}/settings`)}
+      >
+        <FiSettings size="1.5rem" />
+      </IconButton>
       <ReactTooltip id="admin" place="bottom">
         Innstillinger
       </ReactTooltip>
@@ -92,7 +94,7 @@ export default function Calendar() {
           if (open && !winner && !ignoreWeekend) {
             return (
               <Link
-                to={`/${calendar.name.toLocaleLowerCase()}/open/${day + 1}`}
+                to={`/${toCalendarId(calendar.name)}/open/${day + 1}`}
                 key={day + 1}
                 className={dayClass}
               >
