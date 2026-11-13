@@ -4,13 +4,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import {
-  deleteDoc,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { ALICE, BOB, calendar, newTestEnvironment, seed, user } from "./helpers";
 
 let env: RulesTestEnvironment;
@@ -33,36 +27,24 @@ beforeEach(async () => {
 
 describe("calendars", () => {
   it("lets a signed-in user create a calendar they own", async () => {
-    await assertSucceeds(
-      setDoc(doc(asAlice(), "calendars", "kontoret"), calendar(ALICE))
-    );
+    await assertSucceeds(setDoc(doc(asAlice(), "calendars", "kontoret"), calendar(ALICE)));
   });
 
   it("rejects creating a calendar owned by someone else", async () => {
-    await assertFails(
-      setDoc(doc(asAlice(), "calendars", "kontoret"), calendar(BOB))
-    );
+    await assertFails(setDoc(doc(asAlice(), "calendars", "kontoret"), calendar(BOB)));
   });
 
   it("rejects an unauthenticated create", async () => {
-    await assertFails(
-      setDoc(doc(asGuest(), "calendars", "kontoret"), calendar(ALICE))
-    );
+    await assertFails(setDoc(doc(asGuest(), "calendars", "kontoret"), calendar(ALICE)));
   });
 
   it("rejects a document id that does not match the name", async () => {
-    await assertFails(
-      setDoc(doc(asAlice(), "calendars", "noe-annet"), calendar(ALICE))
-    );
+    await assertFails(setDoc(doc(asAlice(), "calendars", "noe-annet"), calendar(ALICE)));
   });
 
   it("rejects an invalid calendar id", async () => {
-    await assertFails(
-      setDoc(doc(asAlice(), "calendars", "A"), calendar(ALICE))
-    );
-    await assertFails(
-      setDoc(doc(asAlice(), "calendars", "Kontoret"), calendar(ALICE))
-    );
+    await assertFails(setDoc(doc(asAlice(), "calendars", "A"), calendar(ALICE)));
+    await assertFails(setDoc(doc(asAlice(), "calendars", "Kontoret"), calendar(ALICE)));
   });
 
   it("rejects unknown fields", async () => {
@@ -70,7 +52,7 @@ describe("calendars", () => {
       setDoc(doc(asAlice(), "calendars", "kontoret"), {
         ...calendar(ALICE),
         isAdmin: true,
-      })
+      }),
     );
   });
 
@@ -95,7 +77,7 @@ describe("calendars", () => {
     await assertSucceeds(
       updateDoc(doc(asAlice(), "calendars", "kontoret"), {
         "settings.fair": false,
-      })
+      }),
     );
   });
 
@@ -104,7 +86,7 @@ describe("calendars", () => {
     await assertFails(
       updateDoc(doc(asBob(), "calendars", "kontoret"), {
         "settings.fair": false,
-      })
+      }),
     );
   });
 
@@ -116,12 +98,8 @@ describe("calendars", () => {
 
   it("stops the owner transferring ownership or renaming", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(
-      updateDoc(doc(asAlice(), "calendars", "kontoret"), { owner: BOB })
-    );
-    await assertFails(
-      updateDoc(doc(asAlice(), "calendars", "kontoret"), { name: "Annet" })
-    );
+    await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { owner: BOB }));
+    await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { name: "Annet" }));
   });
 });
 
@@ -132,8 +110,8 @@ describe("users", () => {
     await assertSucceeds(
       setDoc(
         doc(db, "users", "user-2"),
-        user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret"))
-      )
+        user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret")),
+      ),
     );
   });
 
@@ -143,8 +121,8 @@ describe("users", () => {
     await assertFails(
       setDoc(
         doc(db, "users", "user-2"),
-        user("user-2", BOB, "kontoret", doc(db, "calendars", "kontoret"))
-      )
+        user("user-2", BOB, "kontoret", doc(db, "calendars", "kontoret")),
+      ),
     );
   });
 
@@ -154,10 +132,8 @@ describe("users", () => {
     await assertFails(
       setDoc(
         doc(db, "users", "user-2"),
-        user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret"), [
-          "1",
-        ])
-      )
+        user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret"), ["1"]),
+      ),
     );
   });
 
@@ -178,41 +154,29 @@ describe("users", () => {
 
   it("lets the owner rename a user", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertSucceeds(
-      updateDoc(doc(asAlice(), "users", "user-1"), { name: "Rudolf" })
-    );
+    await assertSucceeds(updateDoc(doc(asAlice(), "users", "user-1"), { name: "Rudolf" }));
   });
 
   it("stops a stranger renaming a user", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(
-      updateDoc(doc(asBob(), "users", "user-1"), { name: "Rudolf" })
-    );
+    await assertFails(updateDoc(doc(asBob(), "users", "user-1"), { name: "Rudolf" }));
   });
 
   // The anti-cheat guarantee: only the drawWinner callable may write `won`.
   it("stops even the owner writing won", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(
-      updateDoc(doc(asAlice(), "users", "user-1"), { won: ["1"] })
-    );
+    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { won: ["1"] }));
   });
 
   it("stops a stranger writing won", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(
-      updateDoc(doc(asBob(), "users", "user-1"), { won: ["1"] })
-    );
+    await assertFails(updateDoc(doc(asBob(), "users", "user-1"), { won: ["1"] }));
   });
 
   it("stops reassigning a user to another calendar or owner", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(
-      updateDoc(doc(asAlice(), "users", "user-1"), { owner: BOB })
-    );
-    await assertFails(
-      updateDoc(doc(asAlice(), "users", "user-1"), { calendarId: "annet" })
-    );
+    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { owner: BOB }));
+    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { calendarId: "annet" }));
   });
 
   it("lets only the owner delete a user", async () => {

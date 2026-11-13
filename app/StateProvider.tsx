@@ -35,10 +35,7 @@ const intitialState: State = {
   calendar: {} as CalendarType,
 };
 
-const Context = React.createContext<[State, React.Dispatch<Action>]>([
-  intitialState,
-  () => null,
-]);
+const Context = React.createContext<[State, React.Dispatch<Action>]>([intitialState, () => null]);
 
 export const useState = () => React.useContext(Context);
 
@@ -57,16 +54,11 @@ const reducer = (state: State = intitialState, action: Action): State => {
   }
 };
 
-const StateProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+const StateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, dispatch] = React.useReducer(reducer, intitialState);
   // useReducer returns a new tuple each render, which would re-render every
   // consumer regardless of whether the state actually changed.
-  const value = React.useMemo<[State, React.Dispatch<Action>]>(
-    () => [state, dispatch],
-    [state]
-  );
+  const value = React.useMemo<[State, React.Dispatch<Action>]>(() => [state, dispatch], [state]);
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
 };

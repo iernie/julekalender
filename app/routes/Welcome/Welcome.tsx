@@ -53,10 +53,7 @@ export default function Welcome() {
       }
     } catch (error) {
       const code = (error as { code?: string }).code;
-      if (
-        code === "auth/credential-already-in-use" ||
-        code === "auth/email-already-in-use"
-      ) {
+      if (code === "auth/credential-already-in-use" || code === "auth/email-already-in-use") {
         // The Google account already exists; sign into it instead. Calendars
         // created under the throwaway anonymous uid are left behind.
         try {
@@ -80,14 +77,9 @@ export default function Welcome() {
   React.useEffect(() => {
     if (!user) return;
 
-    const calendarQuery = query(
-      collection(db, "calendars"),
-      where("owner", "==", user.uid)
-    );
+    const calendarQuery = query(collection(db, "calendars"), where("owner", "==", user.uid));
     const unsub: Unsubscribe = onSnapshot(calendarQuery, (snapshot) => {
-      setCalendars(
-        snapshot.docs.map((entry) => ({ ...entry.data() }) as CalendarType)
-      );
+      setCalendars(snapshot.docs.map((entry) => ({ ...entry.data() }) as CalendarType));
     });
 
     return () => {
@@ -117,8 +109,7 @@ export default function Welcome() {
     if (!isValidCalendarId(calendarId)) {
       dispatch({
         type: SET_NOTIFICATION,
-        payload:
-          "Navnet må være 2-40 tegn og kan kun inneholde bokstaver, tall, - og _",
+        payload: "Navnet må være 2-40 tegn og kan kun inneholde bokstaver, tall, - og _",
       });
       return;
     }

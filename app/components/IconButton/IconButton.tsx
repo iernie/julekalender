@@ -10,12 +10,7 @@ type IconButtonProps = {
  * Keyboard-accessible wrapper for the icon actions. Tooltips are decorative,
  * so the accessible name comes from `label`.
  */
-const IconButton: React.FC<IconButtonProps> = ({
-  label,
-  className,
-  children,
-  ...props
-}) => (
+const IconButton: React.FC<IconButtonProps> = ({ label, className, children, ...props }) => (
   <button
     type="button"
     aria-label={label}

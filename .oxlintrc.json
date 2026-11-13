@@ -36,10 +36,5 @@
       }
     }
   ],
-  "ignorePatterns": [
-    "build",
-    ".react-router",
-    "functions/lib",
-    "node_modules"
-  ]
+  "ignorePatterns": ["build", ".react-router", "functions/lib", "node_modules"]
 }

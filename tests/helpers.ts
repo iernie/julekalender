@@ -1,8 +1,5 @@
 import { readFileSync } from "node:fs";
-import {
-  type RulesTestEnvironment,
-  initializeTestEnvironment,
-} from "@firebase/rules-unit-testing";
+import { type RulesTestEnvironment, initializeTestEnvironment } from "@firebase/rules-unit-testing";
 import { doc, type DocumentReference, setDoc } from "firebase/firestore";
 
 export const ALICE = "alice";
@@ -38,7 +35,7 @@ export const user = (
   owner: string,
   calendarId: string,
   calendarRef: DocumentReference,
-  won: Array<string> = []
+  won: Array<string> = [],
 ) => ({
   id,
   name: "Nissen",
@@ -66,15 +63,12 @@ export const seed = async (
     isPublic?: boolean;
     userId?: string;
     won?: Array<string>;
-  }
+  },
 ) => {
   await env.withSecurityRulesDisabled(async (context) => {
     const db = context.firestore();
     const calendarRef = doc(db, "calendars", calendarId);
     await setDoc(calendarRef, calendar(owner, isPublic));
-    await setDoc(
-      doc(db, "users", userId),
-      user(userId, owner, calendarId, calendarRef, won)
-    );
+    await setDoc(doc(db, "users", userId), user(userId, owner, calendarId, calendarRef, won));
   });
 };

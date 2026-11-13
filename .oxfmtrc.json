@@ -1,10 +1,4 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": [
-    "build",
-    ".react-router",
-    "functions/lib",
-    "node_modules",
-    "package-lock.json"
-  ]
+  "ignorePatterns": ["build", ".react-router", "functions/lib", "node_modules", "package-lock.json"]
 }

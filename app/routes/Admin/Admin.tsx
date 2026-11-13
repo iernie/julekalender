@@ -3,15 +3,7 @@ import { useParams, useNavigate } from "react-router";
 import { type UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";
-import {
-  FiHome,
-  FiLock,
-  FiX,
-  FiLogIn,
-  FiUnlock,
-  FiLogOut,
-  FiTrash,
-} from "react-icons/fi";
+import { FiHome, FiLock, FiX, FiLogIn, FiUnlock, FiLogOut, FiTrash } from "react-icons/fi";
 import styles from "./Admin.module.css";
 import { compareAsc } from "date-fns";
 import { Tooltip as ReactTooltip } from "react-tooltip";
@@ -25,13 +17,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import {
-  deleteObject,
-  getDownloadURL,
-  getStorage,
-  ref,
-  uploadBytes,
-} from "firebase/storage";
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import {
   GoogleAuthProvider,
   getAuth,
@@ -46,21 +32,15 @@ import { expiresAt, toCalendarId } from "../../helpers";
 
 const REGION = "europe-west1";
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
-const ALLOWED_AVATAR_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/gif",
-];
+const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const AVATAR_COUNT = 20;
 
 /** Cycles through the seeded avatars before repeating any of them. */
 const nextAvatar = (used: Array<number>): number => {
   if (used.length === AVATAR_COUNT) used.length = 0;
-  const remaining = Array.from(
-    { length: AVATAR_COUNT },
-    (_, index) => index + 1
-  ).filter((candidate) => !used.includes(candidate));
+  const remaining = Array.from({ length: AVATAR_COUNT }, (_, index) => index + 1).filter(
+    (candidate) => !used.includes(candidate),
+  );
   const picked = remaining[Math.floor(Math.random() * remaining.length)];
   used.push(picked);
   return picked;
@@ -81,12 +61,8 @@ export default function Admin() {
   const storage = getStorage();
 
   const usedAvatars = React.useRef<Array<number>>([]);
-  const nameTimers = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(
-    new Map()
-  );
-  const [draftNames, setDraftNames] = React.useState<Record<string, string>>(
-    {}
-  );
+  const nameTimers = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  const [draftNames, setDraftNames] = React.useState<Record<string, string>>({});
 
   React.useEffect(() => {
     const timers = nameTimers.current;
@@ -102,21 +78,18 @@ export default function Admin() {
   const isAnonymous = user?.isAnonymous ?? true;
   const isOwner = Boolean(user && calendar.owner === user.uid);
 
-  const notify = (payload: string) =>
-    dispatch({ type: SET_NOTIFICATION, payload });
+  const notify = (payload: string) => dispatch({ type: SET_NOTIFICATION, payload });
 
   const deleteCalendar = async () => {
     if (confirm) {
       setConfirm(false);
-      notify(
-        "Er du sikker på at du vil slette kalenderen og alle brukerene? Trykk en gang til."
-      );
+      notify("Er du sikker på at du vil slette kalenderen og alle brukerene? Trykk en gang til.");
       return;
     }
     try {
       const remove = httpsCallable<{ calendarId: string }, unknown>(
         getFunctions(undefined, REGION),
-        "deleteCalendar"
+        "deleteCalendar",
       );
       await remove({ calendarId });
       navigate("/");
@@ -138,10 +111,7 @@ export default function Admin() {
     } catch (error) {
       const code = (error as { code?: string }).code;
       if (code === "auth/popup-closed-by-user") return;
-      if (
-        code === "auth/credential-already-in-use" ||
-        code === "auth/email-already-in-use"
-      ) {
+      if (code === "auth/credential-already-in-use" || code === "auth/email-already-in-use") {
         try {
           await signInWithPopup(auth, provider);
           return;
@@ -172,9 +142,9 @@ export default function Admin() {
       setTimeout(() => {
         timers.delete(id);
         updateDoc(doc(db, "users", id), { name: value }).catch(() =>
-          notify("Klarte ikke lagre navnet")
+          notify("Klarte ikke lagre navnet"),
         );
-      }, 500)
+      }, 500),
     );
   };
 
@@ -226,11 +196,7 @@ export default function Admin() {
           label={calendar.public === false ? "Åpne kalender" : "Skjul kalender"}
           onClick={() => setPublic(calendar.public === false)}
         >
-          {calendar.public === false ? (
-            <FiLock size="1.5rem" />
-          ) : (
-            <FiUnlock size="1.5rem" />
-          )}
+          {calendar.public === false ? <FiLock size="1.5rem" /> : <FiUnlock size="1.5rem" />}
         </IconButton>
       )}
       <div className={styles.admin}>
@@ -275,9 +241,7 @@ export default function Admin() {
             className={styles.checkbox}
             disabled={!isOwner}
             checked={calendar.settings.fair ?? false}
-            onChange={(e) =>
-              updateSettings({ "settings.fair": e.target.checked })
-            }
+            onChange={(e) => updateSettings({ "settings.fair": e.target.checked })}
           />
           <label htmlFor="fair" className={styles.label}>
             Jevn gavefordeling (alle får gave før neste runde starter)
@@ -291,9 +255,7 @@ export default function Admin() {
             className={styles.checkbox}
             disabled={!isOwner}
             checked={calendar.settings.ignoreWeekends ?? false}
-            onChange={(e) =>
-              updateSettings({ "settings.ignoreWeekends": e.target.checked })
-            }
+            onChange={(e) => updateSettings({ "settings.ignoreWeekends": e.target.checked })}
           />
           <label htmlFor="weekends" className={styles.label}>
             Ignorer helgene
@@ -307,8 +269,8 @@ export default function Admin() {
 
         {isAnonymous && (
           <p className={styles.hint}>
-            Du er ikke innlogget. Logg inn med Google for å beholde tilgangen
-            til kalenderen på andre enheter.
+            Du er ikke innlogget. Logg inn med Google for å beholde tilgangen til kalenderen på
+            andre enheter.
           </p>
         )}
 
@@ -317,19 +279,13 @@ export default function Admin() {
         <div className={styles.users}>
           {users &&
             users
-              .toSorted((a, b) =>
-                compareAsc(a.createdAt.seconds, b.createdAt.seconds)
-              )
+              .toSorted((a, b) => compareAsc(a.createdAt.seconds, b.createdAt.seconds))
               .map((listed) => {
                 const storageRef = ref(storage, `${calendarId}/${listed.id}`);
                 return (
                   <div className={styles.user} key={listed.id}>
                     <div className={styles.avatar}>
-                      <img
-                        className={styles.image}
-                        src={listed.image}
-                        alt={listed.name}
-                      />
+                      <img className={styles.image} src={listed.image} alt={listed.name} />
                       <input
                         className={styles.upload}
                         type="file"
@@ -348,10 +304,7 @@ export default function Admin() {
                             return;
                           }
                           try {
-                            const uploadResult = await uploadBytes(
-                              storageRef,
-                              file
-                            );
+                            const uploadResult = await uploadBytes(storageRef, file);
                             await updateDoc(doc(db, "users", listed.id), {
                               image: await getDownloadURL(uploadResult.ref),
                             });
@@ -379,9 +332,7 @@ export default function Admin() {
                         const userSnap = await getDoc(userReference);
                         if (!userSnap.exists()) return;
                         if (userSnap.data().image.includes(storageRef.name)) {
-                          await deleteObject(storageRef).catch(
-                            () => undefined
-                          );
+                          await deleteObject(storageRef).catch(() => undefined);
                         }
                         await deleteDoc(userReference);
                       }}
@@ -400,7 +351,7 @@ export default function Admin() {
             const calendarReference = doc(db, "calendars", calendarId);
             const id = uuidv4();
             const downloadUrl = await getDownloadURL(
-              ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`)
+              ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`),
             );
 
             await setDoc(doc(db, "users", id), {

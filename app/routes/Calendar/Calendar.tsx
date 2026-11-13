@@ -76,17 +76,11 @@ export default function Calendar() {
       <div className={styles.days}>
         {Array.from(Array(24).keys()).map((day) => {
           const open = hotkey || (day < today && getMonth(now) === 11);
-          const winner = users?.find(
-            (user) => user.won.indexOf(`${day + 1}`) !== -1
-          );
+          const winner = users?.find((user) => user.won.indexOf(`${day + 1}`) !== -1);
           const ignoreWeekend =
             calendar.settings.ignoreWeekends &&
-            (getDay(
-              new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)
-            ) === 0 ||
-              getDay(
-                new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)
-              ) === 6);
+            (getDay(new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)) === 0 ||
+              getDay(new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)) === 6);
           const dayClass = classnames({
             [styles.day]: true,
             [styles.winner]: winner !== undefined,
@@ -112,18 +106,10 @@ export default function Calendar() {
           } as React.CSSProperties;
 
           return (
-            <div
-              key={day + 1}
-              className={dayClass}
-              style={day === 0 ? css : undefined}
-            >
+            <div key={day + 1} className={dayClass} style={day === 0 ? css : undefined}>
               {winner && (
                 <div className={styles.avatar}>
-                  <img
-                    className={styles.image}
-                    src={winner.image}
-                    alt={winner.name}
-                  />
+                  <img className={styles.image} src={winner.image} alt={winner.name} />
                 </div>
               )}
               <span className={styles.number}>{day + 1}</span>

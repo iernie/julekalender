@@ -6,16 +6,16 @@
  * the Admin SDK and bypass rules) are the only writers of winners.
  */
 
-import {setGlobalOptions} from "firebase-functions/v2";
-import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
+import { setGlobalOptions } from "firebase-functions/v2";
+import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
 import express from "express";
 import cors from "cors";
-import {randomInt} from "node:crypto";
-import {initializeApp} from "firebase-admin/app";
-import {FieldValue, getFirestore} from "firebase-admin/firestore";
-import {getStorage} from "firebase-admin/storage";
+import { randomInt } from "node:crypto";
+import { initializeApp } from "firebase-admin/app";
+import { FieldValue, getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
-setGlobalOptions({maxInstances: 10, region: "europe-west1"});
+setGlobalOptions({ maxInstances: 10, region: "europe-west1" });
 
 initializeApp();
 
@@ -37,7 +37,7 @@ const assertOwner = async (
   if (calendar.owner !== uid) {
     throw new HttpsError("permission-denied", "Ikke din kalender");
   }
-  return {reference, calendar};
+  return { reference, calendar };
 };
 
 const assertDay = (day: unknown): string => {
@@ -49,10 +49,7 @@ const assertDay = (day: unknown): string => {
 };
 
 const assertCalendarId = (calendarId: unknown): string => {
-  if (
-    typeof calendarId !== "string" ||
-    !/^[a-z0-9æøå_-]{2,40}$/.test(calendarId)
-  ) {
+  if (typeof calendarId !== "string" || !/^[a-z0-9æøå_-]{2,40}$/.test(calendarId)) {
     throw new HttpsError("invalid-argument", "Ugyldig kalendernavn");
   }
   return calendarId;
@@ -72,15 +69,9 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
   const db = getFirestore();
 
   return db.runTransaction(async (tx) => {
-    const {reference, calendar} = await assertOwner(
-      request.auth?.uid,
-      calendarId,
-      tx,
-    );
+    const { reference, calendar } = await assertOwner(request.auth?.uid, calendarId, tx);
 
-    const snapshot = await tx.get(
-      db.collection("users").where("calendar", "==", reference),
-    );
+    const snapshot = await tx.get(db.collection("users").where("calendar", "==", reference));
     const users = snapshot.docs.map((doc) => {
       const data = doc.data() as {
         id: string;
@@ -88,7 +79,7 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
         image: string;
         won: Array<string>;
       };
-      return {ref: doc.ref, data};
+      return { ref: doc.ref, data };
     });
 
     if (users.length === 0) {
@@ -97,26 +88,20 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
 
     // The transaction makes this check authoritative: two admins opening the
     // same day concurrently cannot both draw.
-    if (users.some(({data}) => data.won.includes(day))) {
+    if (users.some(({ data }) => data.won.includes(day))) {
       throw new HttpsError("already-exists", "Dagen er allerede trukket");
     }
 
     const settings = calendar.settings ?? {};
-    const counts = users.map(({data}) => data.won.length);
+    const counts = users.map(({ data }) => data.won.length);
     const highest = Math.max(...counts);
     const lowest = Math.min(...counts);
-    const giftsPerUser =
-      typeof settings.giftsPerUser === "number" ? settings.giftsPerUser : null;
+    const giftsPerUser = typeof settings.giftsPerUser === "number" ? settings.giftsPerUser : null;
 
     const viable = users
-      .filter(
-        ({data}) =>
-          !settings.fair || highest === lowest || data.won.length < highest,
-      )
-      .filter(
-        ({data}) => giftsPerUser === null || data.won.length < giftsPerUser,
-      )
-      .filter(({data}) => !excluded.has(data.id));
+      .filter(({ data }) => !settings.fair || highest === lowest || data.won.length < highest)
+      .filter(({ data }) => giftsPerUser === null || data.won.length < giftsPerUser)
+      .filter(({ data }) => !excluded.has(data.id));
 
     if (viable.length === 0) {
       throw new HttpsError("failed-precondition", "Tom for vinnere");
@@ -125,7 +110,7 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
     // crypto.randomInt is uniform; Math.random() * n has modulo bias.
     const winner = viable[randomInt(0, viable.length)];
 
-    tx.update(winner.ref, {won: FieldValue.arrayUnion(day)});
+    tx.update(winner.ref, { won: FieldValue.arrayUnion(day) });
 
     return {
       id: winner.data.id,
@@ -135,49 +120,37 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
   });
 });
 
-export const resetWinner = onCall<{calendarId: string; day: string}>(
-  async (request) => {
-    const calendarId = assertCalendarId(request.data?.calendarId);
-    const day = assertDay(request.data?.day);
+export const resetWinner = onCall<{ calendarId: string; day: string }>(async (request) => {
+  const calendarId = assertCalendarId(request.data?.calendarId);
+  const day = assertDay(request.data?.day);
 
-    const db = getFirestore();
+  const db = getFirestore();
 
-    return db.runTransaction(async (tx) => {
-      const {reference} = await assertOwner(
-        request.auth?.uid,
-        calendarId,
-        tx,
-      );
+  return db.runTransaction(async (tx) => {
+    const { reference } = await assertOwner(request.auth?.uid, calendarId, tx);
 
-      const snapshot = await tx.get(
-        db
-          .collection("users")
-          .where("calendar", "==", reference)
-          .where("won", "array-contains", day),
-      );
+    const snapshot = await tx.get(
+      db.collection("users").where("calendar", "==", reference).where("won", "array-contains", day),
+    );
 
-      snapshot.docs.forEach((doc) => {
-        tx.update(doc.ref, {won: FieldValue.arrayRemove(day)});
-      });
-
-      return {reset: snapshot.size};
+    snapshot.docs.forEach((doc) => {
+      tx.update(doc.ref, { won: FieldValue.arrayRemove(day) });
     });
-  },
-);
+
+    return { reset: snapshot.size };
+  });
+});
 
 /**
  * Deletes a calendar, its users and their uploaded avatars. Done server-side so
  * the cascade cannot be left half-finished by a closed browser tab.
  */
-export const deleteCalendar = onCall<{calendarId: string}>(async (request) => {
+export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => {
   const calendarId = assertCalendarId(request.data?.calendarId);
-  const {reference} = await assertOwner(request.auth?.uid, calendarId);
+  const { reference } = await assertOwner(request.auth?.uid, calendarId);
 
   const db = getFirestore();
-  const users = await db
-    .collection("users")
-    .where("calendar", "==", reference)
-    .get();
+  const users = await db.collection("users").where("calendar", "==", reference).get();
 
   const batch = db.batch();
   users.docs.forEach((doc) => batch.delete(doc.ref));
@@ -187,10 +160,10 @@ export const deleteCalendar = onCall<{calendarId: string}>(async (request) => {
   // Avatars uploaded for this calendar all live under `<calendarId>/`.
   await getStorage()
     .bucket()
-    .deleteFiles({prefix: `${calendarId}/`})
+    .deleteFiles({ prefix: `${calendarId}/` })
     .catch(() => undefined);
 
-  return {deleted: users.size};
+  return { deleted: users.size };
 });
 
 /**
@@ -198,10 +171,10 @@ export const deleteCalendar = onCall<{calendarId: string}>(async (request) => {
  * here for now so api.kalender.christmas keeps working.
  */
 const app = express();
-app.use(cors({origin: "*"}));
+app.use(cors({ origin: "*" }));
 
 app.get("/api", (_, response) => {
-  response.json({error: "Kalendernavn mangler"});
+  response.json({ error: "Kalendernavn mangler" });
 });
 
 /**
@@ -210,36 +183,27 @@ app.get("/api", (_, response) => {
  */
 const asyncHandler =
   <P extends Record<string, string>>(
-    handler: (
-      request: express.Request<P>,
-      response: express.Response,
-    ) => Promise<void>,
+    handler: (request: express.Request<P>, response: express.Response) => Promise<void>,
   ) =>
-    (
-      request: express.Request<P>,
-      response: express.Response,
-      next: express.NextFunction,
-    ) => {
-      handler(request, response).catch(next);
-    };
+  (request: express.Request<P>, response: express.Response, next: express.NextFunction) => {
+    handler(request, response).catch(next);
+  };
 
 app.get(
   "/api/:name",
-  asyncHandler<{name: string}>(async (request, response) => {
-    const {name} = request.params;
-    const {apiKey} = request.query;
+  asyncHandler<{ name: string }>(async (request, response) => {
+    const { name } = request.params;
+    const { apiKey } = request.query;
 
-    const calendarReference = getFirestore()
-      .collection("calendars")
-      .doc(name.toLocaleLowerCase());
+    const calendarReference = getFirestore().collection("calendars").doc(name.toLocaleLowerCase());
 
     const calendar = (await calendarReference.get()).data();
     if (!calendar) {
-      response.json({error: "Kalender ikke funnet"});
+      response.json({ error: "Kalender ikke funnet" });
       return;
     }
     if (calendar.public === false && calendar.owner !== apiKey) {
-      response.json({error: "Mangler tilgang til kalender"});
+      response.json({ error: "Mangler tilgang til kalender" });
       return;
     }
 
@@ -249,27 +213,27 @@ app.get(
       .get();
 
     if (users.empty) {
-      response.json({error: "Ingen brukere funnet"});
+      response.json({ error: "Ingen brukere funnet" });
       return;
     }
 
     const today = new Date().getDate().toString();
-    const winner = users.docs
-      .map((doc) => doc.data())
-      .find((user) => user.won.includes(today));
+    const winner = users.docs.map((doc) => doc.data()).find((user) => user.won.includes(today));
 
-    response.json(winner ? {name: winner.name, image: winner.image} : {});
+    response.json(winner ? { name: winner.name, image: winner.image } : {});
   }),
 );
 
 // Keeps the historical contract: the API always answers with JSON.
-app.use((
-  _error: unknown,
-  _request: express.Request,
-  response: express.Response,
-  _next: express.NextFunction,
-) => {
-  response.json({error: "En feil skjedde"});
-});
+app.use(
+  (
+    _error: unknown,
+    _request: express.Request,
+    response: express.Response,
+    _next: express.NextFunction,
+  ) => {
+    response.json({ error: "En feil skjedde" });
+  },
+);
 
 export const api = onRequest(app);

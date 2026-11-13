@@ -1,13 +1,6 @@
 import React from "react";
 import { type Unsubscribe, getAuth } from "firebase/auth";
-import {
-  getFirestore,
-  collection,
-  doc,
-  query,
-  where,
-  onSnapshot,
-} from "firebase/firestore";
+import { getFirestore, collection, doc, query, where, onSnapshot } from "firebase/firestore";
 import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
 import { Outlet, useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
@@ -43,13 +36,10 @@ const StateContainer = () => {
           navigate("/");
         }
       },
-      () => navigate("/")
+      () => navigate("/"),
     );
 
-    const userQuery = query(
-      collection(db, "users"),
-      where("calendar", "==", calendarReference)
-    );
+    const userQuery = query(collection(db, "users"), where("calendar", "==", calendarReference));
 
     const unsubUsers: Unsubscribe = onSnapshot(
       userQuery,
@@ -61,7 +51,7 @@ const StateContainer = () => {
       },
       () => {
         dispatch({ type: SET_USERS, payload: [] });
-      }
+      },
     );
 
     return () => {

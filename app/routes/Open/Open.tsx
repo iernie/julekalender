@@ -21,13 +21,9 @@ export default function Open() {
 
   const { width, height } = useWindowSize();
 
-  const winner = day
-    ? users?.find((user) => user.won.indexOf(day) !== -1)
-    : undefined;
+  const winner = day ? users?.find((user) => user.won.indexOf(day) !== -1) : undefined;
 
-  const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(
-    () => new Set()
-  );
+  const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(() => new Set());
   const [step, setStep] = React.useState<number | null>(null);
   const [showUsers, setShowUsers] = React.useState<boolean>(false);
 
@@ -40,11 +36,7 @@ export default function Open() {
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
-      if (
-        !["INPUT", "LABEL", "UL", "LI"].includes(
-          (e.target as HTMLElement).nodeName
-        )
-      ) {
+      if (!["INPUT", "LABEL", "UL", "LI"].includes((e.target as HTMLElement).nodeName)) {
         setShowUsers(false);
       }
     };
@@ -78,20 +70,14 @@ export default function Open() {
   const viableUsers = users
     .filter(
       (user) =>
-        !calendar.settings.fair ||
-        highestWins === lowestWins ||
-        user.won.length < highestWins
+        !calendar.settings.fair || highestWins === lowestWins || user.won.length < highestWins,
     )
     .filter(
-      (user) =>
-        !calendar.settings.giftsPerUser ||
-        user.won.length < calendar.settings.giftsPerUser
+      (user) => !calendar.settings.giftsPerUser || user.won.length < calendar.settings.giftsPerUser,
     );
 
   const notify = (error: unknown, fallback: string) => {
-    const message =
-      (error as { message?: string })?.message?.replace(/^.*?: /, "") ??
-      fallback;
+    const message = (error as { message?: string })?.message?.replace(/^.*?: /, "") ?? fallback;
     dispatch({ type: SET_NOTIFICATION, payload: message || fallback });
   };
 
@@ -122,7 +108,7 @@ export default function Open() {
     try {
       const reset = httpsCallable<{ calendarId: string; day: string }, unknown>(
         getFunctions(undefined, REGION),
-        "resetWinner"
+        "resetWinner",
       );
       await reset({ calendarId: toCalendarId(name), day });
       setStep(null);
@@ -172,10 +158,7 @@ export default function Open() {
                 <input
                   disabled={viableUsers.every((u) => u.id !== user.id)}
                   type="checkbox"
-                  checked={
-                    viableUsers.some((u) => u.id === user.id) &&
-                    !excluded.has(user.id)
-                  }
+                  checked={viableUsers.some((u) => u.id === user.id) && !excluded.has(user.id)}
                   onChange={(e) => {
                     setExcluded((previous) => {
                       const next = new Set(previous);
@@ -197,11 +180,7 @@ export default function Open() {
       <div className={stepClass}>
         <div className={styles.winner}>
           <div className={styles.avatar}>
-            <img
-              className={styles.image}
-              src={winner?.image}
-              alt={winner?.name}
-            />
+            <img className={styles.image} src={winner?.image} alt={winner?.name} />
           </div>
 
           <h1>{winner?.name}</h1>

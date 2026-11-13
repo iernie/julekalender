@@ -9,8 +9,7 @@ import { ALICE, BOB, newTestEnvironment, seed } from "./helpers";
 
 let env: RulesTestEnvironment;
 
-const png = (bytes = 8) =>
-  new Uint8Array(bytes).fill(1) as unknown as Uint8Array<ArrayBuffer>;
+const png = (bytes = 8) => new Uint8Array(bytes).fill(1) as unknown as Uint8Array<ArrayBuffer>;
 const PNG = { contentType: "image/png" };
 
 beforeAll(async () => {
@@ -32,18 +31,12 @@ describe("avatars", () => {
     await env.withSecurityRulesDisabled(async (context) => {
       await uploadBytes(ref(context.storage(), "avatars/1.png"), png(), PNG);
     });
-    await assertSucceeds(
-      getBytes(ref(env.unauthenticatedContext().storage(), "avatars/1.png"))
-    );
+    await assertSucceeds(getBytes(ref(env.unauthenticatedContext().storage(), "avatars/1.png")));
   });
 
   it("cannot be overwritten", async () => {
     await assertFails(
-      uploadBytes(
-        ref(env.authenticatedContext(ALICE).storage(), "avatars/1.png"),
-        png(),
-        PNG
-      )
+      uploadBytes(ref(env.authenticatedContext(ALICE).storage(), "avatars/1.png"), png(), PNG),
     );
   });
 });
@@ -51,41 +44,27 @@ describe("avatars", () => {
 describe("calendar uploads", () => {
   it("lets the calendar owner upload an avatar", async () => {
     await assertSucceeds(
-      uploadBytes(
-        ref(env.authenticatedContext(ALICE).storage(), "kontoret/user-1"),
-        png(),
-        PNG
-      )
+      uploadBytes(ref(env.authenticatedContext(ALICE).storage(), "kontoret/user-1"), png(), PNG),
     );
   });
 
   it("stops a stranger uploading to someone else's calendar", async () => {
     await assertFails(
-      uploadBytes(
-        ref(env.authenticatedContext(BOB).storage(), "kontoret/user-1"),
-        png(),
-        PNG
-      )
+      uploadBytes(ref(env.authenticatedContext(BOB).storage(), "kontoret/user-1"), png(), PNG),
     );
   });
 
   it("stops an unauthenticated upload", async () => {
     await assertFails(
-      uploadBytes(
-        ref(env.unauthenticatedContext().storage(), "kontoret/user-1"),
-        png(),
-        PNG
-      )
+      uploadBytes(ref(env.unauthenticatedContext().storage(), "kontoret/user-1"), png(), PNG),
     );
   });
 
   it("rejects non-image content types", async () => {
     await assertFails(
-      uploadBytes(
-        ref(env.authenticatedContext(ALICE).storage(), "kontoret/user-1"),
-        png(),
-        { contentType: "application/pdf" }
-      )
+      uploadBytes(ref(env.authenticatedContext(ALICE).storage(), "kontoret/user-1"), png(), {
+        contentType: "application/pdf",
+      }),
     );
   });
 
@@ -94,8 +73,8 @@ describe("calendar uploads", () => {
       uploadBytes(
         ref(env.authenticatedContext(ALICE).storage(), "kontoret/user-1"),
         png(2 * 1024 * 1024 + 1),
-        PNG
-      )
+        PNG,
+      ),
     );
   });
 });
@@ -106,8 +85,8 @@ describe("everything else", () => {
       uploadBytes(
         ref(env.authenticatedContext(ALICE).storage(), "random/path/file.png"),
         png(),
-        PNG
-      )
+        PNG,
+      ),
     );
   });
 });

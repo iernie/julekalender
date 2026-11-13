@@ -42,7 +42,7 @@ There is no root lint script. Verification = `npm run typecheck` + `npm run test
 ## Gotchas
 
 - `initializeApp()` is called with no config in production — Firebase App Hosting injects the web app config. Local dev needs `VITE_FIREBASE_*` vars in `.env.local` (see `app/routes/App/App.tsx`), otherwise Firebase init fails.
-- **Every visitor is signed in anonymously** on first load so that each calendar has an `owner` uid. Google sign-in is an *upgrade* via `linkWithPopup`, not a fresh `signInWithPopup` — don't change this or users lose their calendars. Signing out re-signs in anonymously.
+- **Every visitor is signed in anonymously** on first load so that each calendar has an `owner` uid. Google sign-in is an _upgrade_ via `linkWithPopup`, not a fresh `signInWithPopup` — don't change this or users lose their calendars. Signing out re-signs in anonymously.
 - **`users.won` is server-only.** `firestore.rules` rejects any client write to it; the `drawWinner` / `resetWinner` callables are the only writers. Never write `won` from the app.
 - New `users` documents must carry `calendarId` and `owner` or the rules reject the create.
 - `app/routes/api.ts` is a proxy loader to `https://api.kalender.christmas`; it is not the Functions API.
