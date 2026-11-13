@@ -10,12 +10,15 @@ Root (the web app):
 - `npm run build` — SSR + client build into `build/`
 - `npm run typecheck` — **runs `react-router typegen` first, then `tsc`**. Always use this instead of bare `tsc`; route types in `.react-router/types` are generated and `./+types/*` imports won't resolve otherwise.
 - `npm start` — serve the built SSR output
+- `npm run lint` / `lint:fix` — oxlint across **both** packages (config: `.oxlintrc.json`)
+- `npm run format` / `format:check` — oxfmt (config: `.oxfmtrc.json`)
 
 Functions (`functions/`, separate package, Node 22, own `node_modules`):
 
-- `npm --prefix functions run lint` / `run build` (tsc → `functions/lib`)
+- `npm --prefix functions run build` (tsc → `functions/lib`)
 - `npm --prefix functions run serve` — build + firebase emulators for functions
-- `firebase deploy --only functions` — predeploy hooks run lint + build
+- `firebase deploy --only functions` — predeploy runs the **root** lint, then the functions build
+- `functions/` has no linter of its own; the root oxlint covers it.
 
 Security rules tests (root package):
 
@@ -23,8 +26,9 @@ Security rules tests (root package):
 - Requires a Java runtime. `openjdk` is installed via Homebrew but is **keg-only**, so prefix the call:
   `PATH="/opt/homebrew/opt/openjdk/bin:$PATH" npm run test:rules`
 
-There is no root lint script. Verification = `npm run typecheck` + `npm run test:rules`
-(+ `npm run build` for anything SSR-related).
+Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
+`npm run test:rules` (+ `npm run build` for anything SSR-related). CI
+(`.github/workflows/ci.yml`) runs exactly these.
 
 ## Layout
 
@@ -32,7 +36,6 @@ There is no root lint script. Verification = `npm run typecheck` + `npm run test
 - `app/root.tsx` — HTML document, error boundary, global `app.css`.
 - `app/routes/App/App.tsx` — layout route that initializes Firebase client SDKs in an effect and renders nothing until done.
 - `app/StateProvider.tsx` — hand-rolled reducer/context (`useState()` export returns `[state, dispatch]`). No external state library.
-- `app/index.tsx` is a leftover CRA entrypoint (imports a non-existent `./index.css`); it is not referenced by the router. Don't treat it as the entrypoint.
 - `functions/src/index.ts` — the `api` Express function (region `europe-west1`) plus the `drawWinner`, `resetWinner` and `deleteCalendar` callables. Firebase Hosting rewrites `**` to `api`.
 - `app/helpers.ts` — `toCalendarId`, `isValidCalendarId`, `expiresAt`. Use these instead of inlining `.toLocaleLowerCase()`.
 - `app/components/IconButton/` — keyboard-accessible wrapper for the icon actions. Prefer it over `onClick` on an icon.
@@ -48,5 +51,5 @@ There is no root lint script. Verification = `npm run typecheck` + `npm run test
 - `app/routes/api.ts` is a proxy loader to `https://api.kalender.christmas`; it is not the Functions API.
 - `vite.config.mts` has a hand-maintained `ssr.noExternal: true` with an explicit `external` allowlist. If a new dependency breaks the SSR build, add it there rather than changing `noExternal`.
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.
-- Husky pre-commit runs `lint-staged`, but its glob targets `src/**` which no longer exists — Prettier formatting is effectively not enforced automatically. Keep Prettier defaults (double quotes, semicolons) manually.
-- `functions/` uses eslint-config-google style: 2-space indent and **no spaces inside braces** in imports (`{onRequest}`), unlike the root app.
+- Husky pre-commit runs `lint-staged`, which now runs oxfmt and `oxlint --fix` on staged files. Both packages share one style — the old eslint-config-google "no spaces inside braces" convention in `functions/` is gone.
+- oxfmt is beta. It keeps Prettier's defaults here, so output should match what Prettier produced.
