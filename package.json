@@ -27,6 +27,7 @@
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
+    "test:rules": "firebase emulators:exec --only firestore,storage --project julekal-rules-test \"vitest run\"",
     "prepare": "husky"
   },
   "eslintConfig": {

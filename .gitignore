@@ -35,3 +35,11 @@ yarn-error.log*
 # Cloudflare
 .mf
 .wrangler
+
+# Firebase emulator artifacts
+firestore-debug.log
+storage-debug.log
+ui-debug.log
+pubsub-debug.log
+firebase-debug.log
+*.local
