@@ -1,26 +1,68 @@
 rules_version = '2';
 service cloud.firestore {
-  function isEmpty(resource) {
-   return resource == null || !("data" in resource);
-  }
-	function isOwner(resource) {
-  	return ("owner" in resource.data) && request.auth.uid == resource.data.owner;
-  }
-	function isSignedIn() {
-  	return request.auth != null;
-  }
-  function isPublic(resource) {
-   return !("public" in resource.data) || resource.data.public == true;
-  }
-  
   match /databases/{database}/documents {
-    match /calendars/{calendar} {
-      allow read, update, delete: if isEmpty(resource) || isPublic(resource) || (isSignedIn() && isOwner(resource));
-      allow create;
+
+    function signedIn() {
+      return request.auth != null;
     }
-    match /users/{user} {
-      allow read, update, delete: if isEmpty(resource) || isEmpty(get(resource.data.calendar)) || isPublic(get(resource.data.calendar)) || (isSignedIn() && isOwner(get(resource.data.calendar)));
-      allow create;
+
+    function isOwner(data) {
+      return signedIn() && request.auth.uid == data.owner;
+    }
+
+    function calendarExists(id) {
+      return exists(/databases/$(database)/documents/calendars/$(id));
+    }
+
+    function calendarData(id) {
+      return get(/databases/$(database)/documents/calendars/$(id)).data;
+    }
+
+    function publicCalendar(id) {
+      return calendarExists(id) && calendarData(id).public == true;
+    }
+
+    function validCalendarId(id) {
+      return id.matches('^[a-z0-9æøå_-]{2,40}$');
+    }
+
+    match /calendars/{calendarId} {
+      allow read: if resource.data.public == true || isOwner(resource.data);
+
+      allow create: if signedIn()
+        && validCalendarId(calendarId)
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.name.lower() == calendarId
+        && request.resource.data.public is bool
+        && request.resource.data.keys().hasOnly(
+             ['id', 'name', 'createdAt', 'deleteBy', 'owner', 'public', 'settings']);
+
+      allow update: if isOwner(resource.data)
+        && request.resource.data.owner == resource.data.owner
+        && request.resource.data.name == resource.data.name;
+
+      allow delete: if isOwner(resource.data);
+    }
+
+    match /users/{userId} {
+      allow read: if publicCalendar(resource.data.calendarId)
+        || isOwner(resource.data);
+
+      allow create: if isOwner(request.resource.data)
+        && calendarExists(request.resource.data.calendarId)
+        && request.resource.data.owner == calendarData(request.resource.data.calendarId).owner
+        && request.resource.data.won.size() == 0
+        && request.resource.data.keys().hasOnly(
+             ['id', 'name', 'image', 'calendar', 'calendarId', 'owner', 'createdAt', 'deleteBy', 'won']);
+
+      // Clients may rename and re-avatar, but never touch `won`.
+      // Winners are written exclusively by the drawWinner callable.
+      allow update: if isOwner(resource.data)
+        && request.resource.data.won == resource.data.won
+        && request.resource.data.owner == resource.data.owner
+        && request.resource.data.calendarId == resource.data.calendarId;
+
+      allow delete: if isOwner(resource.data);
     }
   }
 }

@@ -1,12 +1,31 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+
+    function ownsCalendar(calendarId) {
+      return request.auth != null
+        && firestore.exists(/databases/(default)/documents/calendars/$(calendarId))
+        && firestore.get(/databases/(default)/documents/calendars/$(calendarId)).data.owner == request.auth.uid;
+    }
+
+    // Seeded default avatars.
+    match /avatars/{file} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Per-calendar user avatars, uploaded by the calendar owner.
+    match /{calendarId}/{userId} {
+      allow read: if true;
+      allow write: if ownsCalendar(calendarId)
+        && request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp|gif)');
+      allow delete: if ownsCalendar(calendarId);
+    }
+
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
