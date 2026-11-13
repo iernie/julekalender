@@ -22,7 +22,8 @@ const StateContainer = () => {
   React.useEffect(() => {
     if (!name) return;
 
-    const calendarReference = doc(db, "calendars", toCalendarId(name));
+    const calendarId = toCalendarId(name);
+    const calendarReference = doc(db, "calendars", calendarId);
 
     const unsubCalendar = onSnapshot(
       calendarReference,
@@ -39,7 +40,10 @@ const StateContainer = () => {
       () => navigate("/"),
     );
 
-    const userQuery = query(collection(db, "users"), where("calendar", "==", calendarReference));
+    // Must filter on calendarId, not the `calendar` reference: firestore.rules
+    // evaluates list operations against the query, so every field the rule
+    // reads has to be constrained here.
+    const userQuery = query(collection(db, "users"), where("calendarId", "==", calendarId));
 
     const unsubUsers: Unsubscribe = onSnapshot(
       userQuery,

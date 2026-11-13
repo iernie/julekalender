@@ -18,8 +18,11 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/calendars/$(id)).data;
     }
 
-    function publicCalendar(id) {
-      return calendarExists(id) && calendarData(id).public == true;
+    // Readable if the calendar is public, or the caller owns it.
+    function canReadCalendar(id) {
+      return calendarExists(id)
+        && (calendarData(id).public == true
+            || request.auth.uid == calendarData(id).owner);
     }
 
     function validCalendarId(id) {
@@ -27,7 +30,16 @@ service cloud.firestore {
     }
 
     match /calendars/{calendarId} {
-      allow read: if resource.data.public == true || isOwner(resource.data);
+      // `resource` is null for a document that does not exist. Reading a
+      // missing calendar must succeed so the app can check name availability.
+      allow get: if resource == null
+        || resource.data.public == true
+        || isOwner(resource.data);
+
+      // Rules are not filters: for a query, every field the rule reads must be
+      // constrained by the query itself. Listing is only ever done as
+      // `where("owner", "==", uid)`, so this rule reads nothing else.
+      allow list: if isOwner(resource.data);
 
       allow create: if signedIn()
         && validCalendarId(calendarId)
@@ -45,8 +57,12 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if publicCalendar(resource.data.calendarId)
-        || isOwner(resource.data);
+      allow get: if resource == null
+        || canReadCalendar(resource.data.calendarId);
+
+      // Listing is only ever done as `where("calendarId", "==", id)`, so this
+      // rule reads no other field of the user document.
+      allow list: if canReadCalendar(resource.data.calendarId);
 
       allow create: if isOwner(request.resource.data)
         && calendarExists(request.resource.data.calendarId)

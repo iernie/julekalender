@@ -4,7 +4,17 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { deleteDoc, doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { ALICE, BOB, calendar, newTestEnvironment, seed, user } from "./helpers";
 
 let env: RulesTestEnvironment;
@@ -61,6 +71,14 @@ describe("calendars", () => {
     await assertSucceeds(getDoc(doc(asGuest(), "calendars", "kontoret")));
   });
 
+  // The app checks name availability with getDoc before creating. `resource`
+  // is null for a missing document, so the read rule must tolerate it rather
+  // than raising a null evaluation error.
+  it("allows reading a calendar that does not exist", async () => {
+    await assertSucceeds(getDoc(doc(asAlice(), "calendars", "finnes-ikke")));
+    await assertSucceeds(getDoc(doc(asGuest(), "calendars", "finnes-ikke")));
+  });
+
   it("hides a private calendar from everyone but the owner", async () => {
     await seed(env, {
       calendarId: "kontoret",
@@ -70,6 +88,20 @@ describe("calendars", () => {
     await assertFails(getDoc(doc(asGuest(), "calendars", "kontoret")));
     await assertFails(getDoc(doc(asBob(), "calendars", "kontoret")));
     await assertSucceeds(getDoc(doc(asAlice(), "calendars", "kontoret")));
+  });
+
+  // Welcome lists calendars with where("owner","==",uid). The list rule must
+  // read nothing the query does not constrain.
+  it("lets an owner list their own calendars", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    const db = asAlice();
+    await assertSucceeds(getDocs(query(collection(db, "calendars"), where("owner", "==", ALICE))));
+  });
+
+  it("stops listing calendars owned by someone else", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    const db = asBob();
+    await assertFails(getDocs(query(collection(db, "calendars"), where("owner", "==", ALICE))));
   });
 
   it("lets the owner update settings", async () => {
@@ -140,6 +172,37 @@ describe("users", () => {
   it("lets anyone read users of a public calendar", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
     await assertSucceeds(getDoc(doc(asGuest(), "users", "user-1")));
+  });
+
+  // The app loads users with a query, not a get. Firestore evaluates list
+  // rules against the query, so this needs its own coverage: a rule reading a
+  // field the query does not constrain fails with an empty `resource`.
+  it("lets anyone list users of a public calendar", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    const db = asGuest();
+    await assertSucceeds(
+      getDocs(query(collection(db, "users"), where("calendarId", "==", "kontoret"))),
+    );
+  });
+
+  it("lets the owner list users of their private calendar", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE, isPublic: false });
+    const db = asAlice();
+    await assertSucceeds(
+      getDocs(query(collection(db, "users"), where("calendarId", "==", "kontoret"))),
+    );
+  });
+
+  it("stops a stranger listing users of a private calendar", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE, isPublic: false });
+    const db = asBob();
+    await assertFails(
+      getDocs(query(collection(db, "users"), where("calendarId", "==", "kontoret"))),
+    );
+  });
+
+  it("allows reading a user that does not exist", async () => {
+    await assertSucceeds(getDoc(doc(asAlice(), "users", "finnes-ikke")));
   });
 
   it("hides users of a private calendar", async () => {
