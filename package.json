@@ -9,8 +9,6 @@
     "date-fns": "^4.4.0",
     "firebase": "^13.3.0",
     "isbot": "^5.2.3",
-    "lint-staged": "^16.2.7",
-    "prettier": "^3.6.2",
     "react": "^19.3.1",
     "react-confetti": "^6.4.0",
     "react-dom": "^19.3.1",
@@ -19,7 +17,6 @@
     "react-snowfall": "^2.4.0",
     "react-tooltip": "^5.30.0",
     "react-use": "^17.6.1",
-    "typescript": "^5.9.3",
     "uuid": "^13.0.0"
   },
   "scripts": {
@@ -27,29 +24,19 @@
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
     "test:rules": "firebase emulators:exec --only firestore,storage --project julekal-rules-test \"vitest run\"",
     "prepare": "husky"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">= 0.25%"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "proxy": "http://localhost:5000",
   "lint-staged": {
-    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
-      "prettier --write"
+    "*.{js,jsx,ts,tsx,json,jsonc,css,md}": [
+      "oxfmt"
+    ],
+    "*.{js,jsx,ts,tsx}": [
+      "oxlint --fix"
     ]
   },
   "devDependencies": {
@@ -60,6 +47,9 @@
     "@types/react-dom": "^19.3.0",
     "firebase-tools": "^15.36.0",
     "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "oxfmt": "^0.78.0",
+    "oxlint": "^1.93.0",
     "typescript": "^5.9.3",
     "vite": "^7.2.4",
     "vitest": "^5.1.0"
