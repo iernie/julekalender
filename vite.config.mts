@@ -1,13 +1,15 @@
 import { defineConfig } from "vite";
 import { reactRouter } from "@react-router/dev/vite";
 
-export default defineConfig(({ isSsrBuild }) => ({
-  build: {
-    rollupOptions: isSsrBuild
-      ? {
+export default defineConfig({
+  environments: {
+    ssr: {
+      build: {
+        rollupOptions: {
           input: ["virtual:react-router/server-build"],
-        }
-      : undefined,
+        },
+      },
+    },
   },
   ssr: {
     noExternal: true,
@@ -39,4 +41,4 @@ export default defineConfig(({ isSsrBuild }) => ({
     },
   },
   plugins: [reactRouter()],
-}));
+});
