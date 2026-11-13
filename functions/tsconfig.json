@@ -6,6 +6,10 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "outDir": "lib",
+    // TypeScript 7 defaults rootDir to "./", which would emit to lib/src/.
+    "rootDir": "src",
+    // TypeScript 7 defaults types to [], so @types/node must be explicit.
+    "types": ["node"],
     "sourceMap": true,
     "strict": true,
     "target": "es2017"
