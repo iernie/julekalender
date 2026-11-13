@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
+    "emulators": "npm --prefix functions run build && firebase emulators:start --only auth,firestore,storage,functions --project demo-julekal --import ./.emulator-data --export-on-exit ./.emulator-data",
+    "seed": "node scripts/seed-emulators.mjs",
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",

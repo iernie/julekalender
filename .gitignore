@@ -43,3 +43,6 @@ ui-debug.log
 pubsub-debug.log
 firebase-debug.log
 *.local
+
+# Local emulator state
+/.emulator-data

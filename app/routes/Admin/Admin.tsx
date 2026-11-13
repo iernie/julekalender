@@ -28,9 +28,8 @@ import {
 import { getFunctions, httpsCallable } from "firebase/functions";
 import PageTitle from "../../components/PageTitle";
 import IconButton from "../../components/IconButton";
-import { expiresAt, toCalendarId } from "../../helpers";
+import { expiresAt, FUNCTIONS_REGION, toCalendarId } from "../../helpers";
 
-const REGION = "europe-west1";
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const AVATAR_COUNT = 20;
@@ -88,7 +87,7 @@ export default function Admin() {
     }
     try {
       const remove = httpsCallable<{ calendarId: string }, unknown>(
-        getFunctions(undefined, REGION),
+        getFunctions(undefined, FUNCTIONS_REGION),
         "deleteCalendar",
       );
       await remove({ calendarId });

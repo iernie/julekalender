@@ -9,10 +9,8 @@ import IconButton from "../../components/IconButton";
 import { useWindowSize } from "react-use";
 import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
-import { toCalendarId } from "../../helpers";
+import { FUNCTIONS_REGION, toCalendarId } from "../../helpers";
 import { getFunctions, httpsCallable } from "firebase/functions";
-
-const REGION = "europe-west1";
 
 export default function Open() {
   const [{ calendar, users }, dispatch] = useState();
@@ -88,7 +86,7 @@ export default function Open() {
       const draw = httpsCallable<
         { calendarId: string; day: string; excluded: Array<string> },
         { id: string; name: string; image: string }
-      >(getFunctions(undefined, REGION), "drawWinner");
+      >(getFunctions(undefined, FUNCTIONS_REGION), "drawWinner");
 
       await draw({
         calendarId: toCalendarId(name),
@@ -107,7 +105,7 @@ export default function Open() {
     setStep(0);
     try {
       const reset = httpsCallable<{ calendarId: string; day: string }, unknown>(
-        getFunctions(undefined, REGION),
+        getFunctions(undefined, FUNCTIONS_REGION),
         "resetWinner",
       );
       await reset({ calendarId: toCalendarId(name), day });

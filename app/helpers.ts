@@ -1,5 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 
+/** Region the callables are deployed to. Must match functions/src/index.ts. */
+export const FUNCTIONS_REGION = "europe-west1";
+
 /** Firestore document id for a calendar. Must satisfy the rules' id pattern. */
 export const toCalendarId = (name: string) => name.toLocaleLowerCase();
 

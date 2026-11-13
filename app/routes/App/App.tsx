@@ -7,9 +7,11 @@ import { getAnalytics, isSupported } from "firebase/analytics";
 import Snowfall from "react-snowfall";
 import { useWindowSize } from "react-use";
 import styles from "./App.module.css";
-import { getAuth, signInAnonymously } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { connectAuthEmulator, getAuth, signInAnonymously } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectStorageEmulator, getStorage } from "firebase/storage";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
+import { FUNCTIONS_REGION } from "../../helpers";
 
 /**
  * In production, Firebase App Hosting injects the web app config and the no-arg
@@ -29,6 +31,9 @@ const firebaseConfig = (): FirebaseOptions | undefined => {
   };
 };
 
+const useEmulators = import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
+const EMULATOR_HOST = "127.0.0.1";
+
 export default function App() {
   const [init, setInit] = React.useState(false);
   const { width, height } = useWindowSize();
@@ -40,15 +45,27 @@ export default function App() {
       const config = firebaseConfig();
       const app = getApps()[0] ?? (config ? initializeApp(config) : initializeApp());
       const auth = getAuth(app);
-      getFirestore(app);
-      getStorage(app);
+      const db = getFirestore(app);
+      const storage = getStorage(app);
+      const functions = getFunctions(app, FUNCTIONS_REGION);
+
+      // Must happen before any read, write or sign-in on these services.
+      if (useEmulators) {
+        connectAuthEmulator(auth, `http://${EMULATOR_HOST}:9099`, {
+          disableWarnings: true,
+        });
+        connectFirestoreEmulator(db, EMULATOR_HOST, 8081);
+        connectStorageEmulator(storage, EMULATOR_HOST, 9199);
+        connectFunctionsEmulator(functions, EMULATOR_HOST, 5001);
+      }
 
       // Every visitor needs an identity so calendars they create have an owner.
       if (!auth.currentUser) {
         await signInAnonymously(auth);
       }
 
-      if (await isSupported()) getAnalytics(app);
+      // Analytics has no emulator and would try to reach Google in dev.
+      if (!useEmulators && (await isSupported())) getAnalytics(app);
       if (!cancelled) setInit(true);
     };
 
