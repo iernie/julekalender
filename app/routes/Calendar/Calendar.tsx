@@ -12,7 +12,9 @@ import { Tooltip as ReactTooltip } from "react-tooltip";
 
 export default function Calendar() {
   const [{ calendar, users }] = useState();
-  const [today, setToday] = React.useState(getDate(new Date()));
+  // Held in state so the grid re-evaluates when the tab regains focus across
+  // midnight, rather than reading the clock during render.
+  const [now, setNow] = React.useState<Date>(() => new Date());
   const navigate = useNavigate();
   const { name } = useParams<{ name: string }>();
   const [hotkey, setHotkey] = React.useState(false);
@@ -36,7 +38,7 @@ export default function Calendar() {
 
   React.useEffect(() => {
     const onVisibilityChange = () => {
-      setToday(getDate(new Date()));
+      setNow(new Date());
     };
 
     window.addEventListener("visibilitychange", onVisibilityChange, false);
@@ -49,6 +51,8 @@ export default function Calendar() {
   }, []);
 
   if (!name) return null;
+
+  const today = getDate(now);
 
   const firstDayOfTheMonth =
     getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) === 0
@@ -71,7 +75,7 @@ export default function Calendar() {
       </ReactTooltip>
       <div className={styles.days}>
         {Array.from(Array(24).keys()).map((day) => {
-          const open = hotkey || (day < today && getMonth(new Date()) === 11);
+          const open = hotkey || (day < today && getMonth(now) === 11);
           const winner = users?.find(
             (user) => user.won.indexOf(`${day + 1}`) !== -1
           );

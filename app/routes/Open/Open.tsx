@@ -58,9 +58,9 @@ export default function Open() {
     };
   }, [showUsers]);
 
-  React.useEffect(() => {
-    if (winner && step === null) setStep(3);
-  }, [step, winner]);
+  // Derived rather than pushed into state from an effect: an already-drawn day
+  // lands straight on the final step.
+  const current = step ?? (winner ? 3 : null);
 
   if (!name) return null;
   if (!users) return null;
@@ -132,7 +132,7 @@ export default function Open() {
     }
   };
 
-  const stepClass = classnames({ [styles[`step-${step}`]]: true });
+  const stepClass = classnames({ [styles[`step-${current}`]]: true });
 
   return (
     <div>
@@ -177,8 +177,8 @@ export default function Open() {
                     !excluded.has(user.id)
                   }
                   onChange={(e) => {
-                    setExcluded((current) => {
-                      const next = new Set(current);
+                    setExcluded((previous) => {
+                      const next = new Set(previous);
                       if (e.target.checked) {
                         next.delete(user.id);
                       } else {
@@ -206,12 +206,12 @@ export default function Open() {
 
           <h1>{winner?.name}</h1>
         </div>
-        {(step === null || step < 3) && (
+        {(current === null || current < 3) && (
           <button
             type="button"
             className={styles.giftbox}
             aria-label="Trekk dagens vinner"
-            disabled={step === 0 || step === 1}
+            disabled={current === 0 || current === 1}
             onClick={chooseWinner}
           >
             <div className={styles.cover}>
@@ -220,7 +220,7 @@ export default function Open() {
             <div className={styles.box}></div>
           </button>
         )}
-        {step === 3 && (
+        {current === 3 && (
           <IconButton
             data-tooltip-id="refresh"
             className={styles.refresh}
@@ -231,10 +231,10 @@ export default function Open() {
           </IconButton>
         )}
       </div>
-      {step !== 0 && (
+      {current !== 0 && (
         <Confetti
           recycle={false}
-          run={step !== null && step > 1}
+          run={current !== null && current > 1}
           width={width}
           height={height}
         />

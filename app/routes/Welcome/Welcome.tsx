@@ -72,28 +72,27 @@ export default function Welcome() {
   };
 
   React.useEffect(() => {
-    return getAuth().onAuthStateChanged((user) => {
-      setUser(user);
+    return getAuth().onAuthStateChanged((next) => {
+      setUser(next);
     });
   }, []);
 
   React.useEffect(() => {
-    let unsub: Unsubscribe | null = null;
-    if (user) {
-      const calendarQuery = query(
-        collection(db, "calendars"),
-        where("owner", "==", user.uid)
+    if (!user) return;
+
+    const calendarQuery = query(
+      collection(db, "calendars"),
+      where("owner", "==", user.uid)
+    );
+    const unsub: Unsubscribe = onSnapshot(calendarQuery, (snapshot) => {
+      setCalendars(
+        snapshot.docs.map((entry) => ({ ...entry.data() }) as CalendarType)
       );
-      unsub = onSnapshot(calendarQuery, (calendars) => {
-        setCalendars(
-          calendars.docs.map((doc) => ({ ...doc.data() }) as CalendarType)
-        );
-      });
-    } else {
-      setCalendars([]);
-    }
+    });
+
     return () => {
-      if (unsub) unsub();
+      unsub();
+      setCalendars([]);
     };
   }, [db, user]);
 

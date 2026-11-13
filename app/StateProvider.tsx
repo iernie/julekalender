@@ -60,11 +60,15 @@ const reducer = (state: State = intitialState, action: Action): State => {
 const StateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  return (
-    <Context.Provider value={React.useReducer(reducer, intitialState)}>
-      {children}
-    </Context.Provider>
+  const [state, dispatch] = React.useReducer(reducer, intitialState);
+  // useReducer returns a new tuple each render, which would re-render every
+  // consumer regardless of whether the state actually changed.
+  const value = React.useMemo<[State, React.Dispatch<Action>]>(
+    () => [state, dispatch],
+    [state]
   );
+
+  return <Context.Provider value={value}>{children}</Context.Provider>;
 };
 
 export default StateProvider;

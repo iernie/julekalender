@@ -6,12 +6,12 @@ const Notification: React.FC = () => {
   const [{ notification }, dispatch] = useState();
 
   React.useEffect(() => {
-    if (notification) {
-      setTimeout(() => {
-        dispatch({ type: SET_NOTIFICATION });
-      }, 5000);
-    }
-  }, [notification]);
+    if (!notification) return;
+    const timer = setTimeout(() => {
+      dispatch({ type: SET_NOTIFICATION });
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [dispatch, notification]);
 
   if (!notification) return null;
 

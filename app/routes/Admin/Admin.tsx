@@ -52,6 +52,25 @@ const ALLOWED_AVATAR_TYPES = [
   "image/webp",
   "image/gif",
 ];
+const AVATAR_COUNT = 20;
+
+/** Cycles through the seeded avatars before repeating any of them. */
+const nextAvatar = (used: Array<number>): number => {
+  if (used.length === AVATAR_COUNT) used.length = 0;
+  const remaining = Array.from(
+    { length: AVATAR_COUNT },
+    (_, index) => index + 1
+  ).filter((candidate) => !used.includes(candidate));
+  const picked = remaining[Math.floor(Math.random() * remaining.length)];
+  used.push(picked);
+  return picked;
+};
+
+const logout = async () => {
+  const auth = getAuth();
+  await auth.signOut();
+  await signInAnonymously(auth);
+};
 
 export default function Admin() {
   const [confirm, setConfirm] = React.useState(true);
@@ -82,18 +101,6 @@ export default function Admin() {
   const calendarId = toCalendarId(name);
   const isAnonymous = user?.isAnonymous ?? true;
   const isOwner = Boolean(user && calendar.owner === user.uid);
-
-  const getAvatar = (): number => {
-    if (usedAvatars.current.length === 20) {
-      usedAvatars.current = [];
-    }
-    const random = Math.floor(Math.random() * 20) + 1;
-    if (usedAvatars.current.indexOf(random) === -1) {
-      usedAvatars.current.push(random);
-      return random;
-    }
-    return getAvatar();
-  };
 
   const notify = (payload: string) =>
     dispatch({ type: SET_NOTIFICATION, payload });
@@ -144,12 +151,6 @@ export default function Admin() {
       }
       notify("Klarte ikke logge inn.");
     }
-  };
-
-  const logout = async () => {
-    const auth = getAuth();
-    await auth.signOut();
-    await signInAnonymously(auth);
   };
 
   const setPublic = async (isPublic: boolean) => {
@@ -315,8 +316,8 @@ export default function Admin() {
 
         <div className={styles.users}>
           {users &&
-            [...users]
-              .sort((a, b) =>
+            users
+              .toSorted((a, b) =>
                 compareAsc(a.createdAt.seconds, b.createdAt.seconds)
               )
               .map((listed) => {
@@ -367,7 +368,6 @@ export default function Admin() {
                       placeholder="Navn..."
                       disabled={!isOwner}
                       aria-label="Navn"
-                      autoFocus={listed.name === ""}
                       onChange={(e) => renameUser(listed.id, e.target.value)}
                     />
                     <IconButton
@@ -400,7 +400,7 @@ export default function Admin() {
             const calendarReference = doc(db, "calendars", calendarId);
             const id = uuidv4();
             const downloadUrl = await getDownloadURL(
-              ref(storage, `avatars/${getAvatar()}.png`)
+              ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`)
             );
 
             await setDoc(doc(db, "users", id), {

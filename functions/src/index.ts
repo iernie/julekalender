@@ -10,7 +10,7 @@ import {setGlobalOptions} from "firebase-functions/v2";
 import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
 import express from "express";
 import cors from "cors";
-import {randomInt} from "crypto";
+import {randomInt} from "node:crypto";
 import {initializeApp} from "firebase-admin/app";
 import {FieldValue, getFirestore} from "firebase-admin/firestore";
 import {getStorage} from "firebase-admin/storage";
@@ -81,15 +81,15 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
     const snapshot = await tx.get(
       db.collection("users").where("calendar", "==", reference),
     );
-    const users = snapshot.docs.map((doc) => ({
-      ref: doc.ref,
-      ...(doc.data() as {
+    const users = snapshot.docs.map((doc) => {
+      const data = doc.data() as {
         id: string;
         name: string;
         image: string;
         won: Array<string>;
-      }),
-    }));
+      };
+      return {ref: doc.ref, data};
+    });
 
     if (users.length === 0) {
       throw new HttpsError("failed-precondition", "Fant ingen brukere");
@@ -97,12 +97,12 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
 
     // The transaction makes this check authoritative: two admins opening the
     // same day concurrently cannot both draw.
-    if (users.some((user) => user.won.includes(day))) {
+    if (users.some(({data}) => data.won.includes(day))) {
       throw new HttpsError("already-exists", "Dagen er allerede trukket");
     }
 
     const settings = calendar.settings ?? {};
-    const counts = users.map((user) => user.won.length);
+    const counts = users.map(({data}) => data.won.length);
     const highest = Math.max(...counts);
     const lowest = Math.min(...counts);
     const giftsPerUser =
@@ -110,13 +110,13 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
 
     const viable = users
       .filter(
-        (user) =>
-          !settings.fair || highest === lowest || user.won.length < highest,
+        ({data}) =>
+          !settings.fair || highest === lowest || data.won.length < highest,
       )
       .filter(
-        (user) => giftsPerUser === null || user.won.length < giftsPerUser,
+        ({data}) => giftsPerUser === null || data.won.length < giftsPerUser,
       )
-      .filter((user) => !excluded.has(user.id));
+      .filter(({data}) => !excluded.has(data.id));
 
     if (viable.length === 0) {
       throw new HttpsError("failed-precondition", "Tom for vinnere");
@@ -127,7 +127,11 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
 
     tx.update(winner.ref, {won: FieldValue.arrayUnion(day)});
 
-    return {id: winner.id, name: winner.name, image: winner.image};
+    return {
+      id: winner.data.id,
+      name: winner.data.name,
+      image: winner.data.image,
+    };
   });
 });
 
@@ -200,25 +204,45 @@ app.get("/api", (_, response) => {
   response.json({error: "Kalendernavn mangler"});
 });
 
-app.get("/api/:name", async (request, response) => {
-  const {name} = request.params;
-  const {apiKey} = request.query;
+/**
+ * Express does not forward rejections from async handlers, so an unhandled
+ * rejection would crash the instance. Wrap them explicitly.
+ */
+const asyncHandler =
+  <P extends Record<string, string>>(
+    handler: (
+      request: express.Request<P>,
+      response: express.Response,
+    ) => Promise<void>,
+  ) =>
+    (
+      request: express.Request<P>,
+      response: express.Response,
+      next: express.NextFunction,
+    ) => {
+      handler(request, response).catch(next);
+    };
 
-  const calendarReference = getFirestore()
-    .collection("calendars")
-    .doc(name.toLocaleLowerCase());
+app.get(
+  "/api/:name",
+  asyncHandler<{name: string}>(async (request, response) => {
+    const {name} = request.params;
+    const {apiKey} = request.query;
 
-  const calendar = (await calendarReference.get()).data();
-  if (!calendar) {
-    response.json({error: "Kalender ikke funnet"});
-    return;
-  }
-  if (calendar.public === false && calendar.owner !== apiKey) {
-    response.json({error: "Mangler tilgang til kalender"});
-    return;
-  }
+    const calendarReference = getFirestore()
+      .collection("calendars")
+      .doc(name.toLocaleLowerCase());
 
-  try {
+    const calendar = (await calendarReference.get()).data();
+    if (!calendar) {
+      response.json({error: "Kalender ikke funnet"});
+      return;
+    }
+    if (calendar.public === false && calendar.owner !== apiKey) {
+      response.json({error: "Mangler tilgang til kalender"});
+      return;
+    }
+
     const users = await getFirestore()
       .collection("users")
       .where("calendar", "==", calendarReference)
@@ -235,9 +259,17 @@ app.get("/api/:name", async (request, response) => {
       .find((user) => user.won.includes(today));
 
     response.json(winner ? {name: winner.name, image: winner.image} : {});
-  } catch {
-    response.json({error: "En feil skjedde"});
-  }
+  }),
+);
+
+// Keeps the historical contract: the API always answers with JSON.
+app.use((
+  _error: unknown,
+  _request: express.Request,
+  response: express.Response,
+  _next: express.NextFunction,
+) => {
+  response.json({error: "En feil skjedde"});
 });
 
 export const api = onRequest(app);

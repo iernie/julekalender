@@ -56,7 +56,7 @@ const StateContainer = () => {
       (users) => {
         dispatch({
           type: SET_USERS,
-          payload: users.docs.map((doc) => ({ ...doc.data() }) as UserType),
+          payload: users.docs.map((entry) => ({ ...entry.data() }) as UserType),
         });
       },
       () => {
