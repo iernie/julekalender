@@ -54,5 +54,8 @@
     "*.{js,jsx,ts,tsx}": [
       "oxlint --fix"
     ]
+  },
+  "engines": {
+    "node": ">=22.22.0"
   }
 }

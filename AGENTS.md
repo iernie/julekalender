@@ -53,3 +53,6 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.
 - Husky pre-commit runs `lint-staged`, which now runs oxfmt and `oxlint --fix` on staged files. Both packages share one style — the old eslint-config-google "no spaces inside braces" convention in `functions/` is gone.
 - oxfmt is beta. It keeps Prettier's defaults here, so output should match what Prettier produced.
+- The root package is **ESM** (`"type": "module"`) and needs Node >=22.22, both required by React Router 8.
+- `functions/` deliberately stays on `@types/node@22` to match the Cloud Functions Node 22 runtime. Do not bump it to match the root package.
+- TypeScript 7 ships **no programmatic compiler API**. Tooling that imports `typescript` (rather than shelling out to `tsc`) needs the `@typescript/typescript6` package. It also defaults `rootDir` to `./` and `types` to `[]`, which is why `functions/tsconfig.json` sets both explicitly — without `rootDir` it emits to `lib/src/` and breaks the function entrypoint.
