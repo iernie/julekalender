@@ -3,3 +3,8 @@ allowBuilds:
   protobufjs: false
   re2: false
 pmOnFail: ignore
+# App Hosting's nodejs runtime resolves externalized ESM imports (firebase-admin
+# and its transitive deps, plus the CJS react-tooltip/react-confetti deps) from
+# the top level of node_modules. pnpm's default isolated layout hides transitive
+# packages there, so use npm's flat layout instead.
+nodeLinker: hoisted
