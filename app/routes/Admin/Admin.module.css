@@ -35,11 +35,12 @@
 }
 
 .url {
-  color: blue;
+  color: var(--color-link);
   text-decoration: none;
 
   &:hover,
-  &:focus {
+  &:focus-visible {
+    color: var(--color-link-hover);
     text-decoration: underline;
   }
 }

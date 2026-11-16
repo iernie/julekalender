@@ -9,6 +9,9 @@
   --grey-2: rgb(201, 202, 200);
   --grey-3: rgb(173, 175, 175);
   --grey-4: rgb(77, 79, 83);
+  --color-link: var(--red);
+  --color-link-hover: var(--darkerRed);
+  --font-display: "Playfair Display", "Calligraffitti", serif;
 }
 
 html {
@@ -37,4 +40,8 @@ body {
 *:before,
 *:after {
   box-sizing: inherit;
+}
+
+h2 {
+  font-family: var(--font-display);
 }

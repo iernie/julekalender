@@ -50,11 +50,12 @@
 .link {
   display: inline-block;
   margin: 0 1rem;
-  color: blue;
+  color: var(--color-link);
   text-decoration: none;
 
   &:hover,
-  &:focus {
+  &:focus-visible {
+    color: var(--color-link-hover);
     text-decoration: underline;
   }
 }
