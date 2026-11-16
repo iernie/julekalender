@@ -11,5 +11,4 @@ export default [
       ]),
     ]),
   ]),
-  route("/api/:name", "routes/api.ts"),
 ] satisfies RouteConfig;

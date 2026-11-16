@@ -44,12 +44,11 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - `app/root.tsx` — HTML document, error boundary, global `app.css`.
 - `app/routes/App/App.tsx` — root layout. Firebase is initialised at module scope in `app/firebase.ts`, **not** in an effect, so the server render and first client render match.
 - `app/StateProvider.tsx` — hand-rolled reducer/context (`useState()` export returns `[state, dispatch]`). No external state library.
-- `functions/src/index.ts` — the `api` Express function (region `europe-west1`) plus the `drawWinner`, `resetWinner` and `deleteCalendar` callables. Firebase Hosting rewrites `**` to `api`.
+- `functions/src/index.ts` — the public `api` Express function (region `europe-west1`, `maxInstances: 10`) plus the `drawWinner`, `resetWinner` and `deleteCalendar` callables. Firebase Hosting rewrites `**` to `api`, which is what `api.kalender.christmas` serves.
 - `app/helpers.ts` — `toCalendarId`, `isValidCalendarId`, `expiresAt`, `FUNCTIONS_REGION`.
-- `app/firebase.ts` — client SDK singleton + emulator wiring. `app/firebase.server.ts` — Admin SDK for loaders; never import it from a component.
+- `app/firebase.ts` — client SDK singleton + emulator wiring. `app/firebase.server.ts` — Admin SDK for route loaders; never import it from a component.
 - `app/serialize.ts` — `toCalendar` / `toUser`. Every path into app state goes through these.
 - `app/hooks.ts` — `useMounted`, `useWindowSize`, `usePrefersReducedMotion`, all built on `useSyncExternalStore` so they are SSR-safe. Gate browser-dependent output behind `useMounted` to avoid hydration mismatches.
-- `app/routes/api.ts` — the public `/api/:name` endpoint, served by the app via the Admin SDK.
 - `app/components/IconButton/` — keyboard-accessible wrapper for the icon actions. Prefer it over `onClick` on an icon.
 - `tests/` — Firestore and Storage security rules tests (Vitest + `@firebase/rules-unit-testing`).
 - `scripts/seed-emulators.mjs` — uploads `static/*.png` to `avatars/` in the Storage emulator; the app needs them when adding a user.
@@ -68,6 +67,7 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - Client Firestore listeners wait for `onAuthStateChanged` to fire before subscribing. A listener rejected for lack of auth is never retried, which would break private calendars.
 - Run `npm run test:rules` on its own emulator instance. Against a dev emulator started for another project, `storage.rules`' `firestore.get` resolves to that project's data and the ownership tests fail spuriously.
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.
+- **The public API lives only in `functions/`**, deliberately. It is unauthenticated, so keeping it off the web app's Cloud Run service preserves its own `maxInstances` cost cap and keeps scraper traffic from scaling the site. The app must not grow a competing `/api` route.
 - Husky pre-commit runs `lint-staged`, which now runs oxfmt and `oxlint --fix` on staged files. Both packages share one style — the old eslint-config-google "no spaces inside braces" convention in `functions/` is gone.
 - oxfmt is beta. It keeps Prettier's defaults here, so output should match what Prettier produced.
 - Decorative motion (snowfall, confetti) must stay behind `usePrefersReducedMotion`.

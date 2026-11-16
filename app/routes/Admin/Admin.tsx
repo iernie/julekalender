@@ -203,7 +203,7 @@ export default function Admin() {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`/api/${calendarId}${
+            href={`https://api.kalender.christmas/api/${calendarId}${
               calendar.public === false && user ? `?apiKey=${user.uid}` : ""
             }`}
           >
