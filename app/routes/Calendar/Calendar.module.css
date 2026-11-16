@@ -71,6 +71,7 @@
 
 .number {
   font-size: 1.5rem;
+  font-family: var(--font-display);
   position: absolute;
   bottom: 0.5rem;
   right: 1rem;
