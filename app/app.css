@@ -45,3 +45,16 @@ body {
 h2 {
   font-family: var(--font-display);
 }
+
+input:not([type="checkbox"]):not([type="file"]):not([type="radio"]) {
+  &:focus-visible {
+    outline: 0.125rem solid var(--red);
+    outline-offset: 0.125rem;
+  }
+}
+
+a:focus-visible {
+  outline: 0.125rem solid var(--red);
+  outline-offset: 0.1875rem;
+  border-radius: 0.125rem;
+}
