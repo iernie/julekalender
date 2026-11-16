@@ -1,0 +1,92 @@
+version: 2
+
+# Weekly, grouped updates. Minor/patch bumps arrive as one low-noise PR per
+# package ecosystem; majors stay separate so they get a proper review.
+updates:
+  # -------------------------------------------------------------------
+  # Root web app — React Router 8 SSR app (package-lock.json at repo root)
+  # -------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Oslo
+    open-pull-requests-limit: 10
+    commit-message:
+      # conventional commits: chore(deps): / chore(deps-dev): ...
+      prefix: "chore"
+      include: scope
+    labels:
+      - dependencies
+    groups:
+      # React Router ships its packages in lockstep; never bump just one.
+      react-router:
+        patterns:
+          - "react-router"
+          - "@react-router/*"
+      # Everything routine lands together. Listed last: the more specific
+      # react-router group wins for those packages.
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  # -------------------------------------------------------------------
+  # Firebase Functions — separate package + lockfile, Node 24 runtime
+  # -------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: "/functions"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Oslo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: scope
+    labels:
+      - dependencies
+    ignore:
+      # functions/ targets Node 24, so its @types/node must track 24 —
+      # not the root package's Node 26 types.
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+
+  # -------------------------------------------------------------------
+  # GitHub Actions in .github/workflows/ci.yml
+  #
+  # NOTE: Dependabot can only move the version tags in ci.yml — it cannot
+  # regenerate .github/workflows/actions.lock. Until that regeneration is
+  # automated, each PR here needs a follow-up `gh actions-lock` commit or
+  # verify-lockfile.yml will fail.
+  # -------------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "05:00"
+      timezone: Europe/Oslo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore"
+      include: scope
+    labels:
+      - dependencies
+    groups:
+      actions:
+        patterns:
+          - "*"
