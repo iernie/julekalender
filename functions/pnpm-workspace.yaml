@@ -1,6 +1,6 @@
 # functions/ is installed separately from the root (Firebase deploys need a
 # lockfile in the functions source dir), so it needs its own build policy.
 allowBuilds:
-  "@firebase/util": false
-  protobufjs: false
+  "@firebase/util": true
+  protobufjs: true
 pmOnFail: ignore

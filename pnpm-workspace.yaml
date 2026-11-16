@@ -1,7 +1,10 @@
 allowBuilds:
-  "@firebase/util": false
-  protobufjs: false
-  re2: false
+  # Required by App Hosting: this postinstall script bakes FIREBASE_WEBAPP_CONFIG
+  # into @firebase/util/dist/postinstall.mjs so no-arg initializeApp() works.
+  # Disabling it makes the deployed client initialize with no apiKey.
+  "@firebase/util": true
+  protobufjs: true
+  re2: true
 pmOnFail: ignore
 # App Hosting's nodejs runtime resolves externalized ESM imports (firebase-admin
 # and its transitive deps, plus the CJS react-tooltip/react-confetti deps) from

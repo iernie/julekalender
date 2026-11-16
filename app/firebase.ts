@@ -5,12 +5,17 @@ import { connectStorageEmulator, getStorage } from "firebase/storage";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 import { FUNCTIONS_REGION } from "./helpers";
 
+export const useEmulators = import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
+
 /**
  * In production, Firebase App Hosting injects the web app config and the no-arg
- * `initializeApp()` picks it up. Locally that injection does not happen, so fall
- * back to explicit VITE_FIREBASE_* vars from `.env.local`.
+ * `initializeApp()` picks it up. The VITE_FIREBASE_* vars in `.env.local` are
+ * *emulator* values: they are baked into the client bundle at build time, and
+ * using them outside emulator mode would override App Hosting's injected config
+ * with a fake api key. So only honour them when emulators are explicitly on.
  */
 const explicitConfig = (): FirebaseOptions | undefined => {
+  if (!useEmulators) return undefined;
   const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
   if (!apiKey) return undefined;
   return {
@@ -42,8 +47,6 @@ const createApp = () => {
  * Firestore/Storage handles while rendering.
  */
 export const firebaseApp = getApps()[0] ?? createApp();
-
-export const useEmulators = import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true";
 
 if (useEmulators && !import.meta.env.SSR) {
   const host = "127.0.0.1";
