@@ -1,7 +1,7 @@
 import React from "react";
 import classnames from "clsx";
 import { getDate, getMonth, getYear, getDay } from "date-fns";
-import { useState } from "../../StateProvider";
+import { useAppState, useCalendar } from "../../StateProvider";
 import { useNavigate, useParams, Link } from "react-router";
 import { FiSettings } from "react-icons/fi";
 import PageTitle from "../../components/PageTitle";
@@ -11,7 +11,8 @@ import styles from "./Calendar.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 
 export default function Calendar() {
-  const [{ calendar, users }] = useState();
+  const [{ users }] = useAppState();
+  const calendar = useCalendar();
   // Held in state so the grid re-evaluates when the tab regains focus across
   // midnight, rather than reading the clock during render.
   const [now, setNow] = React.useState<Date>(() => new Date());

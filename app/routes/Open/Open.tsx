@@ -1,6 +1,6 @@
 import React from "react";
 import classnames from "clsx";
-import { useState, SET_NOTIFICATION } from "../../StateProvider";
+import { useAppState, useCalendar, SET_NOTIFICATION } from "../../StateProvider";
 import { Navigate, useNavigate, useParams } from "react-router";
 import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
@@ -13,7 +13,8 @@ import { useMounted, usePrefersReducedMotion, useWindowSize } from "../../hooks"
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 export default function Open() {
-  const [{ calendar, users }, dispatch] = useState();
+  const [{ users }, dispatch] = useAppState();
+  const calendar = useCalendar();
   const { name, day } = useParams<{ name: string; day: string }>();
   const navigate = useNavigate();
 

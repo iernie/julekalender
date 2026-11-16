@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
-import { SET_NOTIFICATION, useState } from "../../StateProvider";
+import { SET_NOTIFICATION, useAppState, useCalendar } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";
 import { FiHome, FiLock, FiX, FiLogIn, FiUnlock, FiLogOut, FiTrash } from "react-icons/fi";
 import styles from "./Admin.module.css";
@@ -52,7 +52,8 @@ const logout = async () => {
 
 export default function Admin() {
   const [confirm, setConfirm] = React.useState(true);
-  const [{ calendar, users, user }, dispatch] = useState();
+  const [{ users, user }, dispatch] = useAppState();
+  const calendar = useCalendar();
   const { name } = useParams<{ name: string }>();
   const navigate = useNavigate();
   const db = getFirestore();

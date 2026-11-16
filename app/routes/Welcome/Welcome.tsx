@@ -11,7 +11,6 @@ import {
   where,
 } from "firebase/firestore";
 import {
-  type User,
   getAuth,
   GoogleAuthProvider,
   linkWithPopup,
@@ -19,7 +18,7 @@ import {
   signInWithPopup,
   type Unsubscribe,
 } from "firebase/auth";
-import { useState, SET_NOTIFICATION } from "../../StateProvider";
+import { useAppState, SET_NOTIFICATION } from "../../StateProvider";
 import { Link, useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
 import { type CalendarType } from "../../types";
@@ -32,14 +31,15 @@ import IconButton from "../../components/IconButton";
 import styles from "./Welcome.module.css";
 
 export default function Welcome() {
-  const [, dispatch] = useState();
-  const [user, setUser] = React.useState<User | null>(null);
+  // Auth state comes from the single listener in the root layout.
+  const [{ user }, dispatch] = useAppState();
   const [calendars, setCalendars] = React.useState<Array<CalendarType>>([]);
   const navigate = useNavigate();
   const [name, setName] = React.useState<string>("");
   const db = getFirestore();
 
   const isAnonymous = user?.isAnonymous ?? true;
+  const uid = user?.uid;
 
   const login = async () => {
     const auth = getAuth();
@@ -70,15 +70,9 @@ export default function Welcome() {
   };
 
   React.useEffect(() => {
-    return getAuth().onAuthStateChanged((next) => {
-      setUser(next);
-    });
-  }, []);
+    if (!uid) return;
 
-  React.useEffect(() => {
-    if (!user) return;
-
-    const calendarQuery = query(collection(db, "calendars"), where("owner", "==", user.uid));
+    const calendarQuery = query(collection(db, "calendars"), where("owner", "==", uid));
     const unsub: Unsubscribe = onSnapshot(calendarQuery, (snapshot) => {
       setCalendars(snapshot.docs.map((entry) => toCalendar(entry.data())));
     });
@@ -87,7 +81,7 @@ export default function Welcome() {
       unsub();
       setCalendars([]);
     };
-  }, [db, user]);
+  }, [db, uid]);
 
   const logout = async () => {
     const auth = getAuth();
@@ -115,7 +109,6 @@ export default function Welcome() {
       return;
     }
 
-    const uid = getAuth().currentUser?.uid;
     if (!uid) {
       dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke logge inn." });
       return;

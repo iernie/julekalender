@@ -43,7 +43,7 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - `app/` — the only app source. Routes are declared explicitly in `app/routes.ts` (config-based routing, not file-based). Each route lives in `app/routes/<Name>/` with a CSS module and `index.ts` barrel.
 - `app/root.tsx` — HTML document, error boundary, global `app.css`.
 - `app/routes/App/App.tsx` — root layout. Firebase is initialised at module scope in `app/firebase.ts`, **not** in an effect, so the server render and first client render match.
-- `app/StateProvider.tsx` — hand-rolled reducer/context (`useState()` export returns `[state, dispatch]`). No external state library.
+- `app/StateProvider.tsx` — hand-rolled reducer/context. `useAppState()` returns `[state, dispatch]`; `useCalendar()` returns the non-null calendar and is only valid under the `:name` layout. No external state library.
 - `functions/src/index.ts` — the public `api` Express function (region `europe-west1`, `maxInstances: 10`) plus the `drawWinner`, `resetWinner` and `deleteCalendar` callables. Firebase Hosting rewrites `**` to `api`, which is what `api.kalender.christmas` serves.
 - `app/helpers.ts` — `toCalendarId`, `isValidCalendarId`, `expiresAt`, `FUNCTIONS_REGION`.
 - `app/firebase.ts` — client SDK singleton + emulator wiring. `app/firebase.server.ts` — Admin SDK for route loaders; never import it from a component.
@@ -64,6 +64,8 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - `vite.config.mts` has a hand-maintained `ssr.noExternal: true` with an explicit `external` allowlist. If a new dependency breaks the SSR build, add it there rather than changing `noExternal`. **`firebase-admin` and its deps must stay listed** — bundling them quadruples the server bundle. Vite 8 only accepts strings there, not RegExp.
 - **Timestamps never reach app state.** Loaders return ISO strings and `onSnapshot` data is normalised the same way, so `CalendarType`/`UserType` describe the _serialized_ shape. Firestore still stores real Timestamps and a `calendar` DocumentReference, so write payloads do not match those types.
 - **Only public calendars are server-rendered.** The server has no user session, so the loader returns an empty shell for private ones and the client listeners fill it in.
+- There is exactly **one** `onAuthStateChanged` listener, in `routes/App/App.tsx`, because it wraps every route. Read the user from `useAppState()` rather than adding another listener.
+- `state.calendar` is `null` until loaded. The calendar layout renders its outlet only once it is set, so routes under it should use `useCalendar()` instead of null-checking.
 - Client Firestore listeners wait for `onAuthStateChanged` to fire before subscribing. A listener rejected for lack of auth is never retried, which would break private calendars.
 - Run `npm run test:rules` on its own emulator instance. Against a dev emulator started for another project, `storage.rules`' `firestore.get` resolves to that project's data and the ownership tests fail spuriously.
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.

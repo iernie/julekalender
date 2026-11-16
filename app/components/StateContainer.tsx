@@ -1,7 +1,7 @@
 import React from "react";
-import { type Unsubscribe, getAuth } from "firebase/auth";
+import { type Unsubscribe } from "firebase/auth";
 import { collection, doc, getFirestore, onSnapshot, query, where } from "firebase/firestore";
-import { useState, SET_CALENDAR, SET_NOTIFICATION, SET_USERS, SET_USER } from "../StateProvider";
+import { useAppState, SET_CALENDAR, SET_NOTIFICATION, SET_USERS } from "../StateProvider";
 import { Outlet, useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
 import { toCalendarId } from "../helpers";
@@ -32,7 +32,7 @@ export async function loader({ params }: Route.LoaderArgs) {
 }
 
 const StateContainer = () => {
-  const [{ calendar, user }, dispatch] = useState();
+  const [{ calendar, user }, dispatch] = useAppState();
   const navigate = useNavigate();
   const { name } = useParams<{ name: string }>();
   const db = getFirestore();
@@ -40,12 +40,6 @@ const StateContainer = () => {
   // undefined until onAuthStateChanged first fires; null once signed out.
   const authReady = user !== undefined;
   const uid = user?.uid ?? null;
-
-  React.useEffect(() => {
-    return getAuth().onAuthStateChanged((next) => {
-      dispatch({ type: SET_USER, payload: next });
-    });
-  }, [dispatch]);
 
   React.useEffect(() => {
     // `user` is undefined until onAuthStateChanged first fires. Subscribing
@@ -108,7 +102,7 @@ const StateContainer = () => {
     // oxlint-disable-next-line exhaustive-effect-dependencies
   }, [authReady, db, dispatch, name, navigate, uid]);
 
-  if (Object.keys(calendar).length === 0) return <Loading />;
+  if (!calendar) return <Loading />;
 
   return (
     <>

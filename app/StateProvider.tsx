@@ -10,37 +10,44 @@ export const SET_USER = "SET_USER";
 
 type State = {
   notification?: string;
-  calendar: CalendarType;
+  /** null until a calendar route has loaded one. */
+  calendar: CalendarType | null;
   users?: Array<UserType>;
+  /** undefined until onAuthStateChanged first fires; null when signed out. */
   user?: User | null;
 };
-type Action =
-  | {
-      type: typeof SET_NOTIFICATION;
-      payload?: string;
-    }
-  | {
-      type: typeof SET_CALENDAR;
-      payload: CalendarType;
-    }
-  | {
-      type: typeof SET_USERS;
-      payload: Array<UserType>;
-    }
-  | {
-      type: typeof SET_USER;
-      payload: User | null;
-    };
 
-const intitialState: State = {
-  calendar: {} as CalendarType,
+type Action =
+  | { type: typeof SET_NOTIFICATION; payload?: string }
+  | { type: typeof SET_CALENDAR; payload: CalendarType }
+  | { type: typeof SET_USERS; payload: Array<UserType> }
+  | { type: typeof SET_USER; payload: User | null };
+
+const initialState: State = {
+  calendar: null,
 };
 
-const Context = React.createContext<[State, React.Dispatch<Action>]>([intitialState, () => null]);
+const Context = React.createContext<[State, React.Dispatch<Action>]>([initialState, () => null]);
 
-export const useState = () => React.useContext(Context);
+/**
+ * Deliberately not called `useState`: it used to shadow React's own hook, and
+ * most consumers use both.
+ */
+export const useAppState = () => React.useContext(Context);
 
-const reducer = (state: State = intitialState, action: Action): State => {
+/**
+ * For routes rendered under the calendar layout, which only renders its outlet
+ * once a calendar is loaded.
+ */
+export const useCalendar = (): CalendarType => {
+  const [{ calendar }] = useAppState();
+  if (!calendar) {
+    throw new Error("useCalendar must be used under the calendar layout route");
+  }
+  return calendar;
+};
+
+const reducer = (state: State = initialState, action: Action): State => {
   switch (action.type) {
     case SET_NOTIFICATION:
       return { ...state, notification: action.payload };
@@ -68,7 +75,7 @@ const StateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   // data and the first client render matches it.
   const loaded = useRouteLoaderData(CALENDAR_ROUTE_ID) as CalendarRouteData | undefined;
 
-  const [state, dispatch] = React.useReducer(reducer, intitialState, (base) =>
+  const [state, dispatch] = React.useReducer(reducer, initialState, (base) =>
     loaded?.calendar ? { ...base, calendar: loaded.calendar, users: loaded.users } : base,
   );
   // useReducer returns a new tuple each render, which would re-render every

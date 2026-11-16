@@ -1,9 +1,9 @@
 import React from "react";
-import { SET_NOTIFICATION, useState } from "../../StateProvider";
+import { SET_NOTIFICATION, useAppState } from "../../StateProvider";
 import styles from "./Notification.module.css";
 
 const Notification: React.FC = () => {
-  const [{ notification }, dispatch] = useState();
+  const [{ notification }, dispatch] = useAppState();
 
   React.useEffect(() => {
     if (!notification) return;
