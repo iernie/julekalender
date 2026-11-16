@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Julekalender as a Service — React Router v7 (SSR) app on Firebase App Hosting, plus a separate Firebase Functions API codebase.
+Julekalender as a Service — React Router v8 (SSR) app on Firebase App Hosting, plus a separate Firebase Functions codebase for the callables.
 
 ## Commands
 
@@ -42,10 +42,14 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 
 - `app/` — the only app source. Routes are declared explicitly in `app/routes.ts` (config-based routing, not file-based). Each route lives in `app/routes/<Name>/` with a CSS module and `index.ts` barrel.
 - `app/root.tsx` — HTML document, error boundary, global `app.css`.
-- `app/routes/App/App.tsx` — layout route that initializes Firebase client SDKs in an effect and renders nothing until done.
+- `app/routes/App/App.tsx` — root layout. Firebase is initialised at module scope in `app/firebase.ts`, **not** in an effect, so the server render and first client render match.
 - `app/StateProvider.tsx` — hand-rolled reducer/context (`useState()` export returns `[state, dispatch]`). No external state library.
 - `functions/src/index.ts` — the `api` Express function (region `europe-west1`) plus the `drawWinner`, `resetWinner` and `deleteCalendar` callables. Firebase Hosting rewrites `**` to `api`.
-- `app/helpers.ts` — `toCalendarId`, `isValidCalendarId`, `expiresAt`. Use these instead of inlining `.toLocaleLowerCase()`.
+- `app/helpers.ts` — `toCalendarId`, `isValidCalendarId`, `expiresAt`, `FUNCTIONS_REGION`.
+- `app/firebase.ts` — client SDK singleton + emulator wiring. `app/firebase.server.ts` — Admin SDK for loaders; never import it from a component.
+- `app/serialize.ts` — `toCalendar` / `toUser`. Every path into app state goes through these.
+- `app/useMounted.ts` — gate anything that depends on the browser (window size) to avoid hydration mismatches.
+- `app/routes/api.ts` — the public `/api/:name` endpoint, served by the app via the Admin SDK.
 - `app/components/IconButton/` — keyboard-accessible wrapper for the icon actions. Prefer it over `onClick` on an icon.
 - `tests/` — Firestore and Storage security rules tests (Vitest + `@firebase/rules-unit-testing`).
 - `scripts/seed-emulators.mjs` — uploads `static/*.png` to `avatars/` in the Storage emulator; the app needs them when adding a user.
@@ -58,8 +62,11 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - **Rules are not filters.** For a Firestore _query_, every field the rule reads must be constrained by the query itself, or it fails with an empty `resource` ("Property X is undefined on object. for 'list'"). `firestore.rules` therefore splits `get` from `list`: users are listed with `where("calendarId", "==", id)` and calendars with `where("owner", "==", uid)`. If you change either query, change the matching `list` rule — and cover it with a `getDocs` test, since a `getDoc` test will not catch it.
 - **`users.won` is server-only.** `firestore.rules` rejects any client write to it; the `drawWinner` / `resetWinner` callables are the only writers. Never write `won` from the app.
 - New `users` documents must carry `calendarId` and `owner` or the rules reject the create.
-- `app/routes/api.ts` is a proxy loader to `https://api.kalender.christmas`; it is not the Functions API.
-- `vite.config.mts` has a hand-maintained `ssr.noExternal: true` with an explicit `external` allowlist. If a new dependency breaks the SSR build, add it there rather than changing `noExternal`.
+- `vite.config.mts` has a hand-maintained `ssr.noExternal: true` with an explicit `external` allowlist. If a new dependency breaks the SSR build, add it there rather than changing `noExternal`. **`firebase-admin` and its deps must stay listed** — bundling them quadruples the server bundle. Vite 8 only accepts strings there, not RegExp.
+- **Timestamps never reach app state.** Loaders return ISO strings and `onSnapshot` data is normalised the same way, so `CalendarType`/`UserType` describe the _serialized_ shape. Firestore still stores real Timestamps and a `calendar` DocumentReference, so write payloads do not match those types.
+- **Only public calendars are server-rendered.** The server has no user session, so the loader returns an empty shell for private ones and the client listeners fill it in.
+- Client Firestore listeners wait for `onAuthStateChanged` to fire before subscribing. A listener rejected for lack of auth is never retried, which would break private calendars.
+- Run `npm run test:rules` on its own emulator instance. Against a dev emulator started for another project, `storage.rules`' `firestore.get` resolves to that project's data and the ownership tests fail spuriously.
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.
 - Husky pre-commit runs `lint-staged`, which now runs oxfmt and `oxlint --fix` on staged files. Both packages share one style — the old eslint-config-google "no spaces inside braces" convention in `functions/` is gone.
 - oxfmt is beta. It keeps Prettier's defaults here, so output should match what Prettier produced.
