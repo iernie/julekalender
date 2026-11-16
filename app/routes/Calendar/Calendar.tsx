@@ -108,7 +108,9 @@ export default function Calendar() {
 
           const css = {
             "--grid-column-start": firstDayOfTheMonth,
+            "--tile-index": day,
           } as React.CSSProperties;
+          const tileCss = { "--tile-index": day } as React.CSSProperties;
 
           if (open && !winner && !ignoreWeekend) {
             return (
@@ -116,7 +118,7 @@ export default function Calendar() {
                 to={`/${toCalendarId(calendar.name)}/open/${day + 1}`}
                 key={day + 1}
                 className={dayClass}
-                style={day === 0 ? css : undefined}
+                style={day === 0 ? css : tileCss}
               >
                 <span className={styles.number}>{day + 1}</span>
               </Link>
@@ -124,7 +126,7 @@ export default function Calendar() {
           }
 
           return (
-            <div key={day + 1} className={dayClass} style={day === 0 ? css : undefined}>
+            <div key={day + 1} className={dayClass} style={day === 0 ? css : tileCss}>
               {winner && (
                 <div className={styles.avatar}>
                   <img className={styles.image} src={winner.image} alt={winner.name} />

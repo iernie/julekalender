@@ -37,6 +37,39 @@
     url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='white' stroke-width='4' stroke-dasharray='6%2c 14' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
   font-size: 3rem;
   text-decoration: none;
+  animation: tileIn 0.35s ease-out both;
+  animation-delay: calc(var(--tile-index, 0) * 25ms);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:not(.open):not(.winner):not(.ignore):hover {
+    transform: scale(1.06);
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.18);
+  }
+
+  &:focus-visible {
+    outline: 0.1875rem solid var(--white);
+    outline-offset: 0.1875rem;
+  }
+}
+
+@keyframes tileIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .day {
+    animation: none;
+    transition: none;
+  }
 }
 
 .ignore {
