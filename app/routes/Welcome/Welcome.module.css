@@ -30,13 +30,6 @@
   }
 }
 
-.login {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  cursor: pointer;
-}
-
 .calendars {
   margin-top: 4rem;
 }

@@ -5,6 +5,7 @@ import { FiSettings } from "react-icons/fi";
 import { Link, useNavigate, useParams } from "react-router";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import IconButton from "../../components/IconButton";
+import NavBar from "../../components/NavBar";
 import PageTitle from "../../components/PageTitle";
 import { toCalendarId } from "../../helpers";
 import { genericMeta, metaCalendarData, metaOrigin, socialMeta } from "../../meta";
@@ -78,18 +79,23 @@ export default function Calendar() {
 
   return (
     <div className={styles.calendar}>
+      <NavBar
+        right={
+          <>
+            <IconButton
+              data-tooltip-id="admin"
+              label="Innstillinger"
+              onClick={() => navigate(`/${toCalendarId(name)}/settings`)}
+            >
+              <FiSettings size="1.5rem" />
+            </IconButton>
+            <ReactTooltip id="admin" place="bottom">
+              Innstillinger
+            </ReactTooltip>
+          </>
+        }
+      />
       <PageTitle>{calendar.name}</PageTitle>
-      <IconButton
-        data-tooltip-id="admin"
-        className={styles.settings}
-        label="Innstillinger"
-        onClick={() => navigate(`/${toCalendarId(name)}/settings`)}
-      >
-        <FiSettings size="1.5rem" />
-      </IconButton>
-      <ReactTooltip id="admin" place="bottom">
-        Innstillinger
-      </ReactTooltip>
       <div className={styles.days}>
         {Array.from(Array(24).keys()).map((day) => {
           const open = hotkey || (day < today && getMonth(now) === 11);

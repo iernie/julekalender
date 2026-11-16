@@ -6,6 +6,7 @@ import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
 import PageTitle from "../../components/PageTitle";
 import IconButton from "../../components/IconButton";
+import NavBar from "../../components/NavBar";
 import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { FUNCTIONS_REGION, toCalendarId } from "../../helpers";
@@ -145,67 +146,72 @@ export default function Open() {
 
   return (
     <div>
+      <NavBar
+        right={
+          <>
+            <div className={styles.usersMenu}>
+              <IconButton
+                data-tooltip-id="users"
+                label="Fjern brukere fra dagens trekning"
+                onClick={() => setShowUsers(true)}
+              >
+                <FiUserMinus size="1.5rem" />
+              </IconButton>
+              <ReactTooltip id="users" place="bottom">
+                Fjern brukere fra dagens trekning
+              </ReactTooltip>
+              <ul
+                className={classnames({
+                  [styles.userlist]: true,
+                  [styles.visible]: showUsers,
+                })}
+              >
+                {users.map((user) => (
+                  <li key={user.id}>
+                    <label>
+                      <input
+                        disabled={viableUsers.every((u) => u.id !== user.id)}
+                        type="checkbox"
+                        checked={
+                          viableUsers.some((u) => u.id === user.id) && !excluded.has(user.id)
+                        }
+                        onChange={(e) => {
+                          setExcluded((previous) => {
+                            const next = new Set(previous);
+                            if (e.target.checked) {
+                              next.delete(user.id);
+                            } else {
+                              next.add(user.id);
+                            }
+                            return next;
+                          });
+                        }}
+                      />
+                      {user.name}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <IconButton
+              data-tooltip-id="home"
+              label="Hjem"
+              onClick={() => navigate(`/${toCalendarId(name)}`)}
+            >
+              <FiHome size="1.5rem" />
+            </IconButton>
+            <ReactTooltip id="home" place="bottom">
+              Hjem
+            </ReactTooltip>
+          </>
+        }
+      />
       <PageTitle>Vinneren er...</PageTitle>
-      <IconButton
-        data-tooltip-id="home"
-        className={styles.settings}
-        label="Hjem"
-        onClick={() => navigate(`/${toCalendarId(name)}`)}
-      >
-        <FiHome size="1.5rem" />
-      </IconButton>
-      <IconButton
-        data-tooltip-id="users"
-        className={styles.users}
-        label="Fjern brukere fra dagens trekning"
-        onClick={() => setShowUsers(true)}
-      >
-        <FiUserMinus size="1.5rem" />
-      </IconButton>
-      <ReactTooltip id="home" place="bottom">
-        Hjem
-      </ReactTooltip>
-      <ReactTooltip id="users" place="bottom">
-        Fjern brukere fra dagens trekning
-      </ReactTooltip>
-      <ul
-        className={classnames({
-          [styles.userlist]: true,
-          [styles.visible]: showUsers,
-        })}
-      >
-        {users.map((user) => {
-          return (
-            <li key={user.id}>
-              <label>
-                <input
-                  disabled={viableUsers.every((u) => u.id !== user.id)}
-                  type="checkbox"
-                  checked={viableUsers.some((u) => u.id === user.id) && !excluded.has(user.id)}
-                  onChange={(e) => {
-                    setExcluded((previous) => {
-                      const next = new Set(previous);
-                      if (e.target.checked) {
-                        next.delete(user.id);
-                      } else {
-                        next.add(user.id);
-                      }
-                      return next;
-                    });
-                  }}
-                />
-                {user.name}
-              </label>
-            </li>
-          );
-        })}
-      </ul>
       <div className={stepClass}>
         <div className={styles.winner}>
           <div className={styles.avatar}>
             <img className={styles.image} src={winner?.image} alt={winner?.name} />
           </div>
-
           <h1>{winner?.name}</h1>
         </div>
         {(current === null || current < 3) && (

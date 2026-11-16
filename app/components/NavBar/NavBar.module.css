@@ -1,0 +1,19 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  z-index: 100;
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}

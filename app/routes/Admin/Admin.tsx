@@ -26,6 +26,7 @@ import {
 import { getFunctions, httpsCallable } from "firebase/functions";
 import PageTitle from "../../components/PageTitle";
 import IconButton from "../../components/IconButton";
+import NavBar from "../../components/NavBar";
 import { expiresAt, FUNCTIONS_REGION, toCalendarId } from "../../helpers";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
@@ -148,55 +149,63 @@ export default function Admin() {
 
   return (
     <div>
+      <NavBar
+        left={
+          isOwner ? (
+            <>
+              <IconButton data-tooltip-id="delete" label="Slett kalender" onClick={deleteCalendar}>
+                <FiTrash size="1.5rem" />
+              </IconButton>
+              <ReactTooltip id="delete" place="bottom">
+                Slett kalender
+              </ReactTooltip>
+            </>
+          ) : undefined
+        }
+        right={
+          <>
+            {isOwner && (
+              <>
+                <IconButton
+                  data-tooltip-id="lock"
+                  label={calendar.public === false ? "Åpne kalender" : "Skjul kalender"}
+                  onClick={() => setPublic(calendar.public === false)}
+                >
+                  {calendar.public === false ? (
+                    <FiLock size="1.5rem" />
+                  ) : (
+                    <FiUnlock size="1.5rem" />
+                  )}
+                </IconButton>
+                <ReactTooltip id="lock" place="bottom">
+                  {calendar.public === false ? "Åpne" : "Skjul"}
+                </ReactTooltip>
+              </>
+            )}
+            <IconButton
+              data-tooltip-id="login"
+              label={isAnonymous ? "Logg inn" : "Logg ut"}
+              onClick={isAnonymous ? login : logout}
+            >
+              {isAnonymous ? <FiLogIn size="1.5rem" /> : <FiLogOut size="1.5rem" />}
+            </IconButton>
+            <ReactTooltip id="login" place="bottom">
+              {isAnonymous ? "Logg inn" : "Logg ut"}
+            </ReactTooltip>
+            <IconButton
+              data-tooltip-id="home"
+              label="Hjem"
+              onClick={() => navigate(`/${calendarId}`)}
+            >
+              <FiHome size="1.5rem" />
+            </IconButton>
+            <ReactTooltip id="home" place="bottom">
+              Hjem
+            </ReactTooltip>
+          </>
+        }
+      />
       <PageTitle>Innstillinger</PageTitle>
-      <ReactTooltip id="login" place="bottom">
-        {isAnonymous ? "Logg inn" : "Logg ut"}
-      </ReactTooltip>
-      <ReactTooltip id="home" place="bottom">
-        Hjem
-      </ReactTooltip>
-      <ReactTooltip id="lock" place="bottom">
-        {calendar.public === false ? "Åpne" : "Skjul"}
-      </ReactTooltip>
-      <ReactTooltip id="delete" place="right">
-        Slett kalender
-      </ReactTooltip>
-      {isOwner && (
-        <IconButton
-          data-tooltip-id="delete"
-          className={styles.delete}
-          label="Slett kalender"
-          onClick={deleteCalendar}
-        >
-          <FiTrash size="1.5rem" />
-        </IconButton>
-      )}
-      <IconButton
-        data-tooltip-id="home"
-        className={styles.settings}
-        label="Hjem"
-        onClick={() => navigate(`/${calendarId}`)}
-      >
-        <FiHome size="1.5rem" />
-      </IconButton>
-      <IconButton
-        data-tooltip-id="login"
-        className={styles.login}
-        label={isAnonymous ? "Logg inn" : "Logg ut"}
-        onClick={isAnonymous ? login : logout}
-      >
-        {isAnonymous ? <FiLogIn size="1.5rem" /> : <FiLogOut size="1.5rem" />}
-      </IconButton>
-      {isOwner && (
-        <IconButton
-          data-tooltip-id="lock"
-          className={styles.lock}
-          label={calendar.public === false ? "Åpne kalender" : "Skjul kalender"}
-          onClick={() => setPublic(calendar.public === false)}
-        >
-          {calendar.public === false ? <FiLock size="1.5rem" /> : <FiUnlock size="1.5rem" />}
-        </IconButton>
-      )}
       <div className={styles.admin}>
         <div className={styles.Form}>
           <a

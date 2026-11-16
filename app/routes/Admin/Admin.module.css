@@ -6,34 +6,6 @@
   padding-bottom: 2rem;
 }
 
-.settings {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  cursor: pointer;
-}
-
-.login {
-  position: fixed;
-  top: 1rem;
-  right: 3rem;
-  cursor: pointer;
-}
-
-.lock {
-  position: fixed;
-  top: 1rem;
-  right: 5rem;
-  cursor: pointer;
-}
-
-.delete {
-  position: fixed;
-  top: 1rem;
-  left: 1rem;
-  cursor: pointer;
-}
-
 .url {
   color: var(--color-link);
   text-decoration: none;

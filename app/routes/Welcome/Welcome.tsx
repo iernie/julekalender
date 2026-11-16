@@ -27,6 +27,7 @@ import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import PageTitle from "../../components/PageTitle";
 import IconButton from "../../components/IconButton";
+import NavBar from "../../components/NavBar";
 import styles from "./Welcome.module.css";
 
 export default function Welcome() {
@@ -138,17 +139,22 @@ export default function Welcome() {
 
   return (
     <div className={styles.welcome}>
-      <IconButton
-        data-tooltip-id="login"
-        className={styles.login}
-        label={isAnonymous ? "Logg inn" : "Logg ut"}
-        onClick={isAnonymous ? login : logout}
-      >
-        {isAnonymous ? <FiLogIn size="1.5rem" /> : <FiLogOut size="1.5rem" />}
-      </IconButton>
-      <ReactTooltip id="login" place="bottom">
-        {isAnonymous ? "Logg inn" : "Logg ut"}
-      </ReactTooltip>
+      <NavBar
+        right={
+          <>
+            <IconButton
+              data-tooltip-id="login"
+              label={isAnonymous ? "Logg inn" : "Logg ut"}
+              onClick={isAnonymous ? login : logout}
+            >
+              {isAnonymous ? <FiLogIn size="1.5rem" /> : <FiLogOut size="1.5rem" />}
+            </IconButton>
+            <ReactTooltip id="login" place="bottom">
+              {isAnonymous ? "Logg inn" : "Logg ut"}
+            </ReactTooltip>
+          </>
+        }
+      />
       <PageTitle>Julekalender as a Service</PageTitle>
       <div className={styles.form}>
         <input
