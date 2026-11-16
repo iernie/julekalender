@@ -167,12 +167,7 @@ export default function Welcome() {
           Opprett
         </button>
       </div>
-      {isAnonymous && (
-        <p className={styles.hint}>
-          Logg inn med Google for å beholde kalenderne dine. Kalendere som ikke eies av noen slettes
-          etter 30 dager.
-        </p>
-      )}
+      {isAnonymous && <p className={styles.hint}>Logg inn med Google for å eie kalendrene dine.</p>}
       {calendars.length > 0 && (
         <>
           <h2 className={styles.calendars}>Dine kalendere</h2>

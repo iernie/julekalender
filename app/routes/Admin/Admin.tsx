@@ -267,7 +267,7 @@ export default function Admin() {
 
         {isAnonymous && (
           <p className={styles.hint}>
-            Du er ikke innlogget. Logg inn med Google for å beholde tilgangen til kalenderen.
+            Du er ikke innlogget. Logg inn med Google for å eie denne kalenderen.
           </p>
         )}
 
