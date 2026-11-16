@@ -15,7 +15,15 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { ALICE, BOB, calendar, newTestEnvironment, seed, user } from "./helpers";
+import {
+  ALICE,
+  BOB,
+  calendar,
+  newTestEnvironment,
+  seed,
+  seedLegacyCalendar,
+  user,
+} from "./helpers";
 
 let env: RulesTestEnvironment;
 
@@ -164,6 +172,33 @@ describe("calendars", () => {
       }),
     );
     await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { isAdmin: true }));
+  });
+
+  // The create rules are stricter than what older versions wrote. The update
+  // rules read those fields through `get(key, null)` so that a document
+  // predating them is still editable by its owner, and so that a missing
+  // `deleteBy` — which the TTL policy skips — can be filled in.
+  describe("documents predating the current rules", () => {
+    it("stay editable by their owner", async () => {
+      await seedLegacyCalendar(env, "kontoret", ALICE);
+      await assertSucceeds(
+        updateDoc(doc(asAlice(), "calendars", "kontoret"), { "settings.fair": false }),
+      );
+    });
+
+    it("may have a missing deleteBy filled in", async () => {
+      await seedLegacyCalendar(env, "kontoret", ALICE);
+      await assertSucceeds(
+        updateDoc(doc(asAlice(), "calendars", "kontoret"), { deleteBy: new Date(2027, 0, 1) }),
+      );
+    });
+
+    it("may not have deleteBy set to anything the TTL policy ignores", async () => {
+      await seedLegacyCalendar(env, "kontoret", ALICE);
+      await assertFails(
+        updateDoc(doc(asAlice(), "calendars", "kontoret"), { deleteBy: "2027-01-01" }),
+      );
+    });
   });
 });
 

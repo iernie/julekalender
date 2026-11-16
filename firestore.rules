@@ -47,6 +47,14 @@ service cloud.firestore {
       return request.resource.data.get(field, null) == resource.data.get(field, null);
     }
 
+    // As `unchanged`, but a document that has no value yet may acquire one.
+    // Documents predating `expires()` carry no `deleteBy`, and a pin alone
+    // would make that permanent — the TTL policy would skip them forever.
+    function unchangedOrRepaired(field) {
+      return unchanged(field)
+        || (resource.data.get(field, null) == null && request.resource.data[field] is timestamp);
+    }
+
     match /calendars/{calendarId} {
       function calendarKeys() {
         return ['id', 'name', 'createdAt', 'deleteBy', 'owner', 'public', 'settings'];
@@ -80,9 +88,9 @@ service cloud.firestore {
         && request.resource.data.owner == resource.data.owner
         && request.resource.data.name == resource.data.name
         && unchanged('id')
-        && unchanged('createdAt')
-        && unchanged('deleteBy')
-        && request.resource.data.public is bool
+        && unchangedOrRepaired('createdAt')
+        && unchangedOrRepaired('deleteBy')
+        && request.resource.data.get('public', true) is bool
         && request.resource.data.keys().hasOnly(calendarKeys());
 
       allow delete: if isOwner(resource.data);
@@ -125,8 +133,8 @@ service cloud.firestore {
         && request.resource.data.calendarId == resource.data.calendarId
         && unchanged('id')
         && unchanged('calendar')
-        && unchanged('createdAt')
-        && unchanged('deleteBy')
+        && unchangedOrRepaired('createdAt')
+        && unchangedOrRepaired('deleteBy')
         && request.resource.data.keys().hasOnly(userKeys());
 
       allow delete: if isOwner(resource.data);

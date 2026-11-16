@@ -48,6 +48,25 @@ export const user = (
   won,
 });
 
+/**
+ * Seeds a calendar shaped the way older versions of the app wrote them: no
+ * `id`, `createdAt`, `deleteBy` or `public`. The update rules must still let
+ * its owner edit it, and must let the missing `deleteBy` be filled in.
+ */
+export const seedLegacyCalendar = async (
+  env: RulesTestEnvironment,
+  calendarId: string,
+  owner: string,
+) => {
+  await env.withSecurityRulesDisabled(async (context) => {
+    await setDoc(doc(context.firestore(), "calendars", calendarId), {
+      name: "Kontoret",
+      owner,
+      settings: { fair: true },
+    });
+  });
+};
+
 /** Seeds a calendar and one user, bypassing rules. */
 export const seed = async (
   env: RulesTestEnvironment,

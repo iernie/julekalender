@@ -29,6 +29,12 @@ const DAYS = 24;
  */
 const RESERVED_PREFIX = "avatars";
 
+/** Must match `validCalendarId` in firestore.rules. */
+const CALENDAR_ID = /^[a-z0-9æøå_-]{2,40}$/;
+
+/** Documents per `getAll` call in the orphan sweep. */
+const GET_ALL_CHUNK = 300;
+
 /** Throws unless the caller owns the calendar. Returns the calendar data. */
 const assertOwner = async (
   uid: string | undefined,
@@ -57,7 +63,7 @@ const assertDay = (day: unknown): string => {
 };
 
 const assertCalendarId = (calendarId: unknown): string => {
-  if (typeof calendarId !== "string" || !/^[a-z0-9æøå_-]{2,40}$/.test(calendarId)) {
+  if (typeof calendarId !== "string" || !CALENDAR_ID.test(calendarId)) {
     throw new HttpsError("invalid-argument", "Ugyldig kalendernavn");
   }
   return calendarId;
@@ -189,14 +195,25 @@ export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => 
  * forever. Deleting an already-empty prefix is a no-op, so running after
  * `deleteCalendar` is harmless.
  */
-export const cleanUpCalendarAvatars = onDocumentDeleted("calendars/{calendarId}", async (event) => {
-  const { calendarId } = event.params;
+export const cleanUpCalendarAvatars = onDocumentDeleted(
+  // Firestore 2nd-gen triggers run in the database's Eventarc location, and
+  // Eventarc maps the `eur3` multi-region (see firebase.json) to
+  // europe-west4 — not the europe-west1 the other functions use. Deploying
+  // this one to the global region is rejected.
+  { document: "calendars/{calendarId}", region: "europe-west4" },
+  async (event) => {
+    const { calendarId } = event.params;
 
-  await getStorage()
-    .bucket()
-    .deleteFiles({ prefix: `${calendarId}/` })
-    .catch(() => undefined);
-});
+    await getStorage()
+      .bucket()
+      .deleteFiles({ prefix: `${calendarId}/`, force: true })
+      .catch((error: unknown) => {
+        // The monthly sweep is the backstop, but a trigger that fails every
+        // time should not be invisible until then.
+        logger.warn("Failed to delete avatars for a deleted calendar", { calendarId, error });
+      });
+  },
+);
 
 /**
  * Monthly reconciliation sweep for the avatar bucket.
@@ -233,20 +250,41 @@ export const sweepOrphanedAvatars = onSchedule("0 4 1 * *", async () => {
   // The seeded default avatars belong to no calendar and must survive.
   prefixes.delete(`${RESERVED_PREFIX}/`);
 
-  const calendarIds = [...prefixes].map((prefix) => prefix.replace(/\/$/, ""));
+  // This is the default bucket, which other Firebase features may also write
+  // to. Only prefixes shaped like a calendar id are ours to delete — a sweep
+  // that deletes whatever it fails to recognise is one bad page away from
+  // destroying someone else's data.
+  const calendarIds = [...prefixes]
+    .map((prefix) => prefix.replace(/\/$/, ""))
+    .filter((id) => CALENDAR_ID.test(id));
 
   if (calendarIds.length === 0) return;
 
-  const snapshots = await db.getAll(
-    ...calendarIds.map((calendarId) => db.collection("calendars").doc(calendarId)),
-  );
+  // getAll takes one request for the whole list; chunk it so a project with
+  // thousands of calendars does not blow the request size limit.
+  const snapshots: Array<FirebaseFirestore.DocumentSnapshot> = [];
+
+  for (let index = 0; index < calendarIds.length; index += GET_ALL_CHUNK) {
+    const chunk = calendarIds.slice(index, index + GET_ALL_CHUNK);
+    // getAll preserves the order of its arguments, which the filter relies on.
+    // oxlint-disable-next-line no-await-in-loop
+    snapshots.push(...(await db.getAll(...chunk.map((id) => db.collection("calendars").doc(id)))));
+  }
+
   const orphaned = calendarIds.filter((_, index) => !snapshots[index].exists);
 
-  await Promise.all(orphaned.map((calendarId) => bucket.deleteFiles({ prefix: `${calendarId}/` })));
+  // allSettled, not all: deleteFiles rejects on the first object it cannot
+  // remove, and onSchedule does not retry, so one bad object would otherwise
+  // cost the whole month's sweep.
+  const results = await Promise.allSettled(
+    orphaned.map((calendarId) => bucket.deleteFiles({ prefix: `${calendarId}/`, force: true })),
+  );
+  const failed = results.filter((result) => result.status === "rejected");
 
   logger.info("Swept orphaned avatar prefixes", {
     scanned: calendarIds.length,
-    deleted: orphaned.length,
+    deleted: orphaned.length - failed.length,
+    failed: failed.length,
   });
 });
 
