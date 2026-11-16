@@ -169,7 +169,8 @@ export default function Welcome() {
       </div>
       {isAnonymous && (
         <p className={styles.hint}>
-          Logg inn med Google for å beholde kalenderne dine på tvers av enheter.
+          Logg inn med Google for å beholde kalenderne dine. Kalendere som ikke eies av noen slettes
+          etter 30 dager.
         </p>
       )}
       {calendars.length > 0 && (
