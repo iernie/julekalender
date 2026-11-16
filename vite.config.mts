@@ -14,6 +14,28 @@ export default defineConfig({
   ssr: {
     noExternal: true,
     external: [
+      // firebase-admin and its transitive native/dynamic deps cannot be
+      // bundled. They ship in node_modules on App Hosting.
+      "firebase-admin",
+      "firebase-admin/app",
+      "firebase-admin/firestore",
+      "firebase-admin/storage",
+      "firebase-admin/auth",
+      "@google-cloud/firestore",
+      "@grpc/grpc-js",
+      "@grpc/proto-loader",
+      "google-auth-library",
+      "google-gax",
+      "farmhash-modern",
+      "protobufjs",
+      "jsonwebtoken",
+      "jwks-rsa",
+      "node-forge",
+      "gaxios",
+      "gcp-metadata",
+      "long",
+      "retry-request",
+      "teeny-request",
       "react-fast-compare",
       "fast-deep-equal",
       "js-cookie",

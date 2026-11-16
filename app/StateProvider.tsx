@@ -1,4 +1,5 @@
 import React from "react";
+import { useRouteLoaderData } from "react-router";
 import { type User } from "firebase/auth";
 import { type CalendarType, type UserType } from "./types";
 
@@ -54,8 +55,22 @@ const reducer = (state: State = intitialState, action: Action): State => {
   }
 };
 
+/** Route id of the `:name` layout, whose loader server-renders the calendar. */
+const CALENDAR_ROUTE_ID = "components/StateContainer";
+
+type CalendarRouteData = {
+  calendar: CalendarType | null;
+  users: Array<UserType>;
+};
+
 const StateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, dispatch] = React.useReducer(reducer, intitialState);
+  // Seeded from the calendar route's loader so the server render already has
+  // data and the first client render matches it.
+  const loaded = useRouteLoaderData(CALENDAR_ROUTE_ID) as CalendarRouteData | undefined;
+
+  const [state, dispatch] = React.useReducer(reducer, intitialState, (base) =>
+    loaded?.calendar ? { ...base, calendar: loaded.calendar, users: loaded.users } : base,
+  );
   // useReducer returns a new tuple each render, which would re-render every
   // consumer regardless of whether the state actually changed.
   const value = React.useMemo<[State, React.Dispatch<Action>]>(() => [state, dispatch], [state]);

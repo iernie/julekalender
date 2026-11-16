@@ -24,6 +24,7 @@ import { Link, useNavigate } from "react-router";
 import { v4 as uuidv4 } from "uuid";
 import { type CalendarType } from "../../types";
 import { expiresAt, isValidCalendarId, toCalendarId } from "../../helpers";
+import { toCalendar } from "../../serialize";
 import { FiLogIn, FiLogOut } from "react-icons/fi";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import PageTitle from "../../components/PageTitle";
@@ -79,7 +80,7 @@ export default function Welcome() {
 
     const calendarQuery = query(collection(db, "calendars"), where("owner", "==", user.uid));
     const unsub: Unsubscribe = onSnapshot(calendarQuery, (snapshot) => {
-      setCalendars(snapshot.docs.map((entry) => ({ ...entry.data() }) as CalendarType));
+      setCalendars(snapshot.docs.map((entry) => toCalendar(entry.data())));
     });
 
     return () => {
@@ -128,6 +129,7 @@ export default function Welcome() {
       return;
     }
 
+    // Stored shape, not CalendarType: Firestore holds real Timestamps.
     await setDoc(calendarReference, {
       id: uuidv4(),
       createdAt: Timestamp.fromDate(new Date()),
@@ -138,7 +140,7 @@ export default function Welcome() {
       settings: {
         fair: true,
       },
-    } as CalendarType);
+    });
     navigate(`/${calendarId}`);
   };
 

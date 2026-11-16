@@ -1,22 +1,26 @@
-import { Timestamp, DocumentReference, type DocumentData } from "firebase/firestore";
+/**
+ * Shapes as held in app state: Timestamps are normalised to ISO strings by
+ * `app/serialize.ts` so loader data and onSnapshot data match. The documents in
+ * Firestore still store real Timestamps, and users additionally store a
+ * `calendar` DocumentReference used by the callables.
+ */
 
 export type UserType = {
   id: string;
-  calendar: DocumentReference<DocumentData>;
   calendarId: string;
   owner: string;
   name: string;
   image: string;
-  createdAt: Timestamp;
-  deleteBy: Timestamp;
+  createdAt: string;
+  deleteBy: string;
   won: Array<string>;
 };
 
 export type CalendarType = {
   id: string;
   name: string;
-  createdAt: Timestamp;
-  deleteBy: Timestamp;
+  createdAt: string;
+  deleteBy: string;
   settings: {
     giftsPerUser?: number;
     fair?: boolean;

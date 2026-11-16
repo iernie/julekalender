@@ -1,6 +1,5 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
-import { type UserType } from "../../types";
 import { SET_NOTIFICATION, useState } from "../../StateProvider";
 import { v4 as uuidv4 } from "uuid";
 import { FiHome, FiLock, FiX, FiLogIn, FiUnlock, FiLogOut, FiTrash } from "react-icons/fi";
@@ -204,7 +203,7 @@ export default function Admin() {
             target="_blank"
             rel="noopener noreferrer"
             className={styles.url}
-            href={`https://api.kalender.christmas/api/${calendarId}${
+            href={`/api/${calendarId}${
               calendar.public === false && user ? `?apiKey=${user.uid}` : ""
             }`}
           >
@@ -263,7 +262,7 @@ export default function Admin() {
 
         <p>
           Din julekalender og alt tilhørende data slettes automatisk:{" "}
-          {calendar.deleteBy.toDate().toLocaleDateString("nb-no")} :)
+          {new Date(calendar.deleteBy).toLocaleDateString("nb-no")} :)
         </p>
 
         {isAnonymous && (
@@ -278,7 +277,7 @@ export default function Admin() {
         <div className={styles.users}>
           {users &&
             users
-              .toSorted((a, b) => compareAsc(a.createdAt.seconds, b.createdAt.seconds))
+              .toSorted((a, b) => compareAsc(new Date(a.createdAt), new Date(b.createdAt)))
               .map((listed) => {
                 const storageRef = ref(storage, `${calendarId}/${listed.id}`);
                 return (
@@ -353,6 +352,8 @@ export default function Admin() {
               ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`),
             );
 
+            // Stored shape, not UserType: Firestore holds real Timestamps and
+            // a `calendar` reference that the callables query by.
             await setDoc(doc(db, "users", id), {
               id,
               name: "",
@@ -363,7 +364,7 @@ export default function Admin() {
               calendarId,
               owner: calendar.owner,
               image: downloadUrl,
-            } as UserType);
+            });
           }}
         >
           Legg til ny bruker

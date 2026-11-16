@@ -53,11 +53,10 @@ export default function Calendar() {
   if (!name) return null;
 
   const today = getDate(now);
+  const calendarYear = getYear(new Date(calendar.createdAt));
 
   const firstDayOfTheMonth =
-    getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1)) === 0
-      ? 7
-      : getDay(new Date(getYear(calendar.createdAt.toDate()), 11, 1));
+    getDay(new Date(calendarYear, 11, 1)) === 0 ? 7 : getDay(new Date(calendarYear, 11, 1));
 
   return (
     <div className={styles.calendar}>
@@ -79,8 +78,8 @@ export default function Calendar() {
           const winner = users?.find((user) => user.won.indexOf(`${day + 1}`) !== -1);
           const ignoreWeekend =
             calendar.settings.ignoreWeekends &&
-            (getDay(new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)) === 0 ||
-              getDay(new Date(getYear(calendar.createdAt.toDate()), 11, day + 1)) === 6);
+            (getDay(new Date(calendarYear, 11, day + 1)) === 0 ||
+              getDay(new Date(calendarYear, 11, day + 1)) === 6);
           const dayClass = classnames({
             [styles.day]: true,
             [styles.winner]: winner !== undefined,
