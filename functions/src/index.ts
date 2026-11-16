@@ -129,15 +129,20 @@ export const resetWinner = onCall<{ calendarId: string; day: string }>(async (re
   return db.runTransaction(async (tx) => {
     const { reference } = await assertOwner(request.auth?.uid, calendarId, tx);
 
-    const snapshot = await tx.get(
-      db.collection("users").where("calendar", "==", reference).where("won", "array-contains", day),
-    );
+    const snapshot = await tx.get(db.collection("users").where("calendar", "==", reference));
 
-    snapshot.docs.forEach((doc) => {
-      tx.update(doc.ref, { won: FieldValue.arrayRemove(day) });
+    // Filtered in memory rather than with a second `array-contains` clause,
+    // which would need a composite index. A calendar has a handful of users.
+    const matching = snapshot.docs.filter((entry) => {
+      const won = entry.data().won;
+      return Array.isArray(won) && won.includes(day);
     });
 
-    return { reset: snapshot.size };
+    matching.forEach((entry) => {
+      tx.update(entry.ref, { won: FieldValue.arrayRemove(day) });
+    });
+
+    return { reset: matching.length };
   });
 });
 
