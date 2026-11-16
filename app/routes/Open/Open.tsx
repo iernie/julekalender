@@ -206,13 +206,14 @@ export default function Open() {
           </>
         }
       />
-      <PageTitle>Vinneren er...</PageTitle>
+      <PageTitle>Luke {day}</PageTitle>
       <div className={stepClass}>
         <div className={styles.winner}>
           <div className={styles.avatar}>
             <img className={styles.image} src={winner?.image} alt={winner?.name} />
           </div>
-          <h1>{winner?.name}</h1>
+          <p className={styles.winnerLabel}>Vinneren er</p>
+          <h1 className={styles.winnerName}>{winner?.name}</h1>
         </div>
         {(current === null || current < 3) && (
           <button
