@@ -6,8 +6,10 @@
  * the Admin SDK and bypass rules) are the only writers of winners.
  */
 
-import { setGlobalOptions } from "firebase-functions/v2";
+import { logger, setGlobalOptions } from "firebase-functions/v2";
+import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
 import express from "express";
 import cors from "cors";
 import { randomInt } from "node:crypto";
@@ -20,6 +22,12 @@ setGlobalOptions({ maxInstances: 10, region: "europe-west1" });
 initializeApp();
 
 const DAYS = 24;
+
+/**
+ * Storage prefix for the seeded default avatars. Reserved as a calendar id in
+ * firestore.rules and storage.rules so it cannot be claimed.
+ */
+const RESERVED_PREFIX = "avatars";
 
 /** Throws unless the caller owns the calendar. Returns the calendar data. */
 const assertOwner = async (
@@ -169,6 +177,77 @@ export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => 
     .catch(() => undefined);
 
   return { deleted: users.size };
+});
+
+/**
+ * Deletes a calendar's uploaded avatars once the calendar document is gone.
+ *
+ * `deleteCalendar` already does this inline, but it is not the only way a
+ * calendar disappears: the TTL policy on `deleteBy` sweeps calendars every
+ * January without calling any callable, and TTL deletions do fire this
+ * trigger. Without it, every avatar ever uploaded would stay in the bucket
+ * forever. Deleting an already-empty prefix is a no-op, so running after
+ * `deleteCalendar` is harmless.
+ */
+export const cleanUpCalendarAvatars = onDocumentDeleted("calendars/{calendarId}", async (event) => {
+  const { calendarId } = event.params;
+
+  await getStorage()
+    .bucket()
+    .deleteFiles({ prefix: `${calendarId}/` })
+    .catch(() => undefined);
+});
+
+/**
+ * Monthly reconciliation sweep for the avatar bucket.
+ *
+ * The delete trigger above is the primary cleanup, but it is best-effort: a
+ * failed invocation is never retried, and avatars uploaded for a calendar that
+ * was deleted while the trigger was down would be orphaned for good. Storage
+ * has no TTL of its own, so this walks the bucket's top-level prefixes — one
+ * per calendar — and removes those with no calendar document behind them.
+ */
+export const sweepOrphanedAvatars = onSchedule("0 4 1 * *", async () => {
+  const bucket = getStorage().bucket();
+  const db = getFirestore();
+
+  const prefixes = new Set<string>();
+  let pageToken: string | undefined;
+
+  do {
+    // Pages must be walked in order: each one yields the next page token.
+    // oxlint-disable-next-line no-await-in-loop
+    const [, , response] = await bucket.getFiles({
+      delimiter: "/",
+      autoPaginate: false,
+      pageToken,
+    });
+    // `delimiter` makes the API return directory-like prefixes instead of
+    // every object, but the typings do not model that response shape.
+    const apiResponse = response as { prefixes?: Array<string>; nextPageToken?: string };
+
+    for (const prefix of apiResponse.prefixes ?? []) prefixes.add(prefix);
+    pageToken = apiResponse.nextPageToken;
+  } while (pageToken);
+
+  // The seeded default avatars belong to no calendar and must survive.
+  prefixes.delete(`${RESERVED_PREFIX}/`);
+
+  const calendarIds = [...prefixes].map((prefix) => prefix.replace(/\/$/, ""));
+
+  if (calendarIds.length === 0) return;
+
+  const snapshots = await db.getAll(
+    ...calendarIds.map((calendarId) => db.collection("calendars").doc(calendarId)),
+  );
+  const orphaned = calendarIds.filter((_, index) => !snapshots[index].exists);
+
+  await Promise.all(orphaned.map((calendarId) => bucket.deleteFiles({ prefix: `${calendarId}/` })));
+
+  logger.info("Swept orphaned avatar prefixes", {
+    scanned: calendarIds.length,
+    deleted: orphaned.length,
+  });
 });
 
 /**
