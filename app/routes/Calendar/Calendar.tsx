@@ -1,16 +1,16 @@
-import React from "react";
 import classnames from "clsx";
-import { getDate, getMonth, getYear, getDay } from "date-fns";
-import { useAppState, useCalendar } from "../../StateProvider";
-import { useNavigate, useParams, Link } from "react-router";
+import { getDate, getDay, getMonth, getYear } from "date-fns";
+import React from "react";
 import { FiSettings } from "react-icons/fi";
-import PageTitle from "../../components/PageTitle";
+import { Link, useNavigate, useParams } from "react-router";
+import { Tooltip as ReactTooltip } from "react-tooltip";
 import IconButton from "../../components/IconButton";
+import PageTitle from "../../components/PageTitle";
 import { toCalendarId } from "../../helpers";
 import { genericMeta, metaCalendarData, metaOrigin, socialMeta } from "../../meta";
+import { useAppState, useCalendar } from "../../StateProvider";
 import type { Route } from "./+types/Calendar";
 import styles from "./Calendar.module.css";
-import { Tooltip as ReactTooltip } from "react-tooltip";
 
 export const meta: Route.MetaFunction = ({ matches }) => {
   const data = metaCalendarData(matches);
@@ -106,21 +106,22 @@ export default function Calendar() {
             [styles.firstday]: day === 0,
           });
 
+          const css = {
+            "--grid-column-start": firstDayOfTheMonth,
+          } as React.CSSProperties;
+
           if (open && !winner && !ignoreWeekend) {
             return (
               <Link
                 to={`/${toCalendarId(calendar.name)}/open/${day + 1}`}
                 key={day + 1}
                 className={dayClass}
+                style={day === 0 ? css : undefined}
               >
                 <span className={styles.number}>{day + 1}</span>
               </Link>
             );
           }
-
-          const css = {
-            "--grid-column-start": firstDayOfTheMonth,
-          } as React.CSSProperties;
 
           return (
             <div key={day + 1} className={dayClass} style={day === 0 ? css : undefined}>
