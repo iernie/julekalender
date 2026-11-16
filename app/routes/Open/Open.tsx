@@ -6,11 +6,10 @@ import Confetti from "react-confetti";
 import { FiHome, FiRotateCcw, FiUserMinus } from "react-icons/fi";
 import PageTitle from "../../components/PageTitle";
 import IconButton from "../../components/IconButton";
-import { useWindowSize } from "react-use";
 import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { FUNCTIONS_REGION, toCalendarId } from "../../helpers";
-import { useMounted } from "../../useMounted";
+import { useMounted, usePrefersReducedMotion, useWindowSize } from "../../hooks";
 import { getFunctions, httpsCallable } from "firebase/functions";
 
 export default function Open() {
@@ -20,6 +19,7 @@ export default function Open() {
 
   const { width, height } = useWindowSize();
   const mounted = useMounted();
+  const reducedMotion = usePrefersReducedMotion();
 
   const winner = day ? users?.find((user) => user.won.indexOf(day) !== -1) : undefined;
 
@@ -210,7 +210,7 @@ export default function Open() {
           </IconButton>
         )}
       </div>
-      {mounted && current !== 0 && (
+      {mounted && !reducedMotion && current !== 0 && (
         <Confetti
           recycle={false}
           run={current !== null && current > 1}

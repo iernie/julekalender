@@ -4,16 +4,16 @@ import StateProvider from "../../StateProvider";
 import Notification from "../../components/Notification";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import Snowfall from "react-snowfall";
-import { useWindowSize } from "react-use";
 import styles from "./App.module.css";
 import { getAuth, signInAnonymously } from "firebase/auth";
 import { firebaseApp, useEmulators } from "../../firebase";
-import { useMounted } from "../../useMounted";
+import { useMounted, usePrefersReducedMotion, useWindowSize } from "../../hooks";
 
 export default function App() {
   const { width, height } = useWindowSize();
   // Sized from the window, so it cannot be server rendered without a mismatch.
   const mounted = useMounted();
+  const reducedMotion = usePrefersReducedMotion();
 
   React.useEffect(() => {
     const auth = getAuth(firebaseApp);
@@ -37,11 +37,11 @@ export default function App() {
 
   return (
     <StateProvider>
-      <div className={styles.content}>
+      <main className={styles.content}>
         <Outlet />
-      </div>
+      </main>
       <Notification />
-      {mounted && <Snowfall color="white" style={{ height, width }} />}
+      {mounted && !reducedMotion && <Snowfall color="white" style={{ height, width }} />}
     </StateProvider>
   );
 }

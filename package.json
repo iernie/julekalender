@@ -32,7 +32,6 @@
     "react-router": "^8.5.1",
     "react-snowfall": "^2.4.0",
     "react-tooltip": "^6.0.12",
-    "react-use": "^17.6.1",
     "uuid": "^14.0.3"
   },
   "devDependencies": {

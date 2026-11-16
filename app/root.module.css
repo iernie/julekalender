@@ -1,0 +1,45 @@
+.error {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.title {
+  font-family: "Calligraffitti", cursive;
+  font-size: 4rem;
+  margin: 0 0 1rem;
+  color: var(--red);
+}
+
+.details {
+  font-size: 1.125rem;
+  color: var(--grey-4);
+}
+
+.link {
+  display: inline-block;
+  margin-top: 2rem;
+  color: var(--white);
+  background: var(--red);
+  box-shadow: 0 0.125rem 0 var(--darkerRed);
+  padding: 0.625rem 1rem;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition: background linear 0.1s;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--lighterRed);
+  }
+}
+
+.stack {
+  margin-top: 2rem;
+  padding: 1rem;
+  overflow-x: auto;
+  text-align: left;
+  background: var(--grey-2);
+  border-radius: 0.25rem;
+  font-size: 0.8125rem;
+}

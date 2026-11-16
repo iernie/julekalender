@@ -36,16 +36,10 @@ export default defineConfig({
       "long",
       "retry-request",
       "teeny-request",
+      // Pulled in by react-tooltip and react-confetti; CommonJS, so they
+      // break the dev SSR runtime when inlined.
       "react-fast-compare",
       "fast-deep-equal",
-      "js-cookie",
-      "copy-to-clipboard",
-      "nano-css",
-      "screenfull",
-      "react-universal-interface",
-      "fast-shallow-equal",
-      "ts-easing",
-      "classnames",
       "tween-functions",
     ],
     optimizeDeps: {

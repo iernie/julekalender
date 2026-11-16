@@ -1,7 +1,7 @@
 import React from "react";
 import { type Unsubscribe, getAuth } from "firebase/auth";
 import { collection, doc, getFirestore, onSnapshot, query, where } from "firebase/firestore";
-import { useState, SET_CALENDAR, SET_USERS, SET_USER } from "../StateProvider";
+import { useState, SET_CALENDAR, SET_NOTIFICATION, SET_USERS, SET_USER } from "../StateProvider";
 import { Outlet, useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
 import { toCalendarId } from "../helpers";
@@ -65,10 +65,19 @@ const StateContainer = () => {
             payload: toCalendar(calendarSnap.data() as Record<string, unknown>),
           });
         } else {
+          dispatch({ type: SET_NOTIFICATION, payload: "Kalenderen finnes ikke lenger" });
           navigate("/");
         }
       },
-      () => navigate("/"),
+      // A rejected listener is never retried, so surface it rather than
+      // leaving the page silently stuck or empty.
+      () => {
+        dispatch({
+          type: SET_NOTIFICATION,
+          payload: "Du har ikke tilgang til denne kalenderen",
+        });
+        navigate("/");
+      },
     );
 
     // Must filter on calendarId, not the `calendar` reference: firestore.rules
@@ -85,6 +94,7 @@ const StateContainer = () => {
         });
       },
       () => {
+        dispatch({ type: SET_NOTIFICATION, payload: "Klarte ikke laste brukerne" });
         dispatch({ type: SET_USERS, payload: [] });
       },
     );

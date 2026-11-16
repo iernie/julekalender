@@ -48,7 +48,7 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - `app/helpers.ts` — `toCalendarId`, `isValidCalendarId`, `expiresAt`, `FUNCTIONS_REGION`.
 - `app/firebase.ts` — client SDK singleton + emulator wiring. `app/firebase.server.ts` — Admin SDK for loaders; never import it from a component.
 - `app/serialize.ts` — `toCalendar` / `toUser`. Every path into app state goes through these.
-- `app/useMounted.ts` — gate anything that depends on the browser (window size) to avoid hydration mismatches.
+- `app/hooks.ts` — `useMounted`, `useWindowSize`, `usePrefersReducedMotion`, all built on `useSyncExternalStore` so they are SSR-safe. Gate browser-dependent output behind `useMounted` to avoid hydration mismatches.
 - `app/routes/api.ts` — the public `/api/:name` endpoint, served by the app via the Admin SDK.
 - `app/components/IconButton/` — keyboard-accessible wrapper for the icon actions. Prefer it over `onClick` on an icon.
 - `tests/` — Firestore and Storage security rules tests (Vitest + `@firebase/rules-unit-testing`).
@@ -70,6 +70,8 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.
 - Husky pre-commit runs `lint-staged`, which now runs oxfmt and `oxlint --fix` on staged files. Both packages share one style — the old eslint-config-google "no spaces inside braces" convention in `functions/` is gone.
 - oxfmt is beta. It keeps Prettier's defaults here, so output should match what Prettier produced.
+- Decorative motion (snowfall, confetti) must stay behind `usePrefersReducedMotion`.
+- The `ssr.external` allowlist is minimal: `react-fast-compare` and `fast-deep-equal` come from react-tooltip, `tween-functions` from react-confetti. They are CommonJS and break the **dev** SSR runtime when inlined, even though the production build tolerates it — so test `npm run dev`, not just `npm run build`, after touching that list.
 - The root package is **ESM** (`"type": "module"`) and needs Node >=22.22, both required by React Router 8.
 - `functions/` targets the **Node 24** Cloud Functions runtime (GA, 2nd-gen only; all our functions are v2). Node 26 cannot be deployed — the Firebase CLI only accepts 20, 22 and 24. `@types/node` in `functions/` is pinned to 24 to match; do not bump it to match the root package.
 - **Run the emulators on Node 24** (`.nvmrc`, so `nvm use`). On Node 26 the functions emulator fails to load the codebase: `firebase-admin` → `jsonwebtoken` → `jwa` → `buffer-equal-constant-time` reads `SlowBuffer.prototype`, and `SlowBuffer` still exists in Node 24 but was removed in Node 26.
