@@ -25,11 +25,33 @@ service cloud.firestore {
             || request.auth.uid == calendarData(id).owner);
     }
 
+    // `avatars/` is the Storage prefix holding the seeded default avatars, and
+    // storage.rules grants the owner of calendar `<id>` write access to
+    // `<id>/**`. A calendar called `avatars` would therefore hand its owner
+    // write access to everyone's default avatars, so the name is reserved.
     function validCalendarId(id) {
-      return id.matches('^[a-z0-9æøå_-]{2,40}$');
+      return id.matches('^[a-z0-9æøå_-]{2,40}$') && id != 'avatars';
+    }
+
+    // Both collections expire through a TTL policy on `deleteBy`. Firestore
+    // ignores the policy for any document whose `deleteBy` is not a timestamp,
+    // so a document without one would live forever.
+    function expires(data) {
+      return data.deleteBy is timestamp && data.createdAt is timestamp;
+    }
+
+    // True when an update leaves `field` alone. Reads through `get(key, null)`
+    // so a field absent from a document written before these rules does not
+    // fail evaluation and lock its owner out.
+    function unchanged(field) {
+      return request.resource.data.get(field, null) == resource.data.get(field, null);
     }
 
     match /calendars/{calendarId} {
+      function calendarKeys() {
+        return ['id', 'name', 'createdAt', 'deleteBy', 'owner', 'public', 'settings'];
+      }
+
       // `resource` is null for a document that does not exist. Reading a
       // missing calendar must succeed so the app can check name availability.
       allow get: if resource == null
@@ -46,17 +68,40 @@ service cloud.firestore {
         && request.resource.data.owner == request.auth.uid
         && request.resource.data.name.lower() == calendarId
         && request.resource.data.public is bool
-        && request.resource.data.keys().hasOnly(
-             ['id', 'name', 'createdAt', 'deleteBy', 'owner', 'public', 'settings']);
+        && expires(request.resource.data)
+        && request.resource.data.keys().hasOnly(calendarKeys());
 
+      // Only `public` and `settings` are the owner's to change. Pinning the
+      // rest keeps `deleteBy` out of reach, so expiry cannot be pushed back.
+      // `get(key, null)` rather than a direct read: a field missing from a
+      // document predating these rules would otherwise fail evaluation and
+      // lock the owner out of their own calendar.
       allow update: if isOwner(resource.data)
         && request.resource.data.owner == resource.data.owner
-        && request.resource.data.name == resource.data.name;
+        && request.resource.data.name == resource.data.name
+        && unchanged('id')
+        && unchanged('createdAt')
+        && unchanged('deleteBy')
+        && request.resource.data.public is bool
+        && request.resource.data.keys().hasOnly(calendarKeys());
 
       allow delete: if isOwner(resource.data);
     }
 
     match /users/{userId} {
+      function userKeys() {
+        return ['id', 'name', 'image', 'calendar', 'calendarId', 'owner', 'createdAt', 'deleteBy', 'won'];
+      }
+
+      // A user document carries the calendar twice: `calendarId` as a string,
+      // which the app and these rules query by, and `calendar` as a reference,
+      // which the callables query by. If the two could disagree, a document
+      // that passed these rules as "mine" would still show up in someone
+      // else's draw. Require them to agree.
+      function sameCalendar(data) {
+        return data.calendar == /databases/$(database)/documents/calendars/$(data.calendarId);
+      }
+
       allow get: if resource == null
         || canReadCalendar(resource.data.calendarId);
 
@@ -67,16 +112,22 @@ service cloud.firestore {
       allow create: if isOwner(request.resource.data)
         && calendarExists(request.resource.data.calendarId)
         && request.resource.data.owner == calendarData(request.resource.data.calendarId).owner
+        && sameCalendar(request.resource.data)
         && request.resource.data.won.size() == 0
-        && request.resource.data.keys().hasOnly(
-             ['id', 'name', 'image', 'calendar', 'calendarId', 'owner', 'createdAt', 'deleteBy', 'won']);
+        && expires(request.resource.data)
+        && request.resource.data.keys().hasOnly(userKeys());
 
       // Clients may rename and re-avatar, but never touch `won`.
       // Winners are written exclusively by the drawWinner callable.
       allow update: if isOwner(resource.data)
         && request.resource.data.won == resource.data.won
         && request.resource.data.owner == resource.data.owner
-        && request.resource.data.calendarId == resource.data.calendarId;
+        && request.resource.data.calendarId == resource.data.calendarId
+        && unchanged('id')
+        && unchanged('calendar')
+        && unchanged('createdAt')
+        && unchanged('deleteBy')
+        && request.resource.data.keys().hasOnly(userKeys());
 
       allow delete: if isOwner(resource.data);
     }

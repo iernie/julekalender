@@ -133,6 +133,38 @@ describe("calendars", () => {
     await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { owner: BOB }));
     await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { name: "Annet" }));
   });
+
+  // `avatars` is the Storage prefix for the seeded default avatars, and
+  // storage.rules keys write access off the calendar id. Owning a calendar by
+  // that name would mean owning everyone's defaults.
+  it("rejects the reserved calendar id", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), "calendars", "avatars"), { ...calendar(ALICE), name: "Avatars" }),
+    );
+  });
+
+  // The TTL policy only sweeps documents whose `deleteBy` is a timestamp.
+  it("rejects a calendar that would never expire", async () => {
+    await assertFails(
+      setDoc(doc(asAlice(), "calendars", "kontoret"), {
+        ...calendar(ALICE),
+        deleteBy: "2027-01-01",
+      }),
+    );
+
+    const { deleteBy: _deleteBy, ...withoutDeleteBy } = calendar(ALICE);
+    await assertFails(setDoc(doc(asAlice(), "calendars", "kontoret"), withoutDeleteBy));
+  });
+
+  it("stops the owner postponing expiry or adding unknown fields", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await assertFails(
+      updateDoc(doc(asAlice(), "calendars", "kontoret"), {
+        deleteBy: new Date(2099, 0, 1),
+      }),
+    );
+    await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { isAdmin: true }));
+  });
 });
 
 describe("users", () => {
@@ -240,6 +272,49 @@ describe("users", () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
     await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { owner: BOB }));
     await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { calendarId: "annet" }));
+  });
+
+  // A user document names its calendar twice: `calendarId` for the app and
+  // these rules, `calendar` for the callables. Letting the two disagree would
+  // put a document that passes as "mine" into someone else's draw.
+  it("rejects a user whose calendar reference contradicts its calendarId", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await seed(env, { calendarId: "annet", owner: BOB, userId: "user-9" });
+
+    const db = asAlice();
+    await assertFails(
+      setDoc(
+        doc(db, "users", "user-2"),
+        user("user-2", ALICE, "kontoret", doc(db, "calendars", "annet")),
+      ),
+    );
+  });
+
+  it("stops repointing a user's calendar reference", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    const db = asAlice();
+    await assertFails(
+      updateDoc(doc(db, "users", "user-1"), { calendar: doc(db, "calendars", "annet") }),
+    );
+  });
+
+  it("rejects a user that would never expire", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    const db = asAlice();
+    await assertFails(
+      setDoc(doc(db, "users", "user-2"), {
+        ...user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret")),
+        deleteBy: "2027-01-01",
+      }),
+    );
+  });
+
+  it("stops the owner postponing a user's expiry or adding unknown fields", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await assertFails(
+      updateDoc(doc(asAlice(), "users", "user-1"), { deleteBy: new Date(2099, 0, 1) }),
+    );
+    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { isAdmin: true }));
   });
 
   it("lets only the owner delete a user", async () => {

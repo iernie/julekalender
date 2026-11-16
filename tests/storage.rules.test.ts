@@ -39,6 +39,16 @@ describe("avatars", () => {
       uploadBytes(ref(env.authenticatedContext(ALICE).storage(), "avatars/1.png"), png(), PNG),
     );
   });
+
+  // Storage evaluates every matching rule and grants on any allow, so the
+  // per-calendar block also matches `avatars/<file>`. firestore.rules reserves
+  // the id, but seeded data could predate that, so the storage rule guards too.
+  it("cannot be overwritten by the owner of a calendar named avatars", async () => {
+    await seed(env, { calendarId: "avatars", owner: BOB, userId: "user-9" });
+    await assertFails(
+      uploadBytes(ref(env.authenticatedContext(BOB).storage(), "avatars/1.png"), png(), PNG),
+    );
+  });
 });
 
 describe("calendar uploads", () => {
