@@ -18,9 +18,24 @@
     "unicorn/prefer-node-protocol": "error",
     "react/react-in-jsx-scope": "off",
     "import/no-unassigned-import": "off",
-    "import/no-named-as-default": "off"
+    "import/no-named-as-default": "off",
+    "import/no-nodejs-modules": "error"
   },
   "overrides": [
+    {
+      "files": [
+        "**/*.server.ts",
+        "**/*.server.tsx",
+        "functions/**/*.ts",
+        "tests/**/*.ts",
+        "scripts/**/*.mjs",
+        "*.config.ts",
+        "*.config.mts"
+      ],
+      "rules": {
+        "import/no-nodejs-modules": "off"
+      }
+    },
     {
       "files": ["functions/**/*.ts"],
       "env": {

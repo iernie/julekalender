@@ -50,6 +50,9 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - `app/serialize.ts` — `toCalendar` / `toUser`. Every path into app state goes through these.
 - `app/hooks.ts` — `useMounted`, `useWindowSize`, `usePrefersReducedMotion`, all built on `useSyncExternalStore` so they are SSR-safe. Gate browser-dependent output behind `useMounted` to avoid hydration mismatches.
 - `app/components/IconButton/` — keyboard-accessible wrapper for the icon actions. Prefer it over `onClick` on an icon.
+- `app/meta.ts` — `socialMeta`/`genericMeta` helpers plus accessors for root and calendar loader data.
+- `app/og.server.tsx` + `app/og.templates.tsx` + `app/routes/og.*.ts` — dynamic OG images at `/og/:name/og.png` and `/og/:name/:day/og.png`.
+- `app/assets/fonts/` — Roboto TTFs for satori (OFL-1.1, license included). Not the webfont the UI uses.
 - `tests/` — Firestore and Storage security rules tests (Vitest + `@firebase/rules-unit-testing`).
 - `scripts/seed-emulators.mjs` — uploads `static/*.png` to `avatars/` in the Storage emulator; the app needs them when adding a user.
 - `build/`, `.react-router/`, `functions/lib/` are generated; never edit.
@@ -73,6 +76,11 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - Husky pre-commit runs `lint-staged`, which now runs oxfmt and `oxlint --fix` on staged files. Both packages share one style — the old eslint-config-google "no spaces inside braces" convention in `functions/` is gone.
 - oxfmt is beta. It keeps Prettier's defaults here, so output should match what Prettier produced.
 - Decorative motion (snowfall, confetti) must stay behind `usePrefersReducedMotion`.
+- **Never import `node:*` from client code.** `import/no-nodejs-modules` enforces this for `app/`, with `*.server.ts(x)`, `functions/`, `tests/` and `scripts/` exempted. It builds and typechecks fine but throws in the browser. Use web globals — e.g. `crypto.randomUUID()`, not `node:crypto`.
+- **A route's `meta` replaces its parent's, it does not merge.** Site-wide tags are repeated in `socialMeta`, and routes must return `genericMeta()` rather than `[]` or the page ends up with no title.
+- `og:image` must be absolute, so the root loader publishes the request origin for `meta` functions to read.
+- OG images are PNG because scrapers reject SVG. satori + resvg are in `ssr.external` (resvg ships a native `.node`). Avatars are inlined as data URLs by `toDataUrl` rather than letting satori fetch them — satori blocks private addresses, so the Storage emulator never works locally.
+- OG routes 404 for private calendars so previews cannot leak them.
 - The `ssr.external` allowlist is minimal: `react-fast-compare` and `fast-deep-equal` come from react-tooltip, `tween-functions` from react-confetti. They are CommonJS and break the **dev** SSR runtime when inlined, even though the production build tolerates it — so test `npm run dev`, not just `npm run build`, after touching that list.
 - The root package is **ESM** (`"type": "module"`) and needs Node >=22.22, both required by React Router 8.
 - `functions/` targets the **Node 24** Cloud Functions runtime (GA, 2nd-gen only; all our functions are v2). Node 26 cannot be deployed — the Firebase CLI only accepts 20, 22 and 24. `@types/node` in `functions/` is pinned to 24 to match; do not bump it to match the root package.

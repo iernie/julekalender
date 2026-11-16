@@ -20,7 +20,6 @@ import {
 } from "firebase/auth";
 import { useAppState, SET_NOTIFICATION } from "../../StateProvider";
 import { Link, useNavigate } from "react-router";
-import { v4 as uuidv4 } from "uuid";
 import { type CalendarType } from "../../types";
 import { expiresAt, isValidCalendarId, toCalendarId } from "../../helpers";
 import { toCalendar } from "../../serialize";
@@ -124,7 +123,7 @@ export default function Welcome() {
 
     // Stored shape, not CalendarType: Firestore holds real Timestamps.
     await setDoc(calendarReference, {
-      id: uuidv4(),
+      id: crypto.randomUUID(),
       createdAt: Timestamp.fromDate(new Date()),
       deleteBy: expiresAt(),
       owner: uid,

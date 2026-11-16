@@ -7,8 +7,25 @@ import { FiSettings } from "react-icons/fi";
 import PageTitle from "../../components/PageTitle";
 import IconButton from "../../components/IconButton";
 import { toCalendarId } from "../../helpers";
+import { genericMeta, metaCalendarData, metaOrigin, socialMeta } from "../../meta";
+import type { Route } from "./+types/Calendar";
 import styles from "./Calendar.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
+
+export const meta: Route.MetaFunction = ({ matches }) => {
+  const data = metaCalendarData(matches);
+  const calendar = data?.calendar;
+  if (!calendar) return genericMeta();
+
+  const id = toCalendarId(calendar.name);
+  const opened = new Set(data.users.flatMap((user) => user.won)).size;
+
+  return socialMeta({
+    title: `${calendar.name} - Julekalender`,
+    description: `${opened} av 24 luker er åpnet i julekalenderen til ${calendar.name}.`,
+    image: `${metaOrigin(matches)}/og/${id}/og.png`,
+  });
+};
 
 export default function Calendar() {
   const [{ users }] = useAppState();

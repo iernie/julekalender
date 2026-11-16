@@ -10,7 +10,29 @@ import styles from "./Open.module.css";
 import { Tooltip as ReactTooltip } from "react-tooltip";
 import { FUNCTIONS_REGION, toCalendarId } from "../../helpers";
 import { useMounted, usePrefersReducedMotion, useWindowSize } from "../../hooks";
+import { genericMeta, metaCalendarData, metaOrigin, socialMeta } from "../../meta";
+import type { Route } from "./+types/Open";
 import { getFunctions, httpsCallable } from "firebase/functions";
+
+export const meta: Route.MetaFunction = ({ matches, params }) => {
+  const data = metaCalendarData(matches);
+  const calendar = data?.calendar;
+  const day = params.day;
+  if (!calendar || !day) return genericMeta();
+
+  const id = toCalendarId(calendar.name);
+  const winner = data.users.find((user) => user.won.includes(day));
+
+  return socialMeta({
+    title: winner
+      ? `${winner.name || "Vinneren"} vant luke ${day} - ${calendar.name}`
+      : `Luke ${day} - ${calendar.name}`,
+    description: winner
+      ? `${winner.name || "Vinneren"} vant gaven bak luke ${day} i julekalenderen til ${calendar.name}.`
+      : `Luke ${day} i julekalenderen til ${calendar.name} er ikke åpnet ennå.`,
+    image: `${metaOrigin(matches)}/og/${id}/${day}/og.png`,
+  });
+};
 
 export default function Open() {
   const [{ users }, dispatch] = useAppState();

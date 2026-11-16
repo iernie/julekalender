@@ -1,7 +1,6 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router";
 import { SET_NOTIFICATION, useAppState, useCalendar } from "../../StateProvider";
-import { v4 as uuidv4 } from "uuid";
 import { FiHome, FiLock, FiX, FiLogIn, FiUnlock, FiLogOut, FiTrash } from "react-icons/fi";
 import styles from "./Admin.module.css";
 import { compareAsc } from "date-fns";
@@ -348,7 +347,7 @@ export default function Admin() {
           disabled={!isOwner}
           onClick={async () => {
             const calendarReference = doc(db, "calendars", calendarId);
-            const id = uuidv4();
+            const id = crypto.randomUUID();
             const downloadUrl = await getDownloadURL(
               ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`),
             );

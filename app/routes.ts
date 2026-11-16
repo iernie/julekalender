@@ -11,4 +11,6 @@ export default [
       ]),
     ]),
   ]),
+  route("og/:name/og.png", "routes/og.calendar.ts"),
+  route("og/:name/:day/og.png", "routes/og.day.ts"),
 ] satisfies RouteConfig;

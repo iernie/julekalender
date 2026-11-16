@@ -104,12 +104,7 @@ const StateContainer = () => {
 
   if (!calendar) return <Loading />;
 
-  return (
-    <>
-      <title>{`Julekalender - ${calendar.name}`}</title>
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 };
 
 export default StateContainer;

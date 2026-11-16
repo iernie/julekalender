@@ -20,6 +20,7 @@
   "dependencies": {
     "@react-router/node": "^8.5.1",
     "@react-router/serve": "^8.5.1",
+    "@resvg/resvg-js": "^2.6.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "firebase": "^13.3.0",
@@ -32,7 +33,7 @@
     "react-router": "^8.5.1",
     "react-snowfall": "^2.4.0",
     "react-tooltip": "^6.0.12",
-    "uuid": "^14.0.3"
+    "satori": "^0.63.2"
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^6.0.0",

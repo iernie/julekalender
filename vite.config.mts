@@ -16,6 +16,9 @@ export default defineConfig({
     external: [
       // firebase-admin and its transitive native/dynamic deps cannot be
       // bundled. They ship in node_modules on App Hosting.
+      // Native .node binary (resvg) and its wasm-backed layout engine (satori).
+      "@resvg/resvg-js",
+      "satori",
       "firebase-admin",
       "firebase-admin/app",
       "firebase-admin/firestore",
