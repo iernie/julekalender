@@ -25,9 +25,7 @@ const reachable = async () => {
 };
 
 if (!(await reachable())) {
-  console.error(
-    `Storage emulator not reachable at ${HOST}.\nStart it first with: npm run emulators`,
-  );
+  console.error(`Storage emulator not reachable at ${HOST}.\nStart it first with: pnpm emulators`);
   process.exit(1);
 }
 

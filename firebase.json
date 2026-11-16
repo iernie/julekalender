@@ -31,8 +31,8 @@
         ".runtimeconfig.json"
       ],
       "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR/..\" run lint",
-        "npm --prefix \"$RESOURCE_DIR\" run build"
+        "pnpm --dir \"$RESOURCE_DIR/..\" run lint",
+        "pnpm --dir \"$RESOURCE_DIR\" run build"
       ],
       "source": "functions"
     }

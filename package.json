@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "react-router dev",
-    "emulators": "npm --prefix functions run build && firebase emulators:start --only auth,firestore,storage,functions --project demo-julekal --import ./.emulator-data --export-on-exit ./.emulator-data",
+    "emulators": "pnpm --dir functions run build && firebase emulators:start --only auth,firestore,storage,functions --project demo-julekal --import ./.emulator-data --export-on-exit ./.emulator-data",
     "seed": "node scripts/seed-emulators.mjs",
     "build": "react-router build",
     "start": "react-router-serve ./build/server/index.js",
@@ -57,6 +57,13 @@
     "*.{js,jsx,ts,tsx}": [
       "oxlint --fix"
     ]
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": ">=12.0.0",
+      "onFail": "download"
+    }
   },
   "engines": {
     "node": ">=22.22.0"

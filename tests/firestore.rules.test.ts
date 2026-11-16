@@ -156,7 +156,7 @@ describe("calendars", () => {
     await assertFails(
       setDoc(doc(asAlice(), "calendars", "kontoret"), {
         ...calendar(ALICE),
-        deleteBy: "2027-01-01",
+        deleteBy: "2027-02-01",
       }),
     );
 
@@ -168,7 +168,7 @@ describe("calendars", () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
     await assertFails(
       updateDoc(doc(asAlice(), "calendars", "kontoret"), {
-        deleteBy: new Date(2099, 0, 1),
+        deleteBy: new Date(2099, 1, 1),
       }),
     );
     await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { isAdmin: true }));
@@ -189,7 +189,7 @@ describe("calendars", () => {
     it("may have a missing deleteBy filled in", async () => {
       await seedLegacyCalendar(env, "kontoret", ALICE);
       await assertSucceeds(
-        updateDoc(doc(asAlice(), "calendars", "kontoret"), { deleteBy: new Date(2027, 0, 1) }),
+        updateDoc(doc(asAlice(), "calendars", "kontoret"), { deleteBy: new Date(2027, 1, 1) }),
       );
     });
 
@@ -339,7 +339,7 @@ describe("users", () => {
     await assertFails(
       setDoc(doc(db, "users", "user-2"), {
         ...user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret")),
-        deleteBy: "2027-01-01",
+        deleteBy: "2027-02-01",
       }),
     );
   });

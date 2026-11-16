@@ -190,7 +190,7 @@ export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => 
  *
  * `deleteCalendar` already does this inline, but it is not the only way a
  * calendar disappears: the TTL policy on `deleteBy` sweeps calendars every
- * January without calling any callable, and TTL deletions do fire this
+ * February without calling any callable, and TTL deletions do fire this
  * trigger. Without it, every avatar ever uploaded would stay in the bucket
  * forever. Deleting an already-empty prefix is a no-op, so running after
  * `deleteCalendar` is harmless.

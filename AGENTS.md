@@ -6,17 +6,17 @@ Julekalender as a Service — React Router v8 (SSR) app on Firebase App Hosting,
 
 Root (the web app):
 
-- `npm run dev` — React Router dev server
-- `npm run build` — SSR + client build into `build/`
-- `npm run typecheck` — **runs `react-router typegen` first, then `tsc`**. Always use this instead of bare `tsc`; route types in `.react-router/types` are generated and `./+types/*` imports won't resolve otherwise.
-- `npm start` — serve the built SSR output
-- `npm run lint` / `lint:fix` — oxlint across **both** packages (config: `.oxlintrc.json`)
-- `npm run format` / `format:check` — oxfmt (config: `.oxfmtrc.json`)
+- `pnpm dev` — React Router dev server
+- `pnpm build` — SSR + client build into `build/`
+- `pnpm typecheck` — **runs `react-router typegen` first, then `tsc`**. Always use this instead of bare `tsc`; route types in `.react-router/types` are generated and `./+types/*` imports won't resolve otherwise.
+- `pnpm start` — serve the built SSR output
+- `pnpm lint` / `lint:fix` — oxlint across **both** packages (config: `.oxlintrc.json`)
+- `pnpm format` / `format:check` — oxfmt (config: `.oxfmtrc.json`)
 
-Functions (`functions/`, separate package, Node 24, own `node_modules`):
+Functions (`functions/`, separate package, Node 24, own `node_modules` and `pnpm-lock.yaml`):
 
-- `npm --prefix functions run build` (tsc → `functions/lib`)
-- `npm --prefix functions run serve` — build + firebase emulators for functions
+- `pnpm --dir functions run build` (tsc → `functions/lib`)
+- `pnpm --dir functions run serve` — build + firebase emulators for functions
 - `firebase deploy --only functions` — predeploy runs the **root** lint, then the functions build
 - `functions/` has no linter of its own; the root oxlint covers it.
 
@@ -24,18 +24,18 @@ Local development (emulator suite, fully offline):
 
 - `cp .env.local.example .env.local` — fake config; the `demo-` project id keeps the emulators offline.
 - `nvm use` — Node 24; see the gotcha below.
-- `npm run emulators` — builds functions, starts auth/firestore/storage/functions, persists to `.emulator-data`
-- `npm run seed` — once per fresh emulator, loads the default avatars
-- `npm run dev` — in a second terminal
+- `pnpm emulators` — builds functions, starts auth/firestore/storage/functions, persists to `.emulator-data`
+- `pnpm seed` — once per fresh emulator, loads the default avatars
+- `pnpm dev` — in a second terminal
 
 Security rules tests (root package):
 
-- `npm run test:rules` — boots the Firestore + Storage emulators and runs Vitest against `tests/`
+- `pnpm test:rules` — boots the Firestore + Storage emulators and runs Vitest against `tests/`
 - Requires a Java runtime. `openjdk` is installed via Homebrew but is **keg-only**, so prefix the call:
-  `PATH="/opt/homebrew/opt/openjdk/bin:$PATH" npm run test:rules`
+  `PATH="/opt/homebrew/opt/openjdk/bin:$PATH" pnpm test:rules`
 
-Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
-`npm run test:rules` (+ `npm run build` for anything SSR-related). CI
+Verification = `pnpm lint` + `pnpm format:check` + `pnpm typecheck` +
+`pnpm test:rules` (+ `pnpm build` for anything SSR-related). CI
 (`.github/workflows/ci.yml`) runs exactly these.
 
 ## Layout
@@ -74,7 +74,7 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - There is exactly **one** `onAuthStateChanged` listener, in `routes/App/App.tsx`, because it wraps every route. Read the user from `useAppState()` rather than adding another listener.
 - `state.calendar` is `null` until loaded. The calendar layout renders its outlet only once it is set, so routes under it should use `useCalendar()` instead of null-checking.
 - Client Firestore listeners wait for `onAuthStateChanged` to fire before subscribing. A listener rejected for lack of auth is never retried, which would break private calendars.
-- Run `npm run test:rules` on its own emulator instance. Against a dev emulator started for another project, `storage.rules`' `firestore.get` resolves to that project's data and the ownership tests fail spuriously.
+- Run `pnpm test:rules` on its own emulator instance. Against a dev emulator started for another project, `storage.rules`' `firestore.get` resolves to that project's data and the ownership tests fail spuriously.
 - Two deploy targets coexist: App Hosting serves the web app (`apphosting` in `firebase.json`, ignores `functions/`), while `firebase.json` hosting rewrites go to the `api` function.
 - `sweepOrphanedAvatars` is the first scheduled function here, so the first deploy needs the Cloud Scheduler API enabled on the project and takes longer than usual while the job is created.
 - **The public API lives only in `functions/`**, deliberately. It is unauthenticated, so keeping it off the web app's Cloud Run service preserves its own `maxInstances` cost cap and keeps scraper traffic from scaling the site. The app must not grow a competing `/api` route.
@@ -86,8 +86,9 @@ Verification = `npm run lint` + `npm run format:check` + `npm run typecheck` +
 - `og:image` must be absolute, so the root loader publishes the request origin for `meta` functions to read.
 - OG images are PNG because scrapers reject SVG. satori + resvg are in `ssr.external` (resvg ships a native `.node`). Avatars are inlined as data URLs by `toDataUrl` rather than letting satori fetch them — satori blocks private addresses, so the Storage emulator never works locally.
 - OG routes 404 for private calendars so previews cannot leak them.
-- The `ssr.external` allowlist is minimal: `react-fast-compare` and `fast-deep-equal` come from react-tooltip, `tween-functions` from react-confetti. They are CommonJS and break the **dev** SSR runtime when inlined, even though the production build tolerates it — so test `npm run dev`, not just `npm run build`, after touching that list.
+- The `ssr.external` allowlist is minimal: `react-fast-compare` and `fast-deep-equal` come from react-tooltip, `tween-functions` from react-confetti. They are CommonJS and break the **dev** SSR runtime when inlined, even though the production build tolerates it — so test `pnpm dev`, not just `pnpm build`, after touching that list.
 - The root package is **ESM** (`"type": "module"`) and needs Node >=22.22, both required by React Router 8.
 - `functions/` targets the **Node 24** Cloud Functions runtime (GA, 2nd-gen only; all our functions are v2). Node 26 cannot be deployed — the Firebase CLI only accepts 20, 22 and 24. `@types/node` in `functions/` is pinned to 24 to match; do not bump it to match the root package.
 - **Run the emulators on Node 24** (`.nvmrc`, so `nvm use`). On Node 26 the functions emulator fails to load the codebase: `firebase-admin` → `jsonwebtoken` → `jwa` → `buffer-equal-constant-time` reads `SlowBuffer.prototype`, and `SlowBuffer` still exists in Node 24 but was removed in Node 26.
 - TypeScript 7 ships **no programmatic compiler API**. Tooling that imports `typescript` (rather than shelling out to `tsc`) needs the `@typescript/typescript6` package. It also defaults `rootDir` to `./` and `types` to `[]`, which is why `functions/tsconfig.json` sets both explicitly — without `rootDir` it emits to `lib/src/` and breaks the function entrypoint.
+- **pnpm, but two separate installs.** Root and `functions/` each have their own `pnpm-lock.yaml`; `functions/` is deliberately _not_ a pnpm workspace member — Cloud Build picks the installer from the lockfile in the functions source dir and can't handle workspace links. Use `pnpm --dir functions …` in place of the old `npm --prefix functions …`. Don't add a `packages:` list to `pnpm-workspace.yaml` (it only holds `allowBuilds`), and don't add `packageManager` (or `devEngines.packageManager`) to `package.json` without `pmOnFail: ignore` in both `pnpm-workspace.yaml` files: otherwise pnpm 12 writes a two-document lockfile that breaks Dependabot alerts. CI pins the version in `pnpm/action-setup` instead. Because the installs are separate, `functions/pnpm-workspace.yaml` repeats the `allowBuilds` denials and `pmOnFail` — pnpm settings are not inherited from the root.

@@ -4,7 +4,7 @@ version: 2
 # package ecosystem; majors stay separate so they get a proper review.
 updates:
   # -------------------------------------------------------------------
-  # Root web app — React Router 8 SSR app (package-lock.json at repo root)
+  # Root web app — React Router 8 SSR app (pnpm-lock.yaml at repo root)
   # -------------------------------------------------------------------
   - package-ecosystem: npm
     directory: "/"
@@ -36,7 +36,7 @@ updates:
           - patch
 
   # -------------------------------------------------------------------
-  # Firebase Functions — separate package + lockfile, Node 24 runtime
+  # Firebase Functions — separate package + pnpm-lock.yaml, Node 24 runtime
   # -------------------------------------------------------------------
   - package-ecosystem: npm
     directory: "/functions"

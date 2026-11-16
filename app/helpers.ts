@@ -18,6 +18,6 @@ export const isValidCalendarId = (id: string) =>
 
 /**
  * Calendars and their users expire via the Firestore TTL policy on `deleteBy`.
- * January 1st of the following year — note month is zero-indexed.
+ * February 1st of the following year — note month is zero-indexed.
  */
-export const expiresAt = () => Timestamp.fromDate(new Date(new Date().getFullYear() + 1, 0, 1));
+export const expiresAt = () => Timestamp.fromDate(new Date(new Date().getFullYear() + 1, 1, 1));
