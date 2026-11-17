@@ -2,11 +2,10 @@ import React from "react";
 import { Outlet } from "react-router";
 import StateProvider, { SET_USER, useAppState } from "../../StateProvider";
 import Notification from "../../components/Notification";
-import { getAnalytics, isSupported } from "firebase/analytics";
 import Snowfall from "react-snowfall";
 import styles from "./App.module.css";
 import { getAuth, onAuthStateChanged, signInAnonymously } from "firebase/auth";
-import { firebaseApp, useEmulators } from "../../firebase";
+import { firebaseApp } from "../../firebase";
 import { useMounted, usePrefersReducedMotion, useWindowSize } from "../../hooks";
 
 export default function App() {
@@ -42,16 +41,6 @@ function AppShell() {
 
     return unsubscribe;
   }, [dispatch]);
-
-  React.useEffect(() => {
-    // Analytics has no emulator and would try to reach Google in dev.
-    if (useEmulators) return;
-    isSupported()
-      .then((supported) => {
-        if (supported) getAnalytics(firebaseApp);
-      })
-      .catch(() => undefined);
-  }, []);
 
   return (
     <>
