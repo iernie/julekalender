@@ -14,10 +14,16 @@ import styles from "./root.module.css";
 
 /**
  * og:image has to be an absolute URL, and meta functions only receive the
- * path, so the request origin is published here for descendant routes.
+ * path, so the public origin is published here for descendant routes.
+ *
+ * Behind App Hosting, `request.url` is the internal Cloud Run URL
+ * (`http://<backend>.run.app`), which 403s for scrapers, so production sets
+ * PUBLIC_ORIGIN in apphosting.yaml. Forwarded headers are deliberately not
+ * trusted: they are client-controllable and the CDN may cache the HTML.
  */
 export function loader({ request }: Route.LoaderArgs) {
-  return { origin: new URL(request.url).origin };
+  const configured = process.env.PUBLIC_ORIGIN?.replace(/\/+$/, "");
+  return { origin: configured || new URL(request.url).origin };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => {
