@@ -49,14 +49,19 @@ export default function Open() {
 
   const [excluded, setExcluded] = React.useState<ReadonlySet<string>>(() => new Set());
   const [step, setStep] = React.useState<number | null>(null);
+  const [drawn, setDrawn] = React.useState<boolean>(false);
   const [showUsers, setShowUsers] = React.useState<boolean>(false);
 
+  // Derived rather than pushed into state from an effect: an already-drawn day
+  // lands straight on the final step, and the box only opens once the draw has
+  // resolved, the suspense delay has passed and the winner has reached state.
+  const current = step === 1 && drawn && winner ? 2 : (step ?? (winner ? 3 : null));
+
   React.useEffect(() => {
-    if (step !== 1 && step !== 2) return;
-    const delay = step === 1 ? Math.random() * 6000 + 2000 : 400;
-    const timer = setTimeout(() => setStep(step + 1), delay);
+    if (current !== 2) return;
+    const timer = setTimeout(() => setStep(3), 400);
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [current]);
 
   React.useEffect(() => {
     const handleClickOutside = (e: MouseEvent): void => {
@@ -73,10 +78,6 @@ export default function Open() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showUsers]);
-
-  // Derived rather than pushed into state from an effect: an already-drawn day
-  // lands straight on the final step.
-  const current = step ?? (winner ? 3 : null);
 
   if (!name) return null;
   if (!users) return null;
@@ -107,19 +108,26 @@ export default function Open() {
 
   const chooseWinner = async () => {
     if (!day) return;
-    setStep(0);
+    // Start shaking straight away; the network round trip runs concurrently
+    // with the suspense delay instead of before it.
+    setDrawn(false);
+    setStep(1);
     try {
+      const suspense = new Promise((resolve) => setTimeout(resolve, Math.random() * 6000 + 2000));
       const draw = httpsCallable<
         { calendarId: string; day: string; excluded: Array<string> },
         { id: string; name: string; image: string }
       >(getFunctions(undefined, FUNCTIONS_REGION), "drawWinner");
 
-      await draw({
-        calendarId: toCalendarId(name),
-        day,
-        excluded: [...excluded],
-      });
-      setStep(1);
+      await Promise.all([
+        draw({
+          calendarId: toCalendarId(name),
+          day,
+          excluded: [...excluded],
+        }),
+        suspense,
+      ]);
+      setDrawn(true);
     } catch (error) {
       setStep(null);
       notify(error, "Klarte ikke velge ny vinner");
