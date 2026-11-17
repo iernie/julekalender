@@ -6,6 +6,7 @@ import {
 } from "@firebase/rules-unit-testing";
 import {
   collection,
+  collectionGroup,
   deleteDoc,
   doc,
   getDoc,
@@ -30,6 +31,13 @@ let env: RulesTestEnvironment;
 const asAlice = () => env.authenticatedContext(ALICE).firestore();
 const asBob = () => env.authenticatedContext(BOB).firestore();
 const asGuest = () => env.unauthenticatedContext().firestore();
+
+type TestFirestore = ReturnType<typeof asAlice>;
+
+const userDoc = (db: TestFirestore, calendarId: string, userId: string) =>
+  doc(db, "calendars", calendarId, "users", userId);
+const usersOf = (db: TestFirestore, calendarId: string) =>
+  collection(db, "calendars", calendarId, "users");
 
 beforeAll(async () => {
   env = await newTestEnvironment();
@@ -205,140 +213,108 @@ describe("calendars", () => {
 describe("users", () => {
   it("lets the calendar owner add a user", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    const db = asAlice();
-    await assertSucceeds(
-      setDoc(
-        doc(db, "users", "user-2"),
-        user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret")),
-      ),
-    );
+    await assertSucceeds(setDoc(userDoc(asAlice(), "kontoret", "user-2"), user("user-2")));
   });
 
   it("stops a stranger adding a user to someone else's calendar", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    const db = asBob();
-    await assertFails(
-      setDoc(
-        doc(db, "users", "user-2"),
-        user("user-2", BOB, "kontoret", doc(db, "calendars", "kontoret")),
-      ),
-    );
+    await assertFails(setDoc(userDoc(asBob(), "kontoret", "user-2"), user("user-2")));
+  });
+
+  it("rejects adding a user to a calendar that does not exist", async () => {
+    await assertFails(setDoc(userDoc(asAlice(), "finnes-ikke", "user-2"), user("user-2")));
+  });
+
+  it("rejects a user whose id does not match its document id", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await assertFails(setDoc(userDoc(asAlice(), "kontoret", "user-2"), user("user-3")));
   });
 
   it("rejects a new user that already has wins", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await assertFails(setDoc(userDoc(asAlice(), "kontoret", "user-2"), user("user-2", ["1"])));
+  });
+
+  // The fields the subcollection made redundant must not creep back in, or a
+  // document could again claim a calendar or owner its path contradicts.
+  it("rejects the old calendar and owner fields", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
     const db = asAlice();
     await assertFails(
-      setDoc(
-        doc(db, "users", "user-2"),
-        user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret"), ["1"]),
-      ),
+      setDoc(userDoc(db, "kontoret", "user-2"), { ...user("user-2"), calendarId: "annet" }),
+    );
+    await assertFails(
+      setDoc(userDoc(db, "kontoret", "user-2"), { ...user("user-2"), owner: ALICE }),
     );
   });
 
   it("lets anyone read users of a public calendar", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertSucceeds(getDoc(doc(asGuest(), "users", "user-1")));
+    await assertSucceeds(getDoc(userDoc(asGuest(), "kontoret", "user-1")));
   });
 
-  // The app loads users with a query, not a get. Firestore evaluates list
-  // rules against the query, so this needs its own coverage: a rule reading a
-  // field the query does not constrain fails with an empty `resource`.
+  // The app loads users by listing the subcollection, not with a get. List
+  // rules are evaluated against the query, so this needs its own coverage.
   it("lets anyone list users of a public calendar", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    const db = asGuest();
-    await assertSucceeds(
-      getDocs(query(collection(db, "users"), where("calendarId", "==", "kontoret"))),
-    );
+    await assertSucceeds(getDocs(usersOf(asGuest(), "kontoret")));
   });
 
   it("lets the owner list users of their private calendar", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE, isPublic: false });
-    const db = asAlice();
-    await assertSucceeds(
-      getDocs(query(collection(db, "users"), where("calendarId", "==", "kontoret"))),
-    );
+    await assertSucceeds(getDocs(usersOf(asAlice(), "kontoret")));
   });
 
   it("stops a stranger listing users of a private calendar", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE, isPublic: false });
-    const db = asBob();
-    await assertFails(
-      getDocs(query(collection(db, "users"), where("calendarId", "==", "kontoret"))),
-    );
+    await assertFails(getDocs(usersOf(asBob(), "kontoret")));
+    await assertFails(getDocs(usersOf(asGuest(), "kontoret")));
   });
 
-  it("allows reading a user that does not exist", async () => {
-    await assertSucceeds(getDoc(doc(asAlice(), "users", "finnes-ikke")));
+  // Users are only ever reached through their calendar. A collection-group
+  // query across every calendar would leak private calendars' users.
+  it("stops listing users across calendars", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await assertFails(getDocs(collectionGroup(asAlice(), "users")));
+  });
+
+  it("allows reading a user that does not exist in a readable calendar", async () => {
+    await seed(env, { calendarId: "kontoret", owner: ALICE });
+    await assertSucceeds(getDoc(userDoc(asAlice(), "kontoret", "finnes-ikke")));
   });
 
   it("hides users of a private calendar", async () => {
-    await seed(env, {
-      calendarId: "kontoret",
-      owner: ALICE,
-      isPublic: false,
-    });
-    await assertFails(getDoc(doc(asBob(), "users", "user-1")));
-    await assertSucceeds(getDoc(doc(asAlice(), "users", "user-1")));
+    await seed(env, { calendarId: "kontoret", owner: ALICE, isPublic: false });
+    await assertFails(getDoc(userDoc(asBob(), "kontoret", "user-1")));
+    await assertSucceeds(getDoc(userDoc(asAlice(), "kontoret", "user-1")));
   });
 
   it("lets the owner rename a user", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertSucceeds(updateDoc(doc(asAlice(), "users", "user-1"), { name: "Rudolf" }));
+    await assertSucceeds(updateDoc(userDoc(asAlice(), "kontoret", "user-1"), { name: "Rudolf" }));
   });
 
   it("stops a stranger renaming a user", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(updateDoc(doc(asBob(), "users", "user-1"), { name: "Rudolf" }));
+    await assertFails(updateDoc(userDoc(asBob(), "kontoret", "user-1"), { name: "Rudolf" }));
   });
 
   // The anti-cheat guarantee: only the drawWinner callable may write `won`.
   it("stops even the owner writing won", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { won: ["1"] }));
+    await assertFails(updateDoc(userDoc(asAlice(), "kontoret", "user-1"), { won: ["1"] }));
   });
 
   it("stops a stranger writing won", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(updateDoc(doc(asBob(), "users", "user-1"), { won: ["1"] }));
-  });
-
-  it("stops reassigning a user to another calendar or owner", async () => {
-    await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { owner: BOB }));
-    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { calendarId: "annet" }));
-  });
-
-  // A user document names its calendar twice: `calendarId` for the app and
-  // these rules, `calendar` for the callables. Letting the two disagree would
-  // put a document that passes as "mine" into someone else's draw.
-  it("rejects a user whose calendar reference contradicts its calendarId", async () => {
-    await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await seed(env, { calendarId: "annet", owner: BOB, userId: "user-9" });
-
-    const db = asAlice();
-    await assertFails(
-      setDoc(
-        doc(db, "users", "user-2"),
-        user("user-2", ALICE, "kontoret", doc(db, "calendars", "annet")),
-      ),
-    );
-  });
-
-  it("stops repointing a user's calendar reference", async () => {
-    await seed(env, { calendarId: "kontoret", owner: ALICE });
-    const db = asAlice();
-    await assertFails(
-      updateDoc(doc(db, "users", "user-1"), { calendar: doc(db, "calendars", "annet") }),
-    );
+    await assertFails(updateDoc(userDoc(asBob(), "kontoret", "user-1"), { won: ["1"] }));
   });
 
   it("rejects a user that would never expire", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    const db = asAlice();
     await assertFails(
-      setDoc(doc(db, "users", "user-2"), {
-        ...user("user-2", ALICE, "kontoret", doc(db, "calendars", "kontoret")),
+      setDoc(userDoc(asAlice(), "kontoret", "user-2"), {
+        ...user("user-2"),
         deleteBy: "2027-02-01",
       }),
     );
@@ -346,15 +322,16 @@ describe("users", () => {
 
   it("stops the owner postponing a user's expiry or adding unknown fields", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
+    const db = asAlice();
     await assertFails(
-      updateDoc(doc(asAlice(), "users", "user-1"), { deleteBy: new Date(2099, 0, 1) }),
+      updateDoc(userDoc(db, "kontoret", "user-1"), { deleteBy: new Date(2099, 0, 1) }),
     );
-    await assertFails(updateDoc(doc(asAlice(), "users", "user-1"), { isAdmin: true }));
+    await assertFails(updateDoc(userDoc(db, "kontoret", "user-1"), { isAdmin: true }));
   });
 
   it("lets only the owner delete a user", async () => {
     await seed(env, { calendarId: "kontoret", owner: ALICE });
-    await assertFails(deleteDoc(doc(asBob(), "users", "user-1")));
-    await assertSucceeds(deleteDoc(doc(asAlice(), "users", "user-1")));
+    await assertFails(deleteDoc(userDoc(asBob(), "kontoret", "user-1")));
+    await assertSucceeds(deleteDoc(userDoc(asAlice(), "kontoret", "user-1")));
   });
 });

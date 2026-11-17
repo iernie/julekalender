@@ -18,7 +18,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     throw new Response("Not found", { status: 404 });
   }
 
-  const users = await adminDb.collection("users").where("calendarId", "==", calendarId).get();
+  const users = await snapshot.ref.collection("users").get();
   const opened = new Set(users.docs.flatMap((entry) => toUser(entry.data()).won)).size;
 
   return pngResponse(

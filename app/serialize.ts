@@ -31,8 +31,6 @@ export const toCalendar = (data: Record<string, unknown>): CalendarType => ({
 
 export const toUser = (data: Record<string, unknown>): UserType => ({
   id: String(data.id ?? ""),
-  calendarId: String(data.calendarId ?? ""),
-  owner: String(data.owner ?? ""),
   name: String(data.name ?? ""),
   image: String(data.image ?? ""),
   createdAt: toIso(data.createdAt),

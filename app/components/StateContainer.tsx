@@ -1,6 +1,6 @@
 import React from "react";
 import { type Unsubscribe } from "firebase/auth";
-import { collection, doc, getFirestore, onSnapshot, query, where } from "firebase/firestore";
+import { collection, doc, getFirestore, onSnapshot } from "firebase/firestore";
 import { useAppState, SET_CALENDAR, SET_NOTIFICATION, SET_USERS } from "../StateProvider";
 import { Outlet, useNavigate, useParams } from "react-router";
 import Loading from "./Loading";
@@ -23,7 +23,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!data) throw new Response("Kalender ikke funnet", { status: 404 });
   if (data.public === false) return { calendar: null, users: [] };
 
-  const users = await adminDb.collection("users").where("calendarId", "==", calendarId).get();
+  const users = await snapshot.ref.collection("users").get();
 
   return {
     calendar: toCalendar(data),
@@ -74,10 +74,9 @@ const StateContainer = () => {
       },
     );
 
-    // Must filter on calendarId, not the `calendar` reference: firestore.rules
-    // evaluates list operations against the query, so every field the rule
-    // reads has to be constrained here.
-    const userQuery = query(collection(db, "users"), where("calendarId", "==", calendarId));
+    // A plain listing of the subcollection: the `list` rule reads only the
+    // parent calendar, so no `where` clause is needed to satisfy it.
+    const userQuery = collection(calendarReference, "users");
 
     const unsubUsers: Unsubscribe = onSnapshot(
       userQuery,

@@ -85,7 +85,7 @@ export const drawWinner = onCall<DrawRequest>(async (request) => {
   return db.runTransaction(async (tx) => {
     const { reference, calendar } = await assertOwner(request.auth?.uid, calendarId, tx);
 
-    const snapshot = await tx.get(db.collection("users").where("calendar", "==", reference));
+    const snapshot = await tx.get(reference.collection("users"));
     const users = snapshot.docs.map((doc) => {
       const data = doc.data() as {
         id: string;
@@ -143,7 +143,7 @@ export const resetWinner = onCall<{ calendarId: string; day: string }>(async (re
   return db.runTransaction(async (tx) => {
     const { reference } = await assertOwner(request.auth?.uid, calendarId, tx);
 
-    const snapshot = await tx.get(db.collection("users").where("calendar", "==", reference));
+    const snapshot = await tx.get(reference.collection("users"));
 
     // Filtered in memory rather than with a second `array-contains` clause,
     // which would need a composite index. A calendar has a handful of users.
@@ -169,7 +169,7 @@ export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => 
   const { reference } = await assertOwner(request.auth?.uid, calendarId);
 
   const db = getFirestore();
-  const users = await db.collection("users").where("calendar", "==", reference).get();
+  const users = await reference.collection("users").get();
 
   const batch = db.batch();
   users.docs.forEach((doc) => batch.delete(doc.ref));
@@ -329,10 +329,7 @@ app.get(
       return;
     }
 
-    const users = await getFirestore()
-      .collection("users")
-      .where("calendar", "==", calendarReference)
-      .get();
+    const users = await calendarReference.collection("users").get();
 
     if (users.empty) {
       response.json({ error: "Ingen brukere funnet" });

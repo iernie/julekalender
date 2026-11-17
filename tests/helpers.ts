@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { type RulesTestEnvironment, initializeTestEnvironment } from "@firebase/rules-unit-testing";
-import { doc, type DocumentReference, setDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 
 export const ALICE = "alice";
 export const BOB = "bob";
@@ -30,19 +30,10 @@ export const calendar = (owner: string, isPublic = true) => ({
   settings: { fair: true },
 });
 
-export const user = (
-  id: string,
-  owner: string,
-  calendarId: string,
-  calendarRef: DocumentReference,
-  won: Array<string> = [],
-) => ({
+export const user = (id: string, won: Array<string> = []) => ({
   id,
   name: "Nissen",
   image: "https://example.com/a.png",
-  calendar: calendarRef,
-  calendarId,
-  owner,
   createdAt: new Date(),
   deleteBy: new Date(),
   won,
@@ -88,6 +79,6 @@ export const seed = async (
     const db = context.firestore();
     const calendarRef = doc(db, "calendars", calendarId);
     await setDoc(calendarRef, calendar(owner, isPublic));
-    await setDoc(doc(db, "users", userId), user(userId, owner, calendarId, calendarRef, won));
+    await setDoc(doc(calendarRef, "users", userId), user(userId, won));
   });
 };

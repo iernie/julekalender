@@ -94,50 +94,40 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(calendarKeys());
 
       allow delete: if isOwner(resource.data);
-    }
 
-    match /users/{userId} {
-      function userKeys() {
-        return ['id', 'name', 'image', 'calendar', 'calendarId', 'owner', 'createdAt', 'deleteBy', 'won'];
+      // Users live under their calendar, so the calendar is part of the path
+      // rather than a field that could disagree with it. Every rule here reads
+      // the parent calendar and nothing from the user document's own
+      // ownership, which also means a plain listing of the subcollection
+      // satisfies the `list` rule without any `where` clause.
+      match /users/{userId} {
+        function userKeys() {
+          return ['id', 'name', 'image', 'createdAt', 'deleteBy', 'won'];
+        }
+
+        function ownsParent() {
+          return calendarExists(calendarId) && isOwner(calendarData(calendarId));
+        }
+
+        allow read: if canReadCalendar(calendarId);
+
+        allow create: if ownsParent()
+          && request.resource.data.id == userId
+          && request.resource.data.won.size() == 0
+          && expires(request.resource.data)
+          && request.resource.data.keys().hasOnly(userKeys());
+
+        // Clients may rename and re-avatar, but never touch `won`.
+        // Winners are written exclusively by the drawWinner callable.
+        allow update: if ownsParent()
+          && unchanged('won')
+          && unchanged('id')
+          && unchanged('createdAt')
+          && unchanged('deleteBy')
+          && request.resource.data.keys().hasOnly(userKeys());
+
+        allow delete: if ownsParent();
       }
-
-      // A user document carries the calendar twice: `calendarId` as a string,
-      // which the app and these rules query by, and `calendar` as a reference,
-      // which the callables query by. If the two could disagree, a document
-      // that passed these rules as "mine" would still show up in someone
-      // else's draw. Require them to agree.
-      function sameCalendar(data) {
-        return data.calendar == /databases/$(database)/documents/calendars/$(data.calendarId);
-      }
-
-      allow get: if resource == null
-        || canReadCalendar(resource.data.calendarId);
-
-      // Listing is only ever done as `where("calendarId", "==", id)`, so this
-      // rule reads no other field of the user document.
-      allow list: if canReadCalendar(resource.data.calendarId);
-
-      allow create: if isOwner(request.resource.data)
-        && calendarExists(request.resource.data.calendarId)
-        && request.resource.data.owner == calendarData(request.resource.data.calendarId).owner
-        && sameCalendar(request.resource.data)
-        && request.resource.data.won.size() == 0
-        && expires(request.resource.data)
-        && request.resource.data.keys().hasOnly(userKeys());
-
-      // Clients may rename and re-avatar, but never touch `won`.
-      // Winners are written exclusively by the drawWinner callable.
-      allow update: if isOwner(resource.data)
-        && request.resource.data.won == resource.data.won
-        && request.resource.data.owner == resource.data.owner
-        && request.resource.data.calendarId == resource.data.calendarId
-        && unchanged('id')
-        && unchanged('calendar')
-        && unchangedOrRepaired('createdAt')
-        && unchangedOrRepaired('deleteBy')
-        && request.resource.data.keys().hasOnly(userKeys());
-
-      allow delete: if isOwner(resource.data);
     }
   }
 }

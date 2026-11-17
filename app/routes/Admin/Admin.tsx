@@ -140,7 +140,7 @@ export default function Admin() {
       id,
       setTimeout(() => {
         timers.delete(id);
-        updateDoc(doc(db, "users", id), { name: value }).catch(() =>
+        updateDoc(doc(db, "calendars", calendarId, "users", id), { name: value }).catch(() =>
           notify("Klarte ikke lagre navnet"),
         );
       }, 500),
@@ -311,7 +311,7 @@ export default function Admin() {
                           }
                           try {
                             const uploadResult = await uploadBytes(storageRef, file);
-                            await updateDoc(doc(db, "users", listed.id), {
+                            await updateDoc(doc(db, "calendars", calendarId, "users", listed.id), {
                               image: await getDownloadURL(uploadResult.ref),
                             });
                           } catch {
@@ -334,7 +334,7 @@ export default function Admin() {
                       label={`Slett ${listed.name || "bruker"}`}
                       disabled={!isOwner}
                       onClick={async () => {
-                        const userReference = doc(db, "users", listed.id);
+                        const userReference = doc(db, "calendars", calendarId, "users", listed.id);
                         const userSnap = await getDoc(userReference);
                         if (!userSnap.exists()) return;
                         if (userSnap.data().image.includes(storageRef.name)) {
@@ -354,23 +354,18 @@ export default function Admin() {
           type="button"
           disabled={!isOwner}
           onClick={async () => {
-            const calendarReference = doc(db, "calendars", calendarId);
             const id = crypto.randomUUID();
             const downloadUrl = await getDownloadURL(
               ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`),
             );
 
-            // Stored shape, not UserType: Firestore holds real Timestamps and
-            // a `calendar` reference that the callables query by.
-            await setDoc(doc(db, "users", id), {
+            // Stored shape, not UserType: Firestore holds real Timestamps.
+            await setDoc(doc(db, "calendars", calendarId, "users", id), {
               id,
               name: "",
               createdAt: Timestamp.fromDate(new Date()),
               deleteBy: expiresAt(),
               won: [],
-              calendar: calendarReference,
-              calendarId,
-              owner: calendar.owner,
               image: downloadUrl,
             });
           }}

@@ -1,14 +1,13 @@
 /**
  * Shapes as held in app state: Timestamps are normalised to ISO strings by
  * `app/serialize.ts` so loader data and onSnapshot data match. The documents in
- * Firestore still store real Timestamps, and users additionally store a
- * `calendar` DocumentReference used by the callables.
+ * Firestore still store real Timestamps. Users live in the
+ * `calendars/{calendarId}/users` subcollection, so they carry no calendar or
+ * owner field of their own.
  */
 
 export type UserType = {
   id: string;
-  calendarId: string;
-  owner: string;
   name: string;
   image: string;
   createdAt: string;
