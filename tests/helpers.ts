@@ -7,7 +7,7 @@ export const BOB = "bob";
 
 export const newTestEnvironment = (): Promise<RulesTestEnvironment> =>
   initializeTestEnvironment({
-    projectId: "julekal-rules-test",
+    projectId: "demo-julekal-rules-test",
     firestore: {
       rules: readFileSync("firestore.rules", "utf8"),
       host: "127.0.0.1",

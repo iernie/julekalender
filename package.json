@@ -14,7 +14,7 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "test:rules": "firebase emulators:exec --only firestore,storage --project julekal-rules-test \"vitest run\"",
+    "test:rules": "firebase emulators:exec --only firestore,storage --project demo-julekal-rules-test \"vitest run\"",
     "prepare": "husky"
   },
   "dependencies": {

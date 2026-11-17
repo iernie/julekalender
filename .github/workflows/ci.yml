@@ -37,6 +37,16 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      # The emulator jars are fetched from Google on first use; a slow or
+      # failed download there fails the rules tests with "An unexpected error
+      # has occurred". The jar versions are pinned by firebase-tools, so key
+      # the cache on the lockfile.
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.cache/firebase/emulators
+          key: firebase-emulators-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: firebase-emulators-${{ runner.os }}-
+
       - name: Install
         run: |
           pnpm install --frozen-lockfile
