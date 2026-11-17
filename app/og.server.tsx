@@ -47,12 +47,12 @@ export const renderOgImage = async (element: React.ReactNode): Promise<Uint8Arra
   return new Uint8Array(png);
 };
 
-export const pngResponse = (png: Uint8Array) =>
+/** Defaults to a short cache: winners change at most once a day. */
+export const pngResponse = (png: Uint8Array, maxAge = 300) =>
   new Response(png as unknown as BodyInit, {
     headers: {
       "Content-Type": "image/png",
-      // Winners change at most once a day; let scrapers and CDNs cache briefly.
-      "Cache-Control": "public, max-age=300, s-maxage=300",
+      "Cache-Control": `public, max-age=${maxAge}, s-maxage=${maxAge}`,
     },
   });
 

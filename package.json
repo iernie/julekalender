@@ -15,7 +15,8 @@
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "test:rules": "firebase emulators:exec --only firestore,storage --project demo-julekal-rules-test \"vitest run\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@react-router/node": "^8.5.1",

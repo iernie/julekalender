@@ -25,10 +25,11 @@ export const metaCalendarData = (matches: Array<MetaMatch>): CalendarRouteData |
  * Used when a calendar is private or not loaded. A route's meta replaces its
  * parent's, so returning [] would leave the page with no title at all.
  */
-export const genericMeta = () =>
+export const genericMeta = (matches: Array<MetaMatch>) =>
   socialMeta({
     title: "Julekalender as a Service",
     description: "Lag din egen julekalender på et blunk.",
+    image: `${metaOrigin(matches)}/og/og.png`,
   });
 
 export const socialMeta = ({

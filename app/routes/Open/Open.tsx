@@ -19,7 +19,7 @@ export const meta: Route.MetaFunction = ({ matches, params }) => {
   const data = metaCalendarData(matches);
   const calendar = data?.calendar;
   const day = params.day;
-  if (!calendar || !day) return genericMeta();
+  if (!calendar || !day) return genericMeta(matches);
 
   const id = toCalendarId(calendar.name);
   const winner = data.users.find((user) => user.won.includes(day));

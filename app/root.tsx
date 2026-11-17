@@ -11,6 +11,7 @@ import type { Route } from "./+types/root";
 import "./app.css";
 import { Link } from "react-router";
 import styles from "./root.module.css";
+import { genericMeta } from "./meta";
 
 /**
  * og:image has to be an absolute URL, and meta functions only receive the
@@ -26,20 +27,7 @@ export function loader({ request }: Route.LoaderArgs) {
   return { origin: configured || new URL(request.url).origin };
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => {
-  const image = `${loaderData?.origin ?? ""}/logo192.png`;
-  return [
-    { title: "Julekalender as a Service" },
-    { name: "description", content: "Lag din egen julekalender på et blunk." },
-    { property: "og:site_name", content: "Julekalender as a Service" },
-    { property: "og:type", content: "website" },
-    { property: "og:title", content: "Julekalender as a Service" },
-    { property: "og:description", content: "Lag din egen julekalender på et blunk." },
-    { property: "og:image", content: image },
-    { name: "twitter:card", content: "summary" },
-    { name: "twitter:image", content: image },
-  ];
-};
+export const meta: Route.MetaFunction = ({ matches }) => genericMeta(matches);
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -61,7 +49,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#d52b1e" />
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="64x64" />
         <link rel="apple-touch-icon" href="/logo192.png" />
         <link rel="manifest" href="/manifest.json" />
         <Meta />

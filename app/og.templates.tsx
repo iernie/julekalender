@@ -1,4 +1,7 @@
 import { type CalendarType, type UserType } from "./types";
+import bauble from "./assets/bauble.svg?raw";
+
+const BAUBLE_URL = `data:image/svg+xml,${encodeURIComponent(bauble)}`;
 
 /** Matches the site: Roboto for body text, Playfair Display for headings. */
 export const BODY_FONT = "Roboto";
@@ -29,6 +32,78 @@ const shell = (children: React.ReactNode): React.ReactNode => (
 
 const footer = (text: string): React.ReactNode => (
   <div style={{ display: "flex", marginTop: 40, fontSize: 30, color: DARK }}>{text}</div>
+);
+
+const GREY = "#c9cac8";
+/** Doors up to this day are drawn opened in the site preview's calendar grid. */
+const OPENED_UNTIL = 10;
+const DOOR = 76;
+const DOOR_GAP = 10;
+
+const door = (day: number): React.ReactNode => (
+  <div
+    key={day}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: DOOR,
+      height: DOOR,
+      marginLeft: day % 6 === 1 ? 0 : DOOR_GAP,
+      background: day <= OPENED_UNTIL ? RED : GREY,
+      color: "#fff",
+      fontSize: 34,
+      fontFamily: DISPLAY_FONT,
+      fontWeight: 700,
+    }}
+  >
+    {day}
+  </div>
+);
+
+/** Front page: wordmark and tagline beside a calendar grid. */
+export const SiteOgImage = ({ host }: { host: string }): React.ReactNode => (
+  <div
+    style={{
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      alignItems: "center",
+      background: CREAM,
+      fontFamily: BODY_FONT,
+      padding: "0 72px",
+      boxSizing: "border-box",
+    }}
+  >
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, marginRight: 48 }}>
+      <img src={BAUBLE_URL} alt="" width={96} height={96} />
+      <div
+        style={{
+          display: "flex",
+          fontSize: 84,
+          fontFamily: DISPLAY_FONT,
+          fontWeight: 700,
+          color: RED,
+          marginTop: 20,
+          lineHeight: 1,
+        }}
+      >
+        Julekalender
+      </div>
+      <div style={{ display: "flex", fontSize: 40, color: DARK, marginTop: 8 }}>as a Service</div>
+      <div style={{ display: "flex", fontSize: 32, color: DARK, marginTop: 40, maxWidth: 440 }}>
+        Lag din egen julekalender på et blunk.
+      </div>
+      <div style={{ display: "flex", fontSize: 26, color: RED, marginTop: 28 }}>{host}</div>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {[0, 1, 2, 3].map((row) => (
+        <div key={row} style={{ display: "flex", marginTop: row === 0 ? 0 : DOOR_GAP }}>
+          {Array.from({ length: 6 }, (_, column) => door(row * 6 + column + 1))}
+        </div>
+      ))}
+    </div>
+  </div>
 );
 
 /** Calendar overview: name plus how many days have been opened. */

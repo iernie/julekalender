@@ -16,7 +16,7 @@ import styles from "./Calendar.module.css";
 export const meta: Route.MetaFunction = ({ matches }) => {
   const data = metaCalendarData(matches);
   const calendar = data?.calendar;
-  if (!calendar) return genericMeta();
+  if (!calendar) return genericMeta(matches);
 
   const id = toCalendarId(calendar.name);
   const opened = new Set(data.users.flatMap((user) => user.won)).size;
