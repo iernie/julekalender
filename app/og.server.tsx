@@ -1,28 +1,28 @@
-import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
+// `?inline` embeds the files in the server bundle as base64 data URLs. Reading
+// them from disk at runtime does not work: the build never copies them next to
+// `build/server/index.js`, so every OG request failed with ENOENT.
+import robotoRegular from "./assets/fonts/Roboto-Regular.ttf?inline";
+import playfairBold from "./assets/fonts/PlayfairDisplay-Bold.ttf?inline";
+import { BODY_FONT, DISPLAY_FONT } from "./og.templates";
 
 export const OG_WIDTH = 1200;
 export const OG_HEIGHT = 630;
 
-const FONT_DIR = join(dirname(fileURLToPath(import.meta.url)), "assets/fonts");
-
 type Fonts = Array<{ name: string; data: Buffer; weight: 400 | 700; style: "normal" }>;
 
-let fontsPromise: Promise<Fonts> | undefined;
+const fromDataUrl = (url: string): Buffer => Buffer.from(url.slice(url.indexOf(",") + 1), "base64");
 
-/** Read once per instance; the files are ~250 KB together. */
-const loadFonts = (): Promise<Fonts> => {
-  fontsPromise ??= Promise.all([
-    readFile(join(FONT_DIR, "Roboto-Regular.ttf")),
-    readFile(join(FONT_DIR, "Roboto-Bold.ttf")),
-  ]).then(([regular, bold]): Fonts => [
-    { name: "Roboto", data: regular, weight: 400, style: "normal" },
-    { name: "Roboto", data: bold, weight: 700, style: "normal" },
-  ]);
-  return fontsPromise;
+let fonts: Fonts | undefined;
+
+/** Decoded once per instance. */
+const loadFonts = (): Fonts => {
+  fonts ??= [
+    { name: BODY_FONT, data: fromDataUrl(robotoRegular), weight: 400, style: "normal" },
+    { name: DISPLAY_FONT, data: fromDataUrl(playfairBold), weight: 700, style: "normal" },
+  ];
+  return fonts;
 };
 
 /**
@@ -35,7 +35,7 @@ export const renderOgImage = async (element: React.ReactNode): Promise<Uint8Arra
   const svg = await satori(element, {
     width: OG_WIDTH,
     height: OG_HEIGHT,
-    fonts: await loadFonts(),
+    fonts: loadFonts(),
   });
 
   const png = new Resvg(svg, {

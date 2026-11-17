@@ -1,5 +1,9 @@
 import { type CalendarType, type UserType } from "./types";
 
+/** Matches the site: Roboto for body text, Playfair Display for headings. */
+export const BODY_FONT = "Roboto";
+export const DISPLAY_FONT = "Playfair Display";
+
 const RED = "#d52b1e";
 const CREAM = "#e0e1dd";
 const DARK = "#4d4f53";
@@ -14,8 +18,9 @@ const shell = (children: React.ReactNode): React.ReactNode => (
       alignItems: "center",
       justifyContent: "center",
       background: CREAM,
-      fontFamily: "Roboto",
+      fontFamily: BODY_FONT,
       padding: 64,
+      boxSizing: "border-box",
     }}
   >
     {children}
@@ -45,6 +50,7 @@ export const CalendarOgImage = ({
         style={{
           display: "flex",
           fontSize: 96,
+          fontFamily: DISPLAY_FONT,
           fontWeight: 700,
           color: RED,
           marginTop: 12,
@@ -95,6 +101,7 @@ export const DayOgImage = ({
             style={{
               display: "flex",
               fontSize: 84,
+              fontFamily: DISPLAY_FONT,
               fontWeight: 700,
               color: RED,
               marginTop: 24,
@@ -111,6 +118,7 @@ export const DayOgImage = ({
             style={{
               display: "flex",
               fontSize: 180,
+              fontFamily: DISPLAY_FONT,
               fontWeight: 700,
               color: RED,
               marginTop: 16,

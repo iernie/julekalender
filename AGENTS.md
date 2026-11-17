@@ -52,7 +52,7 @@ Verification = `pnpm lint` + `pnpm format:check` + `pnpm typecheck` +
 - `app/components/IconButton/` — keyboard-accessible wrapper for the icon actions. Prefer it over `onClick` on an icon.
 - `app/meta.ts` — `socialMeta`/`genericMeta` helpers plus accessors for root and calendar loader data.
 - `app/og.server.tsx` + `app/og.templates.tsx` + `app/routes/og.*.ts` — dynamic OG images at `/og/:name/og.png` and `/og/:name/:day/og.png`.
-- `app/assets/fonts/` — Roboto TTFs for satori (OFL-1.1, license included). Not the webfont the UI uses.
+- `app/assets/fonts/` — static TTFs for satori, matching the UI: Roboto Regular for body text and Playfair Display Bold for headings (both OFL-1.1, licenses included). The UI itself loads its webfonts from Google Fonts. Imported with `?inline` so they are embedded in the server bundle; reading them from disk fails in production because the build does not copy them. satori cannot use variable fonts or woff2.
 - `tests/` — Firestore and Storage security rules tests (Vitest + `@firebase/rules-unit-testing`).
 - `scripts/seed-emulators.mjs` — uploads `static/*.png` to `avatars/` in the Storage emulator; the app needs them when adding a user.
 - `build/`, `.react-router/`, `functions/lib/` are generated; never edit.
