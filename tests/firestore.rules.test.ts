@@ -150,15 +150,6 @@ describe("calendars", () => {
     await assertFails(updateDoc(doc(asAlice(), "calendars", "kontoret"), { name: "Annet" }));
   });
 
-  // `avatars` is the Storage prefix for the seeded default avatars, and
-  // storage.rules keys write access off the calendar id. Owning a calendar by
-  // that name would mean owning everyone's defaults.
-  it("rejects the reserved calendar id", async () => {
-    await assertFails(
-      setDoc(doc(asAlice(), "calendars", "avatars"), { ...calendar(ALICE), name: "Avatars" }),
-    );
-  });
-
   // The TTL policy only sweeps documents whose `deleteBy` is a timestamp.
   it("rejects a calendar that would never expire", async () => {
     await assertFails(

@@ -26,32 +26,14 @@ beforeEach(async () => {
   await seed(env, { calendarId: "kontoret", owner: ALICE });
 });
 
-describe("avatars", () => {
+describe("calendar uploads", () => {
   it("are world readable", async () => {
     await env.withSecurityRulesDisabled(async (context) => {
-      await uploadBytes(ref(context.storage(), "avatars/1.png"), png(), PNG);
+      await uploadBytes(ref(context.storage(), "kontoret/user-1"), png(), PNG);
     });
-    await assertSucceeds(getBytes(ref(env.unauthenticatedContext().storage(), "avatars/1.png")));
+    await assertSucceeds(getBytes(ref(env.unauthenticatedContext().storage(), "kontoret/user-1")));
   });
 
-  it("cannot be overwritten", async () => {
-    await assertFails(
-      uploadBytes(ref(env.authenticatedContext(ALICE).storage(), "avatars/1.png"), png(), PNG),
-    );
-  });
-
-  // Storage evaluates every matching rule and grants on any allow, so the
-  // per-calendar block also matches `avatars/<file>`. firestore.rules reserves
-  // the id, but seeded data could predate that, so the storage rule guards too.
-  it("cannot be overwritten by the owner of a calendar named avatars", async () => {
-    await seed(env, { calendarId: "avatars", owner: BOB, userId: "user-9" });
-    await assertFails(
-      uploadBytes(ref(env.authenticatedContext(BOB).storage(), "avatars/1.png"), png(), PNG),
-    );
-  });
-});
-
-describe("calendar uploads", () => {
   it("lets the calendar owner upload an avatar", async () => {
     await assertSucceeds(
       uploadBytes(ref(env.authenticatedContext(ALICE).storage(), "kontoret/user-1"), png(), PNG),

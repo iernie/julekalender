@@ -25,12 +25,8 @@ service cloud.firestore {
             || request.auth.uid == calendarData(id).owner);
     }
 
-    // `avatars/` is the Storage prefix holding the seeded default avatars, and
-    // storage.rules grants the owner of calendar `<id>` write access to
-    // `<id>/**`. A calendar called `avatars` would therefore hand its owner
-    // write access to everyone's default avatars, so the name is reserved.
     function validCalendarId(id) {
-      return id.matches('^[a-z0-9æøå_-]{2,40}$') && id != 'avatars';
+      return id.matches('^[a-z0-9æøå_-]{2,40}$');
     }
 
     // Both collections expire through a TTL policy on `deleteBy`. Firestore

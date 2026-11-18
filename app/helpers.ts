@@ -6,15 +6,8 @@ export const FUNCTIONS_REGION = "europe-west1";
 /** Firestore document id for a calendar. Must satisfy the rules' id pattern. */
 export const toCalendarId = (name: string) => name.toLocaleLowerCase();
 
-/**
- * `avatars` is the Storage prefix for the seeded default avatars, and the
- * storage rules key write access off the calendar id, so the name is reserved.
- * Kept in step with `validCalendarId` in firestore.rules.
- */
-export const RESERVED_CALENDAR_IDS = ["avatars"];
-
-export const isValidCalendarId = (id: string) =>
-  /^[a-z0-9æøå_-]{2,40}$/.test(id) && !RESERVED_CALENDAR_IDS.includes(id);
+/** Kept in step with `validCalendarId` in firestore.rules. */
+export const isValidCalendarId = (id: string) => /^[a-z0-9æøå_-]{2,40}$/.test(id);
 
 /**
  * Calendars and their users expire via the Firestore TTL policy on `deleteBy`.
