@@ -151,8 +151,8 @@ export const resetWinner = onCall<{ calendarId: string; day: string }>(async (re
 });
 
 /**
- * Deletes a calendar, its users and their uploaded avatars. Done server-side so
- * the cascade cannot be left half-finished by a closed browser tab.
+ * Deletes a calendar and its users. Done server-side so the cascade cannot be
+ * left half-finished by a closed browser tab.
  */
 export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => {
   const calendarId = assertCalendarId(request.data?.calendarId);
@@ -166,11 +166,7 @@ export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => 
   batch.delete(reference);
   await batch.commit();
 
-  // Avatars uploaded for this calendar all live under `<calendarId>/`.
-  await getStorage()
-    .bucket()
-    .deleteFiles({ prefix: `${calendarId}/` })
-    .catch(() => undefined);
+  // Avatars are removed by `cleanUpCalendarAvatars`, which fires on the delete.
 
   return { deleted: users.size };
 });
@@ -178,12 +174,10 @@ export const deleteCalendar = onCall<{ calendarId: string }>(async (request) => 
 /**
  * Deletes a calendar's uploaded avatars once the calendar document is gone.
  *
- * `deleteCalendar` already does this inline, but it is not the only way a
- * calendar disappears: the TTL policy on `deleteBy` sweeps calendars every
- * February without calling any callable, and TTL deletions do fire this
- * trigger. Without it, every avatar ever uploaded would stay in the bucket
- * forever. Deleting an already-empty prefix is a no-op, so running after
- * `deleteCalendar` is harmless.
+ * The single avatar cleanup: it covers both `deleteCalendar` and the TTL
+ * policy on `deleteBy`, which sweeps calendars every February without calling
+ * any callable. TTL deletions do fire this trigger. Without it, every avatar
+ * ever uploaded would stay in the bucket forever.
  */
 export const cleanUpCalendarAvatars = onDocumentDeleted(
   // Firestore 2nd-gen triggers run in the database's Eventarc location, and
