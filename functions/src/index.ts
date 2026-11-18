@@ -9,7 +9,6 @@
 import { logger, setGlobalOptions } from "firebase-functions/v2";
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { HttpsError, onCall, onRequest } from "firebase-functions/v2/https";
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import express from "express";
 import cors from "cors";
 import { randomInt } from "node:crypto";
@@ -23,17 +22,8 @@ initializeApp();
 
 const DAYS = 24;
 
-/**
- * Storage prefix for the seeded default avatars. Reserved as a calendar id in
- * firestore.rules and storage.rules so it cannot be claimed.
- */
-const RESERVED_PREFIX = "avatars";
-
 /** Must match `validCalendarId` in firestore.rules. */
 const CALENDAR_ID = /^[a-z0-9æøå_-]{2,40}$/;
-
-/** Documents per `getAll` call in the orphan sweep. */
-const GET_ALL_CHUNK = 300;
 
 /** Throws unless the caller owns the calendar. Returns the calendar data. */
 const assertOwner = async (
@@ -208,89 +198,18 @@ export const cleanUpCalendarAvatars = onDocumentDeleted(
       .bucket()
       .deleteFiles({ prefix: `${calendarId}/`, force: true })
       .catch((error: unknown) => {
-        // The monthly sweep is the backstop, but a trigger that fails every
-        // time should not be invisible until then.
+        // A failed invocation is not retried, so log it rather than let the
+        // avatars disappear from view.
         logger.warn("Failed to delete avatars for a deleted calendar", { calendarId, error });
       });
   },
 );
 
 /**
- * Monthly reconciliation sweep for the avatar bucket.
- *
- * The delete trigger above is the primary cleanup, but it is best-effort: a
- * failed invocation is never retried, and avatars uploaded for a calendar that
- * was deleted while the trigger was down would be orphaned for good. Storage
- * has no TTL of its own, so this walks the bucket's top-level prefixes — one
- * per calendar — and removes those with no calendar document behind them.
- */
-export const sweepOrphanedAvatars = onSchedule("0 4 1 * *", async () => {
-  const bucket = getStorage().bucket();
-  const db = getFirestore();
-
-  const prefixes = new Set<string>();
-  let pageToken: string | undefined;
-
-  do {
-    // Pages must be walked in order: each one yields the next page token.
-    // oxlint-disable-next-line no-await-in-loop
-    const [, , response] = await bucket.getFiles({
-      delimiter: "/",
-      autoPaginate: false,
-      pageToken,
-    });
-    // `delimiter` makes the API return directory-like prefixes instead of
-    // every object, but the typings do not model that response shape.
-    const apiResponse = response as { prefixes?: Array<string>; nextPageToken?: string };
-
-    for (const prefix of apiResponse.prefixes ?? []) prefixes.add(prefix);
-    pageToken = apiResponse.nextPageToken;
-  } while (pageToken);
-
-  // The seeded default avatars belong to no calendar and must survive.
-  prefixes.delete(`${RESERVED_PREFIX}/`);
-
-  // This is the default bucket, which other Firebase features may also write
-  // to. Only prefixes shaped like a calendar id are ours to delete — a sweep
-  // that deletes whatever it fails to recognise is one bad page away from
-  // destroying someone else's data.
-  const calendarIds = [...prefixes]
-    .map((prefix) => prefix.replace(/\/$/, ""))
-    .filter((id) => CALENDAR_ID.test(id));
-
-  if (calendarIds.length === 0) return;
-
-  // getAll takes one request for the whole list; chunk it so a project with
-  // thousands of calendars does not blow the request size limit.
-  const snapshots: Array<FirebaseFirestore.DocumentSnapshot> = [];
-
-  for (let index = 0; index < calendarIds.length; index += GET_ALL_CHUNK) {
-    const chunk = calendarIds.slice(index, index + GET_ALL_CHUNK);
-    // getAll preserves the order of its arguments, which the filter relies on.
-    // oxlint-disable-next-line no-await-in-loop
-    snapshots.push(...(await db.getAll(...chunk.map((id) => db.collection("calendars").doc(id)))));
-  }
-
-  const orphaned = calendarIds.filter((_, index) => !snapshots[index].exists);
-
-  // allSettled, not all: deleteFiles rejects on the first object it cannot
-  // remove, and onSchedule does not retry, so one bad object would otherwise
-  // cost the whole month's sweep.
-  const results = await Promise.allSettled(
-    orphaned.map((calendarId) => bucket.deleteFiles({ prefix: `${calendarId}/`, force: true })),
-  );
-  const failed = results.filter((result) => result.status === "rejected");
-
-  logger.info("Swept orphaned avatar prefixes", {
-    scanned: calendarIds.length,
-    deleted: orphaned.length - failed.length,
-    failed: failed.length,
-  });
-});
-
-/**
- * Public read-only API. Moves into the React Router app in a later phase; kept
- * here for now so api.kalender.christmas keeps working.
+ * Public read-only API served at api.kalender.christmas. It stays in this
+ * codebase deliberately: it is unauthenticated, and keeping it off the web
+ * app's Cloud Run service preserves its own `maxInstances` cost cap and keeps
+ * scraper traffic from scaling the site.
  */
 const app = express();
 app.use(cors({ origin: "*" }));
