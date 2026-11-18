@@ -5,6 +5,7 @@ allowBuilds:
   "@firebase/util": true
   protobufjs: true
   re2: true
+minimumReleaseAge: 2880
 pmOnFail: ignore
 # App Hosting's nodejs runtime resolves externalized ESM imports (firebase-admin
 # and its transitive deps, plus the CJS react-tooltip/react-confetti deps) from
