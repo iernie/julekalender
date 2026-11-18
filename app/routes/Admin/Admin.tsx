@@ -33,7 +33,7 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
 const AVATAR_COUNT = 20;
 
-/** Cycles through the seeded avatars before repeating any of them. */
+/** Cycles through the default avatars in `public/avatars/` before repeating any of them. */
 const nextAvatar = (used: Array<number>): number => {
   if (used.length === AVATAR_COUNT) used.length = 0;
   const remaining = Array.from({ length: AVATAR_COUNT }, (_, index) => index + 1).filter(
@@ -355,9 +355,9 @@ export default function Admin() {
           disabled={!isOwner}
           onClick={async () => {
             const id = crypto.randomUUID();
-            const downloadUrl = await getDownloadURL(
-              ref(storage, `avatars/${nextAvatar(usedAvatars.current)}.png`),
-            );
+            // Absolute, because the public API and the OG renderer read it
+            // outside the browser.
+            const image = `${window.location.origin}/avatars/${nextAvatar(usedAvatars.current)}.png`;
 
             // Stored shape, not UserType: Firestore holds real Timestamps.
             await setDoc(doc(db, "calendars", calendarId, "users", id), {
@@ -366,7 +366,7 @@ export default function Admin() {
               createdAt: Timestamp.fromDate(new Date()),
               deleteBy: expiresAt(),
               won: [],
-              image: downloadUrl,
+              image,
             });
           }}
         >
