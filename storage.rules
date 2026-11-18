@@ -9,25 +9,14 @@ service firebase.storage {
         && firestore.get(/databases/(default)/documents/calendars/$(calendarId)).data.owner == request.auth.uid;
     }
 
-    // Seeded default avatars.
-    match /avatars/{file} {
-      allow read: if true;
-      allow write: if false;
-    }
-
-    // Per-calendar user avatars, uploaded by the calendar owner.
-    //
-    // Storage evaluates every matching rule and grants access if any allows,
-    // so this block also matches `avatars/<file>` above. Without the guard,
-    // whoever registered a calendar named `avatars` could overwrite the seeded
-    // defaults for everyone; firestore.rules reserves the name as well.
+    // Per-calendar user avatars, uploaded by the calendar owner. The default
+    // avatars are served by the app from public/avatars/, not from here.
     match /{calendarId}/{userId} {
       allow read: if true;
-      allow write: if calendarId != 'avatars'
-        && ownsCalendar(calendarId)
+      allow write: if ownsCalendar(calendarId)
         && request.resource.size < 2 * 1024 * 1024
         && request.resource.contentType.matches('image/(png|jpeg|webp|gif)');
-      allow delete: if calendarId != 'avatars' && ownsCalendar(calendarId);
+      allow delete: if ownsCalendar(calendarId);
     }
 
     match /{allPaths=**} {
