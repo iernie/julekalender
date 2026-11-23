@@ -23,7 +23,7 @@
     "@resvg/resvg-js": "^2.6.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
-    "firebase": "^13.3.0",
+    "firebase": "^13.4.0",
     "firebase-admin": "^14.5.1",
     "isbot": "^5.2.3",
     "react": "^19.3.1",
@@ -32,7 +32,7 @@
     "react-icons": "^5.7.0",
     "react-router": "^8.5.1",
     "react-snowfall": "^2.4.0",
-    "react-tooltip": "^6.0.12",
+    "react-tooltip": "^6.0.13",
     "satori": "^0.63.2"
   },
   "devDependencies": {
@@ -41,14 +41,14 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "firebase-tools": "^15.36.0",
+    "firebase-tools": "^15.37.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.1",
-    "oxfmt": "^0.78.0",
-    "oxlint": "^1.93.0",
+    "oxfmt": "^0.79.0",
+    "oxlint": "^1.94.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.1"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,jsonc,css,md}": [
